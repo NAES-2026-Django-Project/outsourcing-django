@@ -43,3 +43,4 @@ Cadeia principal: Team → Project → Stage → Task → Note. Todas tinham `cr
 - Papéis viram Groups do Django.
 - `Project` e `Note` ganham posse estrita por usuário (critério T3-1.3). Notas passam a ser anotações privadas do autor.
 - Movimento de tarefa ganha view própria (`TaskMoveView`).
+- Exclusão física no lugar do `is_active`, atendendo ao `DeleteView` do critério. Só `User.is_active` permanece.
