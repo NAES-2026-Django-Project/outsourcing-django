@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Página não encontrada · Outsourcing{% endblock %}
+{% block content %}
+<h1>Página não encontrada</h1>
+<p>O endereço não existe ou você não tem acesso a este registro.</p>
+<div><a class="btn btn-primary" href="{% url 'pages:home' %}">Voltar ao início</a></div>
+{% endblock %}

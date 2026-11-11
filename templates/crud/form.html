@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}{{ titulo }} · Outsourcing{% endblock %}
+{% block content %}
+<h1>{{ titulo }}</h1>
+<div class="card narrow">
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {{ form|crispy }}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary">{{ botao|default:"Salvar" }}</button>
+        {% if voltar %}<a class="btn btn-outline-secondary" href="{{ voltar }}">Cancelar</a>{% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

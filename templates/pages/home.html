@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+{% if request.user.is_authenticated %}
+  <h1>Olá, {{ request.user.first_name }}</h1>
+  <div class="row g-3">
+    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_abertas }}</span><span class="text-secondary">Tarefas abertas</span></div></div>
+    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_urgentes }}</span><span class="text-secondary">Urgentes</span></div></div>
+    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_projetos }}</span><span class="text-secondary">Projetos em que participo</span></div></div>
+  </div>
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card card-body gap-2">
+        <h2>Tarefas recentes</h2>
+        {% for tarefa in tarefas_recentes %}
+          <div class="d-flex align-items-center gap-2">
+            <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span>
+            <a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a>
+            <small class="ms-auto text-secondary">{{ tarefa.stage.project.name }}</small>
+          </div>
+        {% empty %}
+          <p class="mb-0 text-secondary">Nenhuma tarefa por aqui ainda.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card card-body gap-2">
+        <h2>Projetos recentes</h2>
+        {% for projeto in projetos_recentes %}
+          <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a>
+            <small class="ms-auto text-secondary">Equipe {{ projeto.team.name }}</small>
+          </div>
+        {% empty %}
+          <p class="mb-0 text-secondary">Você ainda não participa de projetos.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <h1>Organize equipes, projetos e tarefas em um só lugar</h1>
+  <p>O Outsourcing acompanha o trabalho de cada equipe em quadros kanban, com papéis para administradores, gerentes e desenvolvedores.</p>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'accounts:login' %}">Entrar</a>
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:cadastro' %}">Criar conta</a>
+  </div>
+{% endif %}
+{% endblock %}

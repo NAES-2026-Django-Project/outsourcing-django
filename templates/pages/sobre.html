@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ titulo }} · Outsourcing{% endblock %}
+{% block content %}
+<h1>{{ titulo }}</h1>
+<p>O Outsourcing é um sistema web para gestão de equipes, projetos e tarefas em quadro kanban, desenvolvido com Python e Django na arquitetura MVT para a disciplina de Novas Aplicações em Engenharia de Software do IFPR.</p>
+<p>Administradores cuidam de usuários e equipes. Gerentes criam projetos e organizam os estágios de suas equipes. Desenvolvedores acompanham as tarefas dos projetos em que participam, movem cada uma pelo quadro e mantêm anotações e apontamentos de horas privados.</p>
+<div class="card card-body gap-2">
+  <h2>Diagrama de casos de uso</h2>
+  <img class="diagram" src="{% static 'img/diagrama-casos-de-uso.png' %}" alt="Diagrama de casos de uso com os atores Visitante, Desenvolvedor, Gerente e Administrador">
+</div>
+<div class="card card-body gap-2">
+  <h2>Diagrama de classes</h2>
+  <img class="diagram" src="{% static 'img/diagrama-classes.png' %}" alt="Diagrama de classes com User, Profile, Address, Team, Project, Stage, Task, Note e TimeEntry">
+</div>
+{% endblock %}

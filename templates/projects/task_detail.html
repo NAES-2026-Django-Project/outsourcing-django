@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ tarefa.title }} · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ tarefa.title }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'projects:quadro' tarefa.stage.project_id %}">Abrir quadro</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}">Editar</a>
+  </div>
+</div>
+<div class="card card-body gap-2">
+  <div>{{ tarefa.description|default:"Sem descrição."|linebreaksbr }}</div>
+  <div><strong>Projeto:</strong> {{ tarefa.stage.project.name }}</div>
+  <div><strong>Estágio:</strong> {{ tarefa.stage.name }}</div>
+  <div><strong>Prioridade:</strong> <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span></div>
+  <div><strong>Responsável:</strong> {{ tarefa.assigned_to|default:"Sem responsável" }}</div>
+  <div><strong>Prazo:</strong> {{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}</div>
+</div>
+<div class="card card-body gap-2">
+  <div class="page-head">
+    <h2>Minhas anotações</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_criar' %}?tarefa={{ tarefa.pk }}">Nova anotação</a>
+  </div>
+  {% for nota in minhas_anotacoes %}
+    <div><a href="{% url 'projects:anotacao_detalhe' nota.pk %}">{{ nota.created_at|date:"d/m/Y H:i" }}</a> · {{ nota.content|truncatechars:120 }}</div>
+  {% empty %}
+    <p class="mb-0 text-secondary">Você ainda não fez anotações nesta tarefa.</p>
+  {% endfor %}
+</div>
+<div class="card card-body gap-2">
+  <div class="page-head">
+    <h2>Meus apontamentos</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_criar' %}?tarefa={{ tarefa.pk }}">Apontar horas</a>
+  </div>
+  {% for apontamento in meus_apontamentos %}
+    <div><a href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a> · <span class="num">{{ apontamento.hours }}h</span>{% if apontamento.description %} · {{ apontamento.description }}{% endif %}</div>
+  {% empty %}
+    <p class="mb-0 text-secondary">Você ainda não apontou horas nesta tarefa.</p>
+  {% endfor %}
+</div>
+{% endblock %}

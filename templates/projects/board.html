@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ projeto.name }} · Quadro · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ projeto.name }}</h1>
+  <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}">Nova tarefa</a>
+</div>
+<div class="board">
+  {% for coluna in colunas %}
+    <section class="board-col">
+      <h2>{{ coluna.estagio.name }}<span class="num">{{ coluna.estagio.tasks.all|length }}</span></h2>
+      {% for tarefa in coluna.estagio.tasks.all %}
+        <article class="task-card {{ tarefa.priority }}">
+          <a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a>
+          <div class="task-meta">
+            <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span>
+            {% if tarefa.assigned_to %}{{ tarefa.assigned_to.first_name }}{% endif %}
+            {% if tarefa.due_date %}· {{ tarefa.due_date|date:"d/m" }}{% endif %}
+            <span class="task-moves">
+              {% if coluna.anterior %}
+                <form method="post" action="{% url 'projects:tarefa_mover' tarefa.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="stage" value="{{ coluna.anterior.pk }}">
+                  <button class="btn btn-outline-secondary btn-sm" aria-label="Mover para {{ coluna.anterior.name }}" title="Mover para {{ coluna.anterior.name }}">◀</button>
+                </form>
+              {% endif %}
+              {% if coluna.proximo %}
+                <form method="post" action="{% url 'projects:tarefa_mover' tarefa.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="stage" value="{{ coluna.proximo.pk }}">
+                  <button class="btn btn-outline-secondary btn-sm" aria-label="Mover para {{ coluna.proximo.name }}" title="Mover para {{ coluna.proximo.name }}">▶</button>
+                </form>
+              {% endif %}
+            </span>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}

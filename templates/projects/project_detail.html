@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ projeto.name }} · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ projeto.name }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'projects:quadro' projeto.pk %}">Abrir quadro</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:projeto_editar' projeto.pk %}">Editar</a>
+  </div>
+</div>
+<div class="card card-body gap-2">
+  <div>{{ projeto.description|default:"Sem descrição."|linebreaksbr }}</div>
+  <div><strong>Equipe:</strong> {{ projeto.team.name }}</div>
+  <div><strong>Período:</strong> {{ projeto.start_date|date:"d/m/Y" }} a {{ projeto.end_date|date:"d/m/Y"|default:"sem término" }}</div>
+  <div><strong>Membros:</strong> {% for m in projeto.assigned_members.all %}{{ m }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
+  <div><strong>Estágios:</strong> {% for s in projeto.stages.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+</div>
+{% endblock %}

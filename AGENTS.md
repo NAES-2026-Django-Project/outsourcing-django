@@ -14,7 +14,7 @@ Dentro do repositório:
 
 - `config/`: settings, urls e wsgi.
 - `accounts/`: usuário por e-mail, Profile, Address, cadastro, login, senha e grupos.
-- `projects/`: Team, Project, Stage, Task, Note, kanban e filtros.
+- `projects/`: Team, Project, Stage, Task, Note, TimeEntry, kanban e filtros.
 - `pages/`: home e página "sobre".
 - `ia/`: única porta de entrada para a IA (`ia/services.py::chamar_ia`) e assistente.
 - `templates/`, `static/`: layout global e arquivos estáticos. `static_gcloud/` é gerado pelo `collectstatic`.
@@ -51,7 +51,7 @@ python manage.py graph_models accounts projects -o docs/design/classes.png
 - Banco sempre PostgreSQL (Neon.tech). **Nunca** configurar SQLite, nem para testes.
 - `accounts.User` precisa existir, com `AUTH_USER_MODEL` configurado, **antes** do primeiro `migrate`.
 - Papéis são Groups do Django: Administrador, Gerente, Desenvolvedor. Cadastro público sempre entra como Desenvolvedor.
-- Posse estrita por usuário em `Project` (`created_by`) e `Note` (`author`): `form_valid()` grava o dono e `get_queryset()` filtra.
+- Posse por usuário: `form_valid()` grava o dono e `get_queryset()` filtra. `Note` e `TimeEntry` (`author`) são estritamente privados, inclusive para administradores. `Project` (`created_by`) restringe o CRUD ao dono, mas aparece no quadro para os participantes.
 - Toda view de cadastro, alteração e exclusão usa o framework de mensagens.
 - Formulários com crispy-forms e Bootstrap 5.
 - Chamadas à IA passam somente por `chamar_ia`.

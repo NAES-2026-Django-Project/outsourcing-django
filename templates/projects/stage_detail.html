@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ estagio.name }} · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ estagio.name }}</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'projects:estagios' %}">Voltar</a>
+</div>
+<div class="card card-body gap-2">
+  <div><strong>Projeto:</strong> {{ estagio.project.name }}</div>
+  <div><strong>Tipo:</strong> {{ estagio.get_stage_type_display }}</div>
+  <div><strong>Ordem:</strong> {{ estagio.order }}</div>
+  <div><strong>Tarefas:</strong> {% for t in estagio.tasks.all %}<a href="{% url 'projects:tarefa_detalhe' t.pk %}">{{ t.title }}</a>{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma{% endfor %}</div>
+</div>
+{% endblock %}

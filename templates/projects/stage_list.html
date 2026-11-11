@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Estágios · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Estágios</h1>
+  <a class="btn btn-primary" href="{% url 'projects:estagio_criar' %}">Novo estágio</a>
+</div>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Projeto</th><th>Ordem</th><th>Estágio</th><th>Tipo</th><th>Tarefas</th><th></th></tr></thead>
+      <tbody>
+        {% for estagio in estagios %}
+          <tr>
+            <td>{{ estagio.project.name }}</td>
+            <td class="num">{{ estagio.order }}</td>
+            <td><a href="{% url 'projects:estagio_detalhe' estagio.pk %}">{{ estagio.name }}</a></td>
+            <td>{{ estagio.get_stage_type_display }}</td>
+            <td class="num">{{ estagio.total_tarefas }}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:estagio_editar' estagio.pk %}">Editar</a>
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:estagio_excluir' estagio.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">Nenhum estágio encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

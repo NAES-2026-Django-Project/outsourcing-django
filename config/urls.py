@@ -4,6 +4,9 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('pages.urls')),
+    path('', include('accounts.urls')),
+    path('', include('projects.urls')),
 ]
 
 if settings.DEBUG_TOOLBAR_ENABLED:

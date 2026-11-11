@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Usuários · Outsourcing{% endblock %}
+{% block content %}
+<h1>Usuários</h1>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Situação</th><th></th></tr></thead>
+      <tbody>
+        {% for usuario in usuarios %}
+          <tr>
+            <td>{{ usuario }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{% for g in usuario.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% empty %}Sem grupo{% endfor %}</td>
+            <td>{{ usuario.is_active|yesno:"Ativo,Inativo" }}</td>
+            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:usuario_papel' usuario.pk %}">Editar</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

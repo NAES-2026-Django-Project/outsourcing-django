@@ -77,6 +77,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # PostgreSQL da Neon.tech (critério do 1º trimestre: não usar SQLite).
 DATABASES = {'default': env.db('DATABASE_URL')}
 
+AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'pages:home'
+LOGOUT_REDIRECT_URL = 'pages:home'
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},

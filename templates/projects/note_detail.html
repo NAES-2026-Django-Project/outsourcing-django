@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Anotação · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Anotação</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'projects:anotacao_editar' anotacao.pk %}">Editar</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:anotacoes' %}">Voltar</a>
+  </div>
+</div>
+<div class="card card-body gap-2">
+  <div><strong>Tarefa:</strong> <a href="{% url 'projects:tarefa_detalhe' anotacao.task_id %}">{{ anotacao.task.title }}</a></div>
+  <div><strong>Criada em:</strong> {{ anotacao.created_at|date:"d/m/Y H:i" }}</div>
+  <div>{{ anotacao.content|linebreaksbr }}</div>
+</div>
+{% endblock %}

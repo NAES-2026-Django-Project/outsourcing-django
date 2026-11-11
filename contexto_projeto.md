@@ -15,3 +15,4 @@ O Outsourcing é um sistema web de gestão de equipes, projetos e tarefas em qua
 - **Estágio**: coluna do quadro kanban.
 - **Tarefa**: item em um estágio, com prioridade, prazo e responsável. Pode ser movida entre estágios do mesmo projeto.
 - **Anotação**: nota privada de um usuário sobre uma tarefa.
+- **Apontamento de horas**: registro privado das horas que um usuário dedicou a uma tarefa em uma data.
