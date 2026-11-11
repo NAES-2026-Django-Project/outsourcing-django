@@ -1,0 +1,84 @@
+/* Tokens de docs/design/DESIGN.md aplicados às variáveis do Bootstrap 5. */
+:root,
+[data-bs-theme="light"] {
+  --paper: #f3f6f5; --surface: #ffffff; --ink: #16262e; --muted: #5b6b70; --line: #d7dfdd;
+  --accent: #0b6e69; --accent-hover: #095a56; --on-accent: #ffffff; --accent-soft: #dcefed;
+  --ok: #2e7d4f; --warn: #a86f12; --danger: #b3392f;
+  --bs-primary: var(--accent); --bs-primary-rgb: 11, 110, 105;
+  --bs-link-color-rgb: 11, 110, 105; --bs-link-hover-color-rgb: 9, 90, 86;
+}
+[data-bs-theme="dark"] {
+  --paper: #11191c; --surface: #1a2529; --ink: #e6edeb; --muted: #9aaaae; --line: #2e3c40;
+  --accent: #4fbdb4; --accent-hover: #6fcfc7; --on-accent: #06211f; --accent-soft: #1d3a3a;
+  --ok: #6cc08d; --warn: #e0ad55; --danger: #ec8177;
+  --bs-primary: var(--accent); --bs-primary-rgb: 79, 189, 180;
+  --bs-link-color-rgb: 79, 189, 180; --bs-link-hover-color-rgb: 111, 207, 199;
+}
+:root,
+[data-bs-theme] {
+  --bs-body-bg: var(--paper); --bs-body-color: var(--ink); --bs-tertiary-bg: var(--surface);
+  --bs-secondary-color: var(--muted); --bs-border-color: var(--line);
+  --bs-body-font-family: "IBM Plex Sans", "Segoe UI", sans-serif; --bs-body-font-size: 15px;
+}
+h1, h2, h3, .brand { font-family: "Manrope", "Segoe UI", sans-serif; }
+h1 { font-size: 24px; font-weight: 800; margin: 0; }
+h2 { font-size: 16px; font-weight: 700; margin: 0; }
+
+.btn-primary {
+  --bs-btn-bg: var(--accent); --bs-btn-border-color: var(--accent); --bs-btn-color: var(--on-accent);
+  --bs-btn-hover-bg: var(--accent-hover); --bs-btn-hover-border-color: var(--accent-hover); --bs-btn-hover-color: var(--on-accent);
+  --bs-btn-active-bg: var(--accent-hover); --bs-btn-active-border-color: var(--accent-hover); --bs-btn-active-color: var(--on-accent);
+  --bs-btn-disabled-bg: var(--accent); --bs-btn-disabled-border-color: var(--accent); --bs-btn-disabled-color: var(--on-accent);
+  font-weight: 600;
+}
+.card { --bs-card-bg: var(--surface); --bs-card-border-color: var(--line); --bs-card-border-radius: 8px; }
+.table { --bs-table-bg: transparent; --bs-table-color: var(--ink); --bs-table-border-color: var(--line); margin: 0; }
+.table th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+.pagination { --bs-pagination-active-bg: var(--accent); --bs-pagination-active-border-color: var(--accent); --bs-pagination-active-color: var(--on-accent); --bs-pagination-color: var(--accent); --bs-pagination-bg: var(--surface); margin: 0; }
+
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar { width: 232px; flex: none; background: var(--surface); border-right: 1px solid var(--line); }
+@media (min-width: 992px) { .sidebar-inner { position: sticky; top: 0; max-height: 100vh; overflow-y: auto; } }
+.sidebar-inner { padding: 14px 10px; width: 100%; }
+.brand { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; padding: 2px 10px 8px; }
+.brand-mark { width: 22px; height: 22px; border-radius: 5px; background: var(--accent); display: inline-grid; grid-template-columns: repeat(3, 3px); gap: 2px; padding: 5px 4px; align-items: start; }
+.brand-mark b { background: var(--on-accent); border-radius: 1px; height: 12px; }
+.brand-mark b:nth-child(2) { height: 8px; }
+.brand-mark b:nth-child(3) { height: 5px; }
+.nav-group { font-size: 12px; color: var(--muted); font-weight: 600; padding: 12px 10px 4px; }
+.nav-item-link { display: block; padding: 7px 10px; border-radius: 6px; color: var(--ink); text-decoration: none; }
+.nav-item-link:hover { background: var(--accent-soft); color: var(--ink); }
+.nav-item-link.active { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.page { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: inline-grid; place-items: center; font-weight: 600; font-size: 12px; }
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.narrow { max-width: 560px; }
+.summary-value { font: 800 26px "Manrope", sans-serif; font-variant-numeric: tabular-nums; }
+
+.pill { display: inline-block; border-radius: 99px; padding: 0 8px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; white-space: nowrap; }
+.prio-low { color: var(--muted); }
+.prio-medium { color: var(--accent); }
+.prio-high { color: var(--warn); }
+.prio-urgent { color: var(--danger); }
+
+.board { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.board-col { background: var(--accent-soft); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 240px; }
+.board-col h2 { font-size: 14px; display: flex; justify-content: space-between; }
+.task-card { background: var(--surface); border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.task-card.low { border-left-color: var(--muted); }
+.task-card.medium { border-left-color: var(--accent); }
+.task-card.high { border-left-color: var(--warn); }
+.task-card.urgent { border-left-color: var(--danger); }
+.task-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.task-moves { margin-left: auto; display: flex; gap: 4px; }
+
+.toast-area { position: fixed; right: 16px; bottom: 16px; z-index: 1090; display: flex; flex-direction: column; gap: 8px; }
+.toast { --bs-toast-bg: var(--surface); --bs-toast-border-color: var(--line); border-left: 4px solid var(--ok); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warning { border-left-color: var(--warn); }
+.diagram { max-width: 100%; height: auto; background: #fff; border-radius: 6px; }
+
+@media (max-width: 991.98px) { .sidebar { border-right: 0; } .page { padding: 16px; } .topbar { padding: 10px 16px; } }

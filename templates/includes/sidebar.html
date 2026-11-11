@@ -1,0 +1,31 @@
+{% with nome=request.resolver_match.url_name %}
+<div class="sidebar-inner">
+  <a class="brand" href="{% url 'pages:home' %}"><span class="brand-mark"><b></b><b></b><b></b></span>Outsourcing</a>
+  <nav>
+    {% if request.user.is_authenticated %}
+      <div class="nav-group">Trabalho</div>
+      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}">Início</a>
+      <a class="nav-item-link {% if 'quadro' in nome %}active{% endif %}" href="{% url 'projects:quadros' %}">Quadros</a>
+      <a class="nav-item-link {% if 'tarefa' in nome %}active{% endif %}" href="{% url 'projects:tarefas' %}">Tarefas</a>
+      <a class="nav-item-link {% if 'anotac' in nome %}active{% endif %}" href="{% url 'projects:anotacoes' %}">Minhas anotações</a>
+      {% if request.user.eh_administrador or request.user.eh_gerente %}
+        <div class="nav-group">Gestão</div>
+        <a class="nav-item-link {% if 'projeto' in nome %}active{% endif %}" href="{% url 'projects:projetos' %}">Meus projetos</a>
+        <a class="nav-item-link {% if 'estagio' in nome %}active{% endif %}" href="{% url 'projects:estagios' %}">Estágios</a>
+        <a class="nav-item-link {% if 'equipe' in nome %}active{% endif %}" href="{% url 'projects:equipes' %}">Equipes</a>
+      {% endif %}
+      {% if request.user.eh_administrador %}
+        <a class="nav-item-link {% if 'usuario' in nome %}active{% endif %}" href="{% url 'accounts:usuarios' %}">Usuários</a>
+      {% endif %}
+      <div class="nav-group">Sistema</div>
+      <a class="nav-item-link {% if nome == 'conta' or nome == 'dados' or nome == 'perfil' or nome == 'endereco' or nome == 'senha' %}active{% endif %}" href="{% url 'accounts:conta' %}">Minha conta</a>
+    {% else %}
+      <div class="nav-group">Público</div>
+      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}">Início</a>
+      <a class="nav-item-link {% if nome == 'login' %}active{% endif %}" href="{% url 'accounts:login' %}">Entrar</a>
+      <a class="nav-item-link {% if nome == 'cadastro' %}active{% endif %}" href="{% url 'accounts:cadastro' %}">Criar conta</a>
+    {% endif %}
+    <a class="nav-item-link {% if nome == 'sobre' %}active{% endif %}" href="{% url 'pages:sobre' %}">Sobre</a>
+  </nav>
+</div>
+{% endwith %}

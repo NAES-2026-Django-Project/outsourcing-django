@@ -1,0 +1,13 @@
+{% if is_paginated %}
+<nav class="d-flex align-items-center gap-3 mt-3" aria-label="Paginação">
+  <ul class="pagination pagination-sm">
+    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+      <a class="page-link" href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% else %}#{% endif %}">Anterior</a>
+    </li>
+    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }}{% else %}#{% endif %}">Próxima</a>
+    </li>
+  </ul>
+  <small class="text-secondary">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} registros</small>
+</nav>
+{% endif %}
