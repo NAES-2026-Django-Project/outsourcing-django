@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Requisições à IA · Outsourcing{% endblock %}
+{% block content %}
+<h1>Requisições à IA</h1>
+{% include "includes/filtros.html" %}
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Data</th><th>Usuário</th><th>Origem</th><th>Situação</th><th>Tokens</th><th>Duração</th><th>Pergunta</th></tr></thead>
+      <tbody>
+        {% for chamada in chamadas %}
+          <tr>
+            <td class="num text-nowrap"><a href="{% url 'ia:requisicao_detalhe' chamada.pk %}">{{ chamada.criado_em|date:"d/m/Y H:i" }}</a></td>
+            <td>{{ chamada.usuario|default:"Usuário removido" }}</td>
+            <td>{{ chamada.get_origem_display }}</td>
+            <td><span class="pill status-{{ chamada.status }}">{{ chamada.get_status_display }}</span></td>
+            <td class="num">{{ chamada.total_tokens }}</td>
+            <td class="num">{{ chamada.duracao_ms }} ms</td>
+            <td>{{ chamada.pergunta|truncatechars:60 }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7">Nenhuma requisição encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

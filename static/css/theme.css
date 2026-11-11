@@ -82,3 +82,9 @@ h2 { font-size: 16px; font-weight: 700; margin: 0; }
 .diagram { max-width: 100%; height: auto; background: #fff; border-radius: 6px; }
 
 @media (max-width: 991.98px) { .sidebar { border-right: 0; } .page { padding: 16px; } .topbar { padding: 10px 16px; } }
+
+.status-sucesso { color: var(--ok); }
+.status-erro, .status-bloqueada { color: var(--danger); }
+.status-recusada { color: var(--warn); }
+.progress { --bs-progress-bar-bg: var(--accent); --bs-progress-bg: var(--accent-soft); }
+.markdown > :last-child { margin-bottom: 0; }

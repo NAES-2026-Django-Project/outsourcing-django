@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load ia_markdown %}
+{% block title %}Requisição à IA · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Requisição de {{ chamada.criado_em|date:"d/m/Y H:i" }}</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'ia:requisicoes' %}">Voltar</a>
+</div>
+<div class="card card-body gap-2">
+  <div><strong>Usuário:</strong> {{ chamada.usuario|default:"Usuário removido" }}</div>
+  <div><strong>Origem:</strong> {{ chamada.get_origem_display }} · <strong>Modelo:</strong> {{ chamada.modelo }}</div>
+  <div><strong>Situação:</strong> <span class="pill status-{{ chamada.status }}">{{ chamada.get_status_display }}</span></div>
+  <div class="num"><strong>Tokens:</strong> {{ chamada.tokens_entrada }} de entrada, {{ chamada.tokens_saida }} de saída · <strong>Duração:</strong> {{ chamada.duracao_ms }} ms</div>
+  {% if chamada.erro %}<div><strong>Erro:</strong> <code>{{ chamada.erro }}</code></div>{% endif %}
+</div>
+<div class="card card-body gap-2">
+  <h2>Pergunta</h2>
+  <div>{{ chamada.pergunta|linebreaksbr }}</div>
+</div>
+{% if chamada.resposta %}
+<div class="card card-body gap-2">
+  <h2>Resposta</h2>
+  <div class="markdown">{{ chamada.resposta|markdown_seguro }}</div>
+</div>
+{% endif %}
+{% endblock %}
