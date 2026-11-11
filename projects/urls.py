@@ -26,4 +26,7 @@ urlpatterns = [
           views.TaskCreateView, views.TaskUpdateView, views.TaskDeleteView),
     *crud('anotacoes', 'anotacoes', 'anotacao', views.NoteListView, views.NoteDetailView,
           views.NoteCreateView, views.NoteUpdateView, views.NoteDeleteView),
+    path('quadros/', views.BoardListView.as_view(), name='quadros'),
+    path('quadros/<int:pk>/', views.BoardView.as_view(), name='quadro'),
+    path('tarefas/<int:pk>/mover/', views.TaskMoveView.as_view(), name='tarefa_mover'),
 ]

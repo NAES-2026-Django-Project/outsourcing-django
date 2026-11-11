@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Quadros · Outsourcing{% endblock %}
+{% block content %}
+<h1>Quadros</h1>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Projeto</th><th>Equipe</th><th>Término</th></tr></thead>
+      <tbody>
+        {% for projeto in projetos %}
+          <tr>
+            <td><a href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a></td>
+            <td>{{ projeto.team.name }}</td>
+            <td class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">Você ainda não participa de projetos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

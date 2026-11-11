@@ -3,7 +3,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, ProtectedError
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from accounts.mixins import AdministradorOuGerenteMixin, SomenteAdministradorMixin
@@ -275,3 +277,56 @@ class NoteDeleteView(NoteAutorMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:anotacoes')
     success_message = 'Anotação excluída.'
     extra_context = {'titulo': 'Excluir anotação', 'voltar': reverse_lazy('projects:anotacoes')}
+
+
+# Quadro kanban e movimento
+
+class BoardListView(LoginRequiredMixin, ListView):
+    template_name = 'projects/board_list.html'
+    context_object_name = 'projetos'
+    paginate_by = ITENS_POR_PAGINA
+
+    def get_queryset(self):
+        return Project.objects.com_participacao(self.request.user).select_related('team')
+
+
+class BoardView(LoginRequiredMixin, DetailView):
+    template_name = 'projects/board.html'
+    context_object_name = 'projeto'
+
+    def get_queryset(self):
+        return Project.objects.com_participacao(self.request.user).select_related('team')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        estagios = list(self.object.stages.prefetch_related('tasks__assigned_to'))
+        context['colunas'] = [
+            {
+                'estagio': estagio,
+                'anterior': estagios[i - 1] if i > 0 else None,
+                'proximo': estagios[i + 1] if i + 1 < len(estagios) else None,
+            }
+            for i, estagio in enumerate(estagios)
+        ]
+        return context
+
+
+class TaskMoveView(LoginRequiredMixin, View):
+    """Movimento do sistema: leva uma tarefa para outro estágio do mesmo projeto."""
+
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tarefa = get_object_or_404(Task.objects.visiveis_para(request.user).select_related('stage'), pk=pk)
+        projeto_id = tarefa.stage.project_id
+        estagio_id = request.POST.get('stage', '')
+        destino = None
+        if estagio_id.isdecimal():
+            destino = Stage.objects.filter(pk=estagio_id, project_id=projeto_id).first()
+        if destino is None:
+            messages.error(request, 'Escolha um estágio do mesmo projeto.')
+        elif destino.pk != tarefa.stage_id:
+            tarefa.stage = destino
+            tarefa.save(update_fields=['stage', 'updated_at'])
+            messages.success(request, f'Tarefa movida para {destino.name}.')
+        return redirect('projects:quadro', pk=projeto_id)
