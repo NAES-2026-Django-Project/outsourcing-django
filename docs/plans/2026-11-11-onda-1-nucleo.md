@@ -9,7 +9,7 @@
 - [x] Dependências instaladas na `.venv` (`requirements.txt`)
 - [x] Layout base escolhido (abordagem A, barra lateral)
 - [x] PostgreSQL local descartável para testes, sem SQLite
-- [ ] `.env` com `SECRET_KEY` e `DATABASE_URL` do Neon (ação do desenvolvedor)
+- [x] `.env` com `SECRET_KEY` e `DATABASE_URL` do Neon (ação do desenvolvedor)
 - [x] `AUTH_USER_MODEL` definido antes do primeiro `migrate`
 
 ## 2. Etapas e commits

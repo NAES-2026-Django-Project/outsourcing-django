@@ -32,7 +32,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | T1-2.4 | Views, urls e templates: DetailView | 7 | `projects/views.py` |
 | [x] | T1-2.5 | Views, urls e templates: ListView | 7 | `projects/views.py` |
 | [x] | T1-2.6 | Instalar, ativar e aplicar Django Crispy Forms e complemento front-end | 7 | `templates/crud/form.html`, `crispy_bootstrap5` |
-| [ ] | T1-2.7 | PostgreSQL da Neon.tech, sem SQLite | 1, 5 | |
+| [x] | T1-2.7 | PostgreSQL da Neon.tech, sem SQLite | 1, 5 | `DATABASES` via `DATABASE_URL` em `config/settings.py`; migrations aplicadas no Neon em 11/11/2026 |
 
 ## 2º trimestre
 
