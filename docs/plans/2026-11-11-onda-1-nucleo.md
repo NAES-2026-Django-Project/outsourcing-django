@@ -49,4 +49,11 @@ Rodar com `python manage.py test`.
 ## 4. Adequação ao critério avaliativo
 
 - [x] Validação dos critérios registrada em `docs/criterios.md`
-- [ ] T3-1.3 pendente de decisão: `Project` aparece no quadro para os participantes
+- [x] T3-1.3 decidido pelo desenvolvedor: criar `TimeEntry` como segunda classe estritamente privada, junto com `Note`
+
+## Adendo: apontamento de horas
+
+- [x] `feat(projects): adicionar apontamento de horas privado`
+- [x] `feat(pages): atualizar diagramas com apontamento de horas`
+- [x] `test(projects): cobrir posse dos apontamentos de horas`
+- [x] `docs(harness): registrar apontamento de horas e validar T3-1.3`

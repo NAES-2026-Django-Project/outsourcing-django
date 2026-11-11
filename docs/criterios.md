@@ -6,7 +6,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 
 | | ID | Critério | Etapa | Evidência |
 |---|---|---|---|---|
-| [x] | DEF-1 | Pelo menos seis classes no models (sem contar User) | 5, 6 | `accounts/models.py`, `projects/models.py` (7 classes) |
+| [x] | DEF-1 | Pelo menos seis classes no models (sem contar User) | 5, 6 | `accounts/models.py`, `projects/models.py` (8 classes) |
 | [x] | DEF-2 | Telas de inserir, alterar, excluir e listar para as classes, salvo regras de negócio | 7 | `projects/urls.py`, `projects/tests.py` |
 | [x] | DEF-3 | Um movimento implementado, além do CRUD (mover tarefa entre estágios) | 8 | `TaskMoveView`, `MovimentoTests` |
 | [x] | DEF-4 | Layout com Bootstrap, Tailwind, Bulma ou semelhante | 4 | `templates/base.html` |
@@ -59,7 +59,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 |---|---|---|---|---|
 | [ ] | T3-1.1 | Debug Toolbar, identificar queries repetidas e otimizá-las | 10 | |
 | [ ] | T3-1.2 | Django Filter em pelo menos duas ListView, com paginação por `templatetag` própria que preserve a busca | 9 | |
-| [ ] | T3-1.3 | Registros associados ao usuário em pelo menos duas classes (só ele lista, vê, altera e exclui) | 7 | |
+| [x] | T3-1.3 | Registros associados ao usuário em pelo menos duas classes (só ele lista, vê, altera e exclui) | 7 | `Note` e `TimeEntry`: `do_autor` em `projects/models.py`, `NoteAutorMixin` e `TimeEntryAutorMixin` em `projects/views.py`, fora do Django admin; `PosseAnotacaoTests`, `PosseApontamentoTests` |
 | [x] | T3-1.4 | Framework de mensagens em cadastro, alteração e exclusão | 7, 11 | `SuccessMessageMixin` nas views, `MensagensECrudTests` |
 | [ ] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | |
 | [ ] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | |

@@ -41,6 +41,7 @@ Cadeia principal: Team → Project → Stage → Task → Note. Todas tinham `cr
 ## Mudanças decididas para o monolito
 
 - Papéis viram Groups do Django.
-- `Project` e `Note` ganham posse estrita por usuário (critério T3-1.3). Notas passam a ser anotações privadas do autor.
+- Notas passam a ser anotações privadas do autor, e o novo model `TimeEntry` registra apontamentos de horas, também privados. As duas classes atendem ao critério T3-1.3 sem exceções.
+- O CRUD de `Project` fica restrito ao dono, mas o projeto continua visível no quadro para os participantes.
 - Movimento de tarefa ganha view própria (`TaskMoveView`).
 - Exclusão física no lugar do `is_active`, atendendo ao `DeleteView` do critério. Só `User.is_active` permanece.
