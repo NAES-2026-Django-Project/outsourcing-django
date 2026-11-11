@@ -13,6 +13,17 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+## Deploy no Google App Engine
+
+Com o [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) instalado e o projeto selecionado (`gcloud init`):
+
+```bash
+python manage.py collectstatic --noinput
+python scripts/gerar_app_local.py   # gera app.local.yaml com os segredos do .env, ignorado pelo git
+gcloud app deploy app.local.yaml
+gcloud app browse
+```
+
 ## Documentação
 
 - [AGENTS.md](AGENTS.md): orientação para agentes de IA e convenções do projeto.
