@@ -1,10 +1,10 @@
 from types import SimpleNamespace
 from unittest import mock
 
-import anthropic
-import httpx2
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
+from google.genai import errors
 
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR
 from accounts.tests import criar_usuario
@@ -13,22 +13,27 @@ from .markdown import markdown_seguro
 from .models import ChamadaIA, ConfiguracaoIA, CotaUsuario, MensagemAssistente, Status
 from .services import CotaExcedida, ErroIA, chamar_ia, janela_de_mensagens, testar_conexao
 
-CHAVE = 'sk-ant-teste-1234567890abcd'
+CHAVE = 'AIzaTesteGemini1234567890abcd'
 
 
-def resposta_falsa(texto='Resposta', stop_reason='end_turn', entrada=100, saida=20):
+def resposta_falsa(texto='Resposta', motivo='STOP', entrada=100, saida=15, pensamento=5, bloqueio=None):
+    partes = [SimpleNamespace(text='raciocínio interno', thought=True), SimpleNamespace(text=texto, thought=None)]
     return SimpleNamespace(
-        content=[SimpleNamespace(type='thinking', thinking=''), SimpleNamespace(type='text', text=texto)],
-        stop_reason=stop_reason,
-        usage=SimpleNamespace(input_tokens=entrada, output_tokens=saida, cache_creation_input_tokens=0, cache_read_input_tokens=0),
+        candidates=[SimpleNamespace(content=SimpleNamespace(parts=partes), finish_reason=SimpleNamespace(name=motivo))],
+        prompt_feedback=SimpleNamespace(block_reason=bloqueio),
+        usage_metadata=SimpleNamespace(prompt_token_count=entrada, candidates_token_count=saida, thoughts_token_count=pensamento),
     )
 
 
+def erro_da_api(codigo=429, status='RESOURCE_EXHAUSTED'):
+    return errors.ClientError(codigo, {'error': {'code': codigo, 'message': 'Falha simulada', 'status': status}})
+
+
 def erro_de_conexao():
-    return anthropic.APIConnectionError(request=httpx2.Request('POST', 'https://api.anthropic.com/v1/messages'))
+    return ConnectionError('Falha de rede simulada')
 
 
-@override_settings(ANTHROPIC_API_KEY='')
+@override_settings(GEMINI_API_KEY='')
 class BaseIA(TestCase):
     def setUp(self):
         self.dev = criar_usuario('dev@exemplo.com', DESENVOLVEDOR)
@@ -39,7 +44,7 @@ class BaseIA(TestCase):
         patcher = mock.patch('ia.services.criar_cliente')
         self.criar_cliente = patcher.start()
         self.addCleanup(patcher.stop)
-        self.api = self.criar_cliente.return_value.beta.messages.create
+        self.api = self.criar_cliente.return_value.models.generate_content
         self.api.return_value = resposta_falsa()
 
     def chamar(self, texto='Oi'):
@@ -54,21 +59,29 @@ class ChamarIATests(BaseIA):
         self.assertEqual((registro.status, registro.usuario, registro.pergunta), (Status.SUCESSO, self.dev, 'Como mover?'))
         self.assertEqual((registro.tokens_entrada, registro.tokens_saida, registro.total_tokens), (100, 20, 120))
         self.criar_cliente.assert_called_once_with(CHAVE)
+        self.criar_cliente.return_value.close.assert_called_once()
 
     def test_parametros_enviados_a_api(self):
         self.chamar()
         kwargs = self.api.call_args.kwargs
-        self.assertEqual(kwargs['model'], 'claude-opus-5-5')
-        self.assertEqual(kwargs['output_config'], {'effort': 'low'})
-        self.assertEqual(kwargs['system'], 'Sistema')
-        self.assertEqual(kwargs['fallbacks'], 'default')
-        self.assertEqual(kwargs['betas'], ['server-side-fallback-2026-07-01'])
+        self.assertEqual(kwargs['model'], 'gemini-3.6-flash')
+        self.assertEqual(kwargs['contents'], [{'role': 'user', 'parts': [{'text': 'Oi'}]}])
+        self.assertEqual(kwargs['config'].system_instruction, 'Sistema')
+        self.assertEqual(kwargs['config'].max_output_tokens, 8000)
+        self.assertEqual(kwargs['config'].thinking_config.thinking_level.name, 'LOW')
 
-    def test_haiku_nao_envia_fallback(self):
-        self.config.modelo = 'claude-haiku-5-5'
+    def test_nivel_de_raciocinio_e_modelo_configuraveis(self):
+        self.config.modelo, self.config.esforco = 'gemini-3.5-flash-lite', 'high'
         self.config.save()
         self.chamar()
-        self.assertNotIn('fallbacks', self.api.call_args.kwargs)
+        kwargs = self.api.call_args.kwargs
+        self.assertEqual(kwargs['model'], 'gemini-3.5-flash-lite')
+        self.assertEqual(kwargs['config'].thinking_config.thinking_level.name, 'HIGH')
+
+    def test_raciocinio_fica_fora_da_resposta_mas_conta_na_cota(self):
+        chamada = self.chamar()
+        self.assertNotIn('raciocínio interno', chamada.resposta)
+        self.assertEqual(chamada.tokens_saida, 20)
 
     def test_cota_excedida_bloqueia_antes_da_api(self):
         ChamadaIA.objects.create(usuario=self.dev, origem='assistente', modelo='x', status=Status.SUCESSO, tokens_entrada=200000)
@@ -89,13 +102,30 @@ class ChamarIATests(BaseIA):
             self.chamar()
         registro = ChamadaIA.objects.get()
         self.assertEqual(registro.status, Status.ERRO)
-        self.assertIn('APIConnectionError', registro.erro)
+        self.assertIn('ConnectionError', registro.erro)
 
-    def test_recusa_do_modelo_e_auditada(self):
-        self.api.return_value = resposta_falsa(texto='', stop_reason='refusal')
-        with self.assertRaises(ErroIA):
+    def test_limite_gratuito_atingido(self):
+        self.api.side_effect = erro_da_api(429)
+        with self.assertRaisesMessage(ErroIA, 'limite gratuito'):
             self.chamar()
-        self.assertEqual(ChamadaIA.objects.get().status, Status.RECUSADA)
+        self.assertIn('RESOURCE_EXHAUSTED', ChamadaIA.objects.get().erro)
+
+    def test_chave_invalida(self):
+        self.api.side_effect = erro_da_api(400, 'INVALID_ARGUMENT API_KEY_INVALID')
+        with self.assertRaisesMessage(ErroIA, 'chave da API foi recusada'):
+            self.chamar()
+
+    def test_bloqueio_por_seguranca_e_auditado_como_recusa(self):
+        for resposta in [resposta_falsa(texto='', motivo='SAFETY'), resposta_falsa(texto='', bloqueio=SimpleNamespace(name='SAFETY'))]:
+            with self.subTest(resposta=resposta):
+                self.api.return_value = resposta
+                with self.assertRaises(ErroIA):
+                    self.chamar()
+        self.assertEqual(ChamadaIA.objects.filter(status=Status.RECUSADA).count(), 2)
+
+    def test_resposta_cortada_pelo_limite_de_tokens(self):
+        self.api.return_value = resposta_falsa(motivo='MAX_TOKENS')
+        self.assertIn('interrompida', self.chamar().resposta)
 
     def test_ia_desativada_ou_sem_chave(self):
         self.config.ativo = False
@@ -116,11 +146,19 @@ class ChamarIATests(BaseIA):
         self.assertEqual(ConfiguracaoIA.carregar().obter_chave(), CHAVE)
         self.assertEqual(ConfiguracaoIA.carregar().chave_mascarada, '••••abcd')
 
+    @override_settings(GEMINI_API_KEY='AIzaDoAmbiente9876')
+    def test_usa_chave_do_ambiente_quando_nao_ha_chave_cadastrada(self):
+        self.config.definir_chave('')
+        self.config.save()
+        self.chamar()
+        self.criar_cliente.assert_called_once_with('AIzaDoAmbiente9876')
+
     def test_testar_conexao_audita_sem_gastar_tokens(self):
-        self.criar_cliente.return_value.models.retrieve.return_value = SimpleNamespace(display_name='Claude Opus 5.5')
+        self.criar_cliente.return_value.models.get.return_value = SimpleNamespace(display_name='Gemini 3.6 Flash')
         sucesso, mensagem = testar_conexao(self.admin)
         self.assertTrue(sucesso)
-        self.assertIn('Claude Opus 5.5', mensagem)
+        self.assertIn('Gemini 3.6 Flash', mensagem)
+        self.api.assert_not_called()
         registro = ChamadaIA.objects.get()
         self.assertEqual((registro.origem, registro.total_tokens), ('teste_conexao', 0))
 
@@ -136,10 +174,10 @@ class AssistenteTests(BaseIA):
             MensagemAssistente.objects.create(usuario=self.dev, papel='assistant', conteudo=f'R{i}')
         self.client.force_login(self.dev)
         self.perguntar()
-        enviadas = self.api.call_args.kwargs['messages']
+        enviadas = self.api.call_args.kwargs['contents']
         self.assertEqual(len(enviadas), 5)
-        self.assertEqual(enviadas[0]['role'], 'user')
-        self.assertEqual([m['content'] for m in enviadas], ['P6', 'R6', 'P7', 'R7', 'Pergunta nova'])
+        self.assertEqual([m['role'] for m in enviadas], ['user', 'model', 'user', 'model', 'user'])
+        self.assertEqual([m['parts'][0]['text'] for m in enviadas], ['P6', 'R6', 'P7', 'R7', 'Pergunta nova'])
 
     def test_janela_sempre_comeca_pelo_usuario(self):
         MensagemAssistente.objects.create(usuario=self.dev, papel='user', conteudo='P0')
@@ -158,7 +196,7 @@ class AssistenteTests(BaseIA):
     def test_system_inclui_instrucoes_e_contexto_do_projeto(self):
         self.client.force_login(self.dev)
         self.perguntar()
-        system = self.api.call_args.kwargs['system']
+        system = self.api.call_args.kwargs['config'].system_instruction
         self.assertIn('Responda somente sobre o uso do sistema', system)
         self.assertIn('Apontamento de horas', system)
         self.assertIn('<contexto_do_sistema>', system)
@@ -279,18 +317,18 @@ class TelasIATests(BaseIA):
 
     def test_configuracao_cifra_chave_nova_e_mantem_quando_vazia(self):
         self.client.force_login(self.admin)
-        dados = {'ativo': 'on', 'modelo': 'claude-sonnet-5-5', 'esforco': 'medium', 'max_tokens': 4000,
+        dados = {'ativo': 'on', 'modelo': 'gemini-3.8-flash', 'esforco': 'medium', 'max_tokens': 4000,
                  'cota_mensal_padrao': 1000, 'instrucoes': 'Seja breve.', 'chave_api': ''}
         response = self.client.post(reverse('ia:configuracao'), dados, follow=True)
         self.assertContains(response, 'Configuração da IA salva.')
         self.assertNotContains(response, CHAVE)
         config = ConfiguracaoIA.carregar()
-        self.assertEqual((config.modelo, config.obter_chave()), ('claude-sonnet-5-5', CHAVE))
-        self.client.post(reverse('ia:configuracao'), {**dados, 'chave_api': 'sk-ant-nova-9999'})
-        self.assertEqual(ConfiguracaoIA.carregar().obter_chave(), 'sk-ant-nova-9999')
+        self.assertEqual((config.modelo, config.obter_chave()), ('gemini-3.8-flash', CHAVE))
+        self.client.post(reverse('ia:configuracao'), {**dados, 'chave_api': 'AIzaNova9999'})
+        self.assertEqual(ConfiguracaoIA.carregar().obter_chave(), 'AIzaNova9999')
 
     def test_botao_testar_conexao_mostra_resultado(self):
-        self.criar_cliente.return_value.models.retrieve.side_effect = erro_de_conexao()
+        self.criar_cliente.return_value.models.get.side_effect = erro_de_conexao()
         self.client.force_login(self.admin)
         response = self.client.post(reverse('ia:testar'), follow=True)
         self.assertContains(response, 'Não foi possível conectar')
