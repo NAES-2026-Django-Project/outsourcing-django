@@ -21,7 +21,7 @@
             <td class="text-end text-nowrap">
               <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadro' projeto.pk %}">Quadro</a>
               <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:projeto_editar' projeto.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:projeto_excluir' projeto.pk %}">Excluir</a>
+              <a class="btn btn-outline-danger btn-sm" data-excluir="o projeto {{ projeto.name }} e suas tarefas" href="{% url 'projects:projeto_excluir' projeto.pk %}">Excluir</a>
             </td>
           </tr>
         {% empty %}

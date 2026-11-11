@@ -18,7 +18,7 @@
             <td class="num">{{ anotacao.created_at|date:"d/m/Y" }}</td>
             <td class="text-end text-nowrap">
               <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_editar' anotacao.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">Excluir</a>
+              <a class="btn btn-outline-danger btn-sm" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">Excluir</a>
             </td>
           </tr>
         {% empty %}

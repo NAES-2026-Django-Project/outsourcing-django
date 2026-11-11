@@ -21,7 +21,7 @@
             <td class="num">{{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}</td>
             <td class="text-end text-nowrap">
               <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:tarefa_editar' tarefa.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:tarefa_excluir' tarefa.pk %}">Excluir</a>
+              <a class="btn btn-outline-danger btn-sm" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}">Excluir</a>
             </td>
           </tr>
         {% empty %}
