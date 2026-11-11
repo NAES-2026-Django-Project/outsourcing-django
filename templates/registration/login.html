@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Entrar · Outsourcing{% endblock %}
+{% block content %}
+<h1>Entrar</h1>
+<div class="card narrow">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn btn-primary">Entrar</button>
+    </form>
+    <p class="mt-3 mb-0">Ainda não tem conta? <a href="{% url 'accounts:cadastro' %}">Criar conta</a></p>
+  </div>
+</div>
+{% endblock %}
