@@ -5,6 +5,7 @@
   <h1>Tarefas</h1>
   <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}">Nova tarefa</a>
 </div>
+{% include "includes/filtros.html" %}
 <div class="card card-body">
   <div class="table-responsive">
     <table class="table align-middle">
