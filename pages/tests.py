@@ -15,6 +15,12 @@ class PaginasTests(TestCase):
         self.assertContains(response, 'img/diagrama-classes.png')
         self.assertEqual(response.context['titulo'], 'Sobre o projeto')
 
+    def test_layout_carrega_jquery_e_plugins(self):
+        response = self.client.get(reverse('pages:sobre'))
+        for script in ['jquery.min.js', 'bootbox.all.min.js', 'jquery.mask.min.js', 'js/app.js']:
+            with self.subTest(script):
+                self.assertContains(response, script)
+
     def test_menu_de_visitante(self):
         response = self.client.get(reverse('pages:home'))
         self.assertContains(response, 'Criar conta')

@@ -3,13 +3,16 @@ from decimal import Decimal
 
 from django.contrib import admin
 from django.contrib.messages import get_messages
-from django.test import TestCase
+from django.db import connection
+from django.test import RequestFactory, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR, GERENTE
 from accounts.tests import criar_usuario
 
 from .models import Note, Project, Stage, Task, Team, TimeEntry
+from .templatetags.paginacao import url_pagina
 
 
 class Base(TestCase):
@@ -289,6 +292,80 @@ class MovimentoTests(Base):
     def test_quadro_de_nao_participante_e_404(self):
         self.client.force_login(self.estranho)
         self.assertEqual(self.client.get(reverse('projects:quadro', args=[self.projeto.pk])).status_code, 404)
+
+
+class FiltrosTests(Base):
+    def test_filtra_tarefas_por_titulo_e_prioridade(self):
+        Task.objects.create(title='Relatório', stage=self.estagios[0], priority='urgent')
+        Task.objects.create(title='Relatório antigo', stage=self.estagios[0], priority='low')
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('projects:tarefas'), {'title': 'relat', 'priority': 'urgent'})
+        self.assertEqual([t.title for t in response.context['tarefas']], ['Relatório'])
+
+    def test_filtra_projetos_por_nome_e_equipe(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('projects:projetos'), {'name': 'por', 'team': self.equipe.pk})
+        self.assertEqual(list(response.context['projetos']), [self.projeto])
+
+    def test_filtro_nao_revela_registros_de_outros(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:projetos'), {'name': 'ERP'})
+        self.assertEqual(list(response.context['projetos']), [])
+
+    def test_opcoes_do_filtro_respeitam_o_usuario(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:projetos'))
+        self.assertEqual(list(response.context['filter'].form.fields['team'].queryset), [self.equipe])
+
+    def test_equipe_alheia_no_filtro_nao_retorna_registros(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:projetos'), {'team': self.outra_equipe.pk})
+        self.assertEqual(list(response.context['projetos']), [])
+
+    def test_paginacao_preserva_a_busca(self):
+        for i in range(12):
+            Task.objects.create(title=f'Item {i}', stage=self.estagios[0], priority='high')
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('projects:tarefas'), {'title': 'Item', 'priority': 'high'})
+        self.assertContains(response, 'title=Item&amp;priority=high&amp;page=2')
+        pagina2 = self.client.get(reverse('projects:tarefas'), {'title': 'Item', 'priority': 'high', 'page': 2})
+        self.assertEqual(len(pagina2.context['tarefas']), 2)
+        self.assertContains(pagina2, 'title=Item&amp;priority=high&amp;page=1')
+
+    def test_templatetag_substitui_a_pagina_atual(self):
+        request = RequestFactory().get('/', {'title': 'a b', 'page': '3'})
+        self.assertEqual(url_pagina({'request': request}, 4), '?title=a+b&page=4')
+
+
+class QueriesTests(Base):
+    """A quantidade de queries das telas não pode crescer com o número de registros."""
+
+    def contar(self, url):
+        with CaptureQueriesContext(connection) as queries:
+            self.assertEqual(self.client.get(url).status_code, 200)
+        return len(queries)
+
+    def criar_registros(self, quantidade):
+        for i in range(quantidade):
+            usuario = criar_usuario(f'membro{Task.objects.count()}@exemplo.com', DESENVOLVEDOR)
+            self.equipe.members.add(usuario)
+            self.projeto.assigned_members.add(usuario)
+            tarefa = Task.objects.create(title=f'T{i}', stage=self.estagios[i % 4], assigned_to=usuario)
+            Note.objects.create(content='n', task=tarefa, author=self.gerente)
+            TimeEntry.objects.create(task=tarefa, author=self.gerente, hours='1.00')
+            projeto = self.criar_projeto(f'P{Project.objects.count()}', self.equipe, self.gerente)
+            projeto.assigned_members.add(usuario)
+
+    def test_listas_e_quadro_nao_tem_n_mais_1(self):
+        self.client.force_login(self.gerente)
+        urls = [
+            reverse(f'projects:{nome}') for nome in ['tarefas', 'projetos', 'estagios', 'equipes', 'anotacoes', 'apontamentos', 'quadros']
+        ] + [reverse('projects:quadro', args=[self.projeto.pk]), reverse('pages:home')]
+        self.criar_registros(2)
+        antes = {url: self.contar(url) for url in urls}
+        self.criar_registros(6)
+        depois = {url: self.contar(url) for url in urls}
+        self.assertEqual(antes, depois)
 
 
 class MensagensECrudTests(Base):
