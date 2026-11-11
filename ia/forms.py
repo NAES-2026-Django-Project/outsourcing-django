@@ -5,7 +5,7 @@ from .models import ConfiguracaoIA, CotaUsuario
 
 class ConfiguracaoIAForm(forms.ModelForm):
     chave_api = forms.CharField(
-        label='Chave da API da Anthropic', required=False, strip=True,
+        label='Chave da API do Gemini (Google AI Studio)', required=False, strip=True,
         widget=forms.PasswordInput(render_value=False, attrs={'autocomplete': 'off'}),
         help_text='Deixe em branco para manter a chave atual. Ela é guardada cifrada.',
     )

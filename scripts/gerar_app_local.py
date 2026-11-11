@@ -15,7 +15,7 @@ def main():
     variaveis = {
         'SECRET_KEY': env('SECRET_KEY'),
         'DATABASE_URL': env('DATABASE_URL'),
-        'ANTHROPIC_API_KEY': env('ANTHROPIC_API_KEY', default=''),
+        'GEMINI_API_KEY': env('GEMINI_API_KEY', default=''),
         'DEBUG': 'False',
         'ALLOWED_HOSTS': '.appspot.com',
         'CSRF_TRUSTED_ORIGINS': 'https://*.appspot.com',

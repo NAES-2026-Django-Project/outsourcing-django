@@ -17,12 +17,16 @@ Limites:
 
 
 class Modelo(models.TextChoices):
-    OPUS = 'claude-opus-5-5', 'Claude Opus 5.5'
-    SONNET = 'claude-sonnet-5-5', 'Claude Sonnet 5.5'
-    HAIKU = 'claude-haiku-5-5', 'Claude Haiku 5.5'
+    """Modelos com camada gratuita na API do Gemini (Google AI Studio)."""
+
+    FLASH = 'gemini-3.6-flash', 'Gemini 3.6 Flash'
+    FLASH_NOVO = 'gemini-3.8-flash', 'Gemini 3.8 Flash'
+    FLASH_LITE = 'gemini-3.5-flash-lite', 'Gemini 3.5 Flash-Lite'
 
 
 class Esforco(models.TextChoices):
+    """Nível de raciocínio (`thinking_level`) aceito pelos três modelos."""
+
     BAIXO = 'low', 'Baixo'
     MEDIO = 'medium', 'Médio'
     ALTO = 'high', 'Alto'
@@ -38,8 +42,8 @@ class ConfiguracaoIA(models.Model):
     """Configuração única (pk=1), editável na tela de configuração."""
 
     ativo = models.BooleanField('IA ativa', default=True)
-    modelo = models.CharField('modelo', max_length=40, choices=Modelo.choices, default=Modelo.OPUS)
-    esforco = models.CharField('esforço', max_length=10, choices=Esforco.choices, default=Esforco.BAIXO)
+    modelo = models.CharField('modelo', max_length=40, choices=Modelo.choices, default=Modelo.FLASH)
+    esforco = models.CharField('nível de raciocínio', max_length=10, choices=Esforco.choices, default=Esforco.BAIXO)
     max_tokens = models.PositiveIntegerField(
         'máximo de tokens por resposta', default=8000,
         validators=[MinValueValidator(256), MaxValueValidator(32000)],
@@ -73,13 +77,13 @@ class ConfiguracaoIA(models.Model):
                 return _fernet().decrypt(self.chave_api_cifrada.encode()).decode()
             except InvalidToken:
                 return ''
-        return settings.ANTHROPIC_API_KEY
+        return settings.GEMINI_API_KEY
 
     @property
     def origem_chave(self):
         if self.chave_api_cifrada:
             return 'cadastrada nesta tela'
-        if settings.ANTHROPIC_API_KEY:
+        if settings.GEMINI_API_KEY:
             return 'variável de ambiente'
         return ''
 
