@@ -210,6 +210,23 @@ class AssistenteTests(BaseIA):
         self.client.force_login(self.dev)
         self.assertEqual(self.client.get(reverse('ia:perguntar')).status_code, 405)
 
+    def test_tela_mostra_historico_sanitizado_e_apoio(self):
+        MensagemAssistente.objects.create(usuario=self.dev, papel='user', conteudo='<b>minha</b> pergunta')
+        MensagemAssistente.objects.create(usuario=self.dev, papel='assistant', conteudo='**resposta** <script>x()</script>')
+        MensagemAssistente.objects.create(usuario=self.admin, papel='user', conteudo='Pergunta do admin')
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('ia:assistente'))
+        self.assertContains(response, '&lt;b&gt;minha&lt;/b&gt; pergunta')
+        self.assertContains(response, '<strong>resposta</strong>')
+        self.assertNotContains(response, '<script>x()')
+        self.assertNotContains(response, 'Pergunta do admin')
+        self.assertContains(response, 'data-sugestao="Quem pode criar projetos?"')
+        self.assertContains(response, 'js/assistente.js')
+        self.assertContains(response, 'csrfmiddlewaretoken')
+
+    def test_tela_exige_login(self):
+        self.assertIn(reverse('accounts:login'), self.client.get(reverse('ia:assistente')).url)
+
     def test_limpar_historico(self):
         MensagemAssistente.objects.create(usuario=self.dev, papel='user', conteudo='P')
         MensagemAssistente.objects.create(usuario=self.admin, papel='user', conteudo='Outro')
