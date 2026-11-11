@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outsourcing: layout base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: casca intercambiável (3 abordagens) em volta das mesmas telas. Tokens espelham docs/design/DESIGN.md. */
+:root{
+  --paper:#f3f6f5;--surface:#ffffff;--ink:#16262e;--muted:#5b6b70;--line:#d7dfdd;
+  --accent:#0b6e69;--on-accent:#ffffff;--accent-soft:#dcefed;--highlight:#c8791a;
+  --ok:#2e7d4f;--warn:#a86f12;--danger:#b3392f;
+  --display:"Manrope","Segoe UI",sans-serif;--body:"IBM Plex Sans","Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11191c;--surface:#1a2529;--ink:#e6edeb;--muted:#9aaaae;--line:#2e3c40;
+  --accent:#4fbdb4;--on-accent:#06211f;--accent-soft:#1d3a3a;--highlight:#e5a14a;
+  --ok:#6cc08d;--warn:#e0ad55;--danger:#ec8177;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11191c;--surface:#1a2529;--ink:#e6edeb;--muted:#9aaaae;--line:#2e3c40;
+  --accent:#4fbdb4;--on-accent:#06211f;--accent-soft:#1d3a3a;--highlight:#e5a14a;
+  --ok:#6cc08d;--warn:#e0ad55;--danger:#ec8177;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--body);display:flex;flex-direction:column}
+h1,h2,h3{font-family:var(--display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:24px;font-weight:800}h2{font-size:16px;font-weight:700}
+p{margin:0;max-width:65ch}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--ink);color:var(--paper);font-size:13px}
+.proto label{display:flex;gap:6px;align-items:center}
+.proto select{background:var(--paper);color:var(--ink);border:0;border-radius:4px;padding:2px 6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;padding:2px 10px;cursor:pointer;opacity:.75}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper);opacity:1;font-weight:600}
+#app{flex:1;min-height:0;display:flex}
+
+.brand{font-family:var(--display);font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
+.brand i{width:22px;height:22px;border-radius:5px;background:var(--accent);display:grid;grid-template-columns:repeat(3,3px);gap:2px;padding:5px 4px;align-items:start}
+.brand i b{background:var(--on-accent);border-radius:1px;height:12px}.brand i b:nth-child(2){height:8px}.brand i b:nth-child(3){height:5px}
+.navlink{display:flex;align-items:center;gap:10px;width:100%;padding:7px 10px;border:0;border-radius:6px;background:none;cursor:pointer;text-align:left;color:var(--ink)}
+.navlink:hover{background:var(--accent-soft)}
+.navlink[aria-current="page"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.group{font-size:12px;color:var(--muted);font-weight:600;padding:12px 10px 4px}
+.main{flex:1;min-width:0;overflow:auto;display:flex;flex-direction:column}
+.page{padding:24px;display:flex;flex-direction:column;gap:16px;width:100%}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar input{flex:1;max-width:340px}
+.spacer{flex:1}
+.user{display:flex;align-items:center;gap:8px;font-size:14px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:600;font-size:12px}
+
+.a{display:grid;grid-template-columns:232px 1fr;width:100%;min-height:0}
+.a aside{background:var(--surface);border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
+.a aside .brand{padding:2px 10px 8px}
+.b{display:flex;flex-direction:column;width:100%;min-height:0}
+.b header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:8px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.b nav{display:flex;flex-wrap:wrap;gap:2px}
+.b .navlink{width:auto;padding:6px 10px}.b .navlink svg{display:none}
+.b .page{max-width:1180px;margin:0 auto}
+.crumb{font-size:13px;color:var(--muted)}
+.c{display:grid;grid-template-columns:60px 228px 1fr;width:100%;min-height:0}
+.rail{background:var(--ink);color:var(--paper);display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;overflow:auto}
+.rail button{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:inherit;cursor:pointer;opacity:.75}
+.rail button:hover{opacity:1}
+.rail button[aria-current="page"]{background:var(--accent);color:var(--on-accent);opacity:1}
+.context{background:var(--surface);border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
+.context .count{margin-left:auto;font-size:12px;color:inherit;opacity:.75;font-variant-numeric:tabular-nums}
+
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.danger{color:var(--danger)}.btn.danger.solid{background:var(--danger);border-color:var(--danger);color:var(--surface)}
+.btn.sm{padding:2px 8px;font-size:13px}
+input,select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.summary strong{font:800 26px var(--display);font-variant-numeric:tabular-nums}
+.summary span{color:var(--muted);font-size:13px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}.row:first-of-type{border-top:0}
+.row small{color:var(--muted);margin-left:auto;white-space:nowrap}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.num{font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.linkish{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-weight:600;text-align:left}
+.pill{display:inline-block;border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;border:1px solid currentColor;white-space:nowrap}
+.p-low{color:var(--muted)}.p-medium{color:var(--accent)}.p-high{color:var(--warn)}.p-urgent{color:var(--danger)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pager{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.board{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--accent-soft);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:240px}
+.col.over{outline:2px dashed var(--accent)}
+.col h2{display:flex;justify-content:space-between;font-size:14px}
+.task{background:var(--surface);border:1px solid var(--line);border-left-width:4px;border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;cursor:grab}
+.task.low{border-left-color:var(--muted)}.task.medium{border-left-color:var(--accent)}.task.high{border-left-color:var(--warn)}.task.urgent{border-left-color:var(--danger)}
+.task footer{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.task footer .btn{margin-left:0}.task .moves{margin-left:auto;display:flex;gap:4px}
+.diagram{border:1px dashed var(--line);border-radius:6px;padding:24px;text-align:center;color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:10px;min-height:220px}
+.msg{padding:8px 12px;border-radius:8px;max-width:75%}.msg.me{align-self:flex-end;background:var(--accent);color:var(--on-accent)}.msg.bot{background:var(--accent-soft)}
+.meter{height:10px;border-radius:99px;background:var(--accent-soft);overflow:hidden}.meter b{display:block;height:100%;background:var(--accent)}
+.form{display:grid;gap:10px;max-width:380px}.form label{display:grid;gap:4px;font-size:14px}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:6px;padding:10px 14px;box-shadow:0 6px 20px rgb(0 0 0/.18);max-width:320px;z-index:5}
+.toast.error{border-left-color:var(--danger)}
+.overlay{position:fixed;inset:0;background:rgb(0 0 0/.45);display:grid;place-items:center;padding:16px;z-index:6}
+.modal{background:var(--surface);border-radius:8px;padding:20px;max-width:400px;display:flex;flex-direction:column;gap:12px}
+.modal .actions{display:flex;justify-content:flex-end;gap:8px}
+@media (max-width:760px){
+  #app{overflow:auto}.a,.c{display:flex;flex-direction:column}
+  .a aside,.context{border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:2px}
+  .a .navlink{width:auto}.group{display:none}.a aside .brand{width:100%}
+  .context{display:none}.rail{flex-direction:row;justify-content:center;flex-wrap:wrap;padding:6px}
+  .main{overflow:visible}.page{padding:16px}.topbar{padding:10px 16px}.b header{padding:8px 16px}
+}
+@media (prefers-reduced-motion:no-preference){.navlink,.btn{transition:background-color .12s,border-color .12s}}
+</style>
+</head>
+<body>
+<div class="proto">
+  <strong>Protótipo</strong>
+  <div class="seg" id="approaches" role="group" aria-label="Abordagem de layout"></div>
+  <label for="role">Ver como <select id="role"><option>Gerente</option><option>Administrador</option><option>Desenvolvedor</option><option>Visitante</option></select></label>
+</div>
+<div id="app"></div>
+<div id="layer"></div>
+<script>
+const I={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',folder:'<path d="M3 6h6l2 3h10v10H3z"/>',check:'<path d="M4 12l5 5L20 6"/>',users:'<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M17 4a4 4 0 010 8M19 15c2 1 3 3 3 6"/>',note:'<path d="M5 3h14v18H5z"/><path d="M9 8h6M9 12h6M9 16h3"/>',chat:'<path d="M4 4h16v12H9l-5 4z"/>',gauge:'<path d="M4 18a9 9 0 1116 0"/><path d="M12 15l4-5"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h0"/>',login:'<path d="M14 4h6v16h-6"/><path d="M3 12h12M11 8l4 4-4 4"/>'};
+const ic=n=>`<svg viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+const STAGES=['Backlog','Em andamento','Concluído','Aprovado'];
+const PR={low:'Baixa',medium:'Média',high:'Alta',urgent:'Urgente'};
+const S={approach:'a',role:'Gerente',view:'home',project:1,fName:'',fTeam:'',fPrio:'',chat:[{bot:1,t:'Olá! Posso explicar como usar o sistema. Por exemplo: como mover uma tarefa no quadro?'}],
+ projects:[{id:1,name:'Portal do Cliente',team:'Atlas',end:'18/12/2026'},{id:2,name:'App de Entregas',team:'Atlas',end:'30/01/2027'},{id:3,name:'Migração do ERP',team:'Boreal',end:'15/03/2027'}],
+ tasks:[{id:1,p:1,s:0,t:'Definir fluxo de recuperação de senha',pr:'medium',who:'Caio Lima',due:'20/11'},{id:2,p:1,s:0,t:'Revisar textos da página de faturas',pr:'low',who:'Bia Rocha',due:'28/11'},{id:3,p:1,s:1,t:'Integrar emissão de segunda via',pr:'urgent',who:'Caio Lima',due:'13/11'},{id:4,p:1,s:1,t:'Ajustar filtros do histórico',pr:'high',who:'Bia Rocha',due:'17/11'},{id:5,p:1,s:2,t:'Tela de login responsiva',pr:'medium',who:'Bia Rocha',due:'06/11'},{id:6,p:1,s:3,t:'Modelo de dados de clientes',pr:'high',who:'Caio Lima',due:'30/10'},{id:7,p:2,s:0,t:'Mapear rotas de coleta',pr:'high',who:'Caio Lima',due:'25/11'},{id:8,p:2,s:1,t:'Rastreio por código do pedido',pr:'medium',who:'Bia Rocha',due:'02/12'},{id:9,p:3,s:0,t:'Inventário de tabelas legadas',pr:'urgent',who:'Davi Melo',due:'14/11'}],
+ teams:[{n:'Atlas',m:'Marina Souza',c:2},{n:'Boreal',m:'Rui Prado',c:4}],
+ notes:[{id:1,task:'Integrar emissão de segunda via',t:'Confirmar com o financeiro o layout do boleto.',d:'10/11'},{id:2,task:'Ajustar filtros do histórico',t:'Testar período maior que 12 meses.',d:'09/11'}]};
+const logged=()=>S.role!=='Visitante';
+function nav(){
+ if(!logged())return[{g:'Público',items:[['home','Início','home'],['about','Sobre','info'],['login','Entrar','login']]}];
+ const work=[['home','Início','home'],['projects','Projetos','folder'],['board','Quadro','list'],['tasks','Tarefas','check'],['notes','Minhas anotações','note']];
+ if(S.role!=='Desenvolvedor')work.push(['teams','Equipes','users']);
+ const ia=[['assistant','Assistente','chat'],['usage','Meu consumo','gauge']];
+ if(S.role==='Administrador')ia.push(['iaconfig','Configuração da IA','gear']);
+ return[{g:'Trabalho',items:work},{g:'Inteligência artificial',items:ia},{g:'Sistema',items:[['about','Sobre','info']]}];
+}
+const titles={home:'Início',projects:'Projetos',board:'Quadro',tasks:'Tarefas',notes:'Minhas anotações',teams:'Equipes',assistant:'Assistente',usage:'Meu consumo',iaconfig:'Configuração da IA',about:'Sobre',login:'Entrar'};
+const brand='<div class="brand"><i><b></b><b></b><b></b></i>Outsourcing</div>';
+const links=(cls='navlink')=>nav().map(g=>`<div class="group">${g.g}</div>`+g.items.map(([v,l,i])=>`<button class="${cls}" data-go="${v}" ${S.view===v?'aria-current="page"':''}>${ic(i)}${l}</button>`).join('')).join('');
+const who={Gerente:['Marina Souza','MS'],Administrador:['Rui Prado','RP'],Desenvolvedor:['Caio Lima','CL']};
+const user=()=>logged()?`<div class="user"><span class="avatar">${who[S.role][1]}</span>${who[S.role][0]} <button class="btn sm" data-act="logout">Sair</button></div>`:`<button class="btn primary sm" data-go="login">Entrar</button>`;
+function shell(){
+ const c=view();
+ if(S.approach==='a')return`<div class="a"><aside>${brand}${links()}</aside><div class="main"><div class="topbar"><input placeholder="Buscar projetos e tarefas" aria-label="Buscar"><span class="spacer"></span>${user()}</div><div class="page">${c}</div></div></div>`;
+ if(S.approach==='b'){const flat=nav().flatMap(g=>g.items);return`<div class="b"><header>${brand}<nav>${flat.map(([v,l])=>`<button class="navlink" data-go="${v}" ${S.view===v?'aria-current="page"':''}>${l}</button>`).join('')}</nav><span class="spacer"></span>${user()}</header><div class="main"><div class="page"><div class="crumb">Outsourcing / ${titles[S.view]}</div>${c}</div></div></div>`;}
+ const flat=nav().flatMap(g=>g.items);
+ const ctx=logged()?`<div class="group">Projetos</div>`+S.projects.map(p=>`<button class="navlink" data-board="${p.id}" ${S.view==='board'&&S.project===p.id?'aria-current="page"':''}>${p.name}<span class="count">${S.tasks.filter(t=>t.p===p.id).length}</span></button>`).join(''):`<div class="group">Bem-vindo</div><p style="padding:0 10px">Entre para ver seus projetos.</p>`;
+ return`<div class="c"><div class="rail">${flat.map(([v,l,i])=>`<button data-go="${v}" title="${l}" aria-label="${l}" ${S.view===v?'aria-current="page"':''}>${ic(i)}</button>`).join('')}</div><div class="context">${brand}${ctx}</div><div class="main"><div class="topbar"><h2>${titles[S.view]}</h2><span class="spacer"></span>${user()}</div><div class="page">${c}</div></div></div>`;
+}
+const pill=p=>`<span class="pill p-${p}">${PR[p]}</span>`;
+const pname=id=>S.projects.find(p=>p.id===id)?.name||'';
+const pager=n=>`<div class="pager"><button class="btn sm" disabled>Anterior</button>Página 1 de 1 · ${n} ${n===1?'registro':'registros'}<button class="btn sm" disabled>Próxima</button></div>`;
+const V={
+ home(){ if(!logged())return`<h1>Organize equipes, projetos e tarefas em um só lugar</h1><p>O Outsourcing acompanha o trabalho de cada equipe em quadros kanban, com papéis para administradores, gerentes e desenvolvedores.</p><div><button class="btn primary" data-go="login">Entrar</button></div>`;
+  const open=S.tasks.filter(t=>t.s<2);
+  return`<h1>Olá, ${who[S.role][0].split(' ')[0]}</h1><div class="summary">
+  <div class="card"><strong>${open.length}</strong><span>Tarefas abertas</span></div><div class="card"><strong>${open.filter(t=>t.pr==='urgent').length}</strong><span>Urgentes</span></div><div class="card"><strong>${S.projects.length}</strong><span>Projetos ativos</span></div></div>
+  <div class="cols"><div class="card"><h2>Tarefas recentes</h2><div>${S.tasks.slice(0,5).map(t=>`<div class="row">${pill(t.pr)}<button class="linkish" data-board="${t.p}">${t.t}</button><small>${t.due}</small></div>`).join('')}</div></div>
+  <div class="card"><h2>Projetos recentes</h2><div>${S.projects.map(p=>`<div class="row"><button class="linkish" data-board="${p.id}">${p.name}</button><small>Equipe ${p.team}</small></div>`).join('')}</div></div></div>`},
+ projects(){const l=S.projects.filter(p=>p.name.toLowerCase().includes(S.fName.toLowerCase())&&(!S.fTeam||p.team===S.fTeam));const can=S.role!=='Desenvolvedor';
+  return`<div class="head"><h1>Projetos</h1><span class="spacer"></span>${can?'<button class="btn primary" data-act="newproject">Novo projeto</button>':''}</div>
+  <div class="filters"><input id="fName" placeholder="Filtrar por nome" aria-label="Filtrar por nome" value="${S.fName}"><select id="fTeam" aria-label="Filtrar por equipe"><option value="">Todas as equipes</option>${S.teams.map(t=>`<option ${S.fTeam===t.n?'selected':''}>${t.n}</option>`).join('')}</select></div>
+  <div class="card"><div class="tablewrap"><table><thead><tr><th>Projeto</th><th>Equipe</th><th>Término</th><th>Tarefas</th><th></th></tr></thead><tbody>${l.map(p=>`<tr><td><button class="linkish" data-board="${p.id}">${p.name}</button></td><td>${p.team}</td><td class="num">${p.end}</td><td class="num">${S.tasks.filter(t=>t.p===p.id).length}</td><td>${can?`<button class="btn sm danger" data-del="${p.id}">Excluir</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">Nenhum projeto encontrado. Ajuste os filtros.</td></tr>'}</tbody></table></div>${pager(l.length)}</div>`},
+ board(){return`<div class="head"><h1>${pname(S.project)}</h1><select id="pick" aria-label="Escolher projeto">${S.projects.map(p=>`<option value="${p.id}" ${p.id===S.project?'selected':''}>${p.name}</option>`).join('')}</select></div>
+  <div class="board">${STAGES.map((n,i)=>{const l=S.tasks.filter(t=>t.p===S.project&&t.s===i);return`<section class="col" data-col="${i}"><h2>${n}<span>${l.length}</span></h2>${l.map(t=>`<article class="task ${t.pr}" draggable="true" data-task="${t.id}"><div>${t.t}</div><footer>${pill(t.pr)}${t.who.split(' ')[0]} · ${t.due}<span class="moves"><button class="btn sm" data-move="${t.id}:-1" aria-label="Mover para o estágio anterior" ${i===0?'disabled':''}>◀</button><button class="btn sm" data-move="${t.id}:1" aria-label="Mover para o próximo estágio" ${i===3?'disabled':''}>▶</button></span></footer></article>`).join('')}</section>`}).join('')}</div>`},
+ tasks(){const l=S.tasks.filter(t=>!S.fPrio||t.pr===S.fPrio);return`<h1>Tarefas</h1><div class="filters"><select id="fPrio" aria-label="Filtrar por prioridade"><option value="">Todas as prioridades</option>${Object.entries(PR).map(([k,v])=>`<option value="${k}" ${S.fPrio===k?'selected':''}>${v}</option>`).join('')}</select></div><div class="card"><div class="tablewrap"><table><thead><tr><th>Tarefa</th><th>Projeto</th><th>Estágio</th><th>Prioridade</th><th>Responsável</th><th>Prazo</th></tr></thead><tbody>${l.map(t=>`<tr><td>${t.t}</td><td>${pname(t.p)}</td><td>${STAGES[t.s]}</td><td>${pill(t.pr)}</td><td>${t.who}</td><td class="num">${t.due}</td></tr>`).join('')}</tbody></table></div>${pager(l.length)}</div>`},
+ notes(){return`<h1>Minhas anotações</h1><p>Somente você vê estas anotações.</p><div class="card">${S.notes.map(n=>`<div class="row"><div><strong>${n.task}</strong><br>${n.t}</div><small>${n.d}</small><button class="btn sm danger" data-delnote="${n.id}">Excluir</button></div>`).join('')||'<p>Você ainda não tem anotações.</p>'}</div>`},
+ teams(){return`<h1>Equipes</h1><div class="card"><div class="tablewrap"><table><thead><tr><th>Equipe</th><th>Gerente</th><th>Membros</th></tr></thead><tbody>${S.teams.map(t=>`<tr><td>${t.n}</td><td>${t.m}</td><td class="num">${t.c}</td></tr>`).join('')}</tbody></table></div></div>`},
+ assistant(){return`<h1>Assistente</h1><div class="card"><div class="chat">${S.chat.map(m=>`<div class="msg ${m.bot?'bot':'me'}">${m.t}</div>`).join('')}</div><form id="ask" class="filters"><input id="q" style="flex:1" placeholder="Pergunte sobre o sistema" aria-label="Pergunta"><button class="btn primary">Enviar</button></form></div>`},
+ usage(){return`<h1>Meu consumo</h1><div class="card"><h2>Novembro de 2026</h2><div class="meter"><b style="width:32%"></b></div><p>16.000 de 50.000 tokens usados. A cota renova em 1º de dezembro.</p></div>`},
+ iaconfig(){return`<h1>Configuração da IA</h1><div class="card"><form class="form" id="cfg"><label for="m">Modelo<input id="m" value="claude-sonnet-5-5"></label><label for="k">Chave de API<input id="k" value="••••••••••••3f9a"></label><label for="c">Cota mensal por usuário (tokens)<input id="c" value="50000"></label><div class="filters"><button class="btn primary">Salvar</button><button type="button" class="btn" data-act="testia">Testar conexão</button></div></form></div>`},
+ about(){return`<h1>Sobre o projeto</h1><p>O Outsourcing é um sistema web para gestão de equipes, projetos e tarefas em quadro kanban, desenvolvido com Python e Django.</p><div class="cols"><div class="card"><h2>Diagrama de casos de uso</h2><div class="diagram">Imagem do diagrama</div></div><div class="card"><h2>Diagrama de classes</h2><div class="diagram">Imagem do diagrama</div></div></div>`},
+ login(){return`<h1>Entrar</h1><div class="card"><form class="form" id="login"><label for="e">E-mail<input id="e" type="email" value="marina@exemplo.com"></label><label for="s">Senha<input id="s" type="password" value="exemplo"></label><button class="btn primary">Entrar</button></form></div>`}
+};
+const view=()=>V[S.view]();
+function render(keep){const a=document.getElementById('app');let f,pos;if(keep&&document.activeElement?.id){f=document.activeElement.id;pos=document.activeElement.selectionStart}a.innerHTML=shell();
+ document.getElementById('approaches').innerHTML=[['a','A · Barra lateral'],['b','B · Barra superior'],['c','C · Trilho e contexto']].map(([k,l])=>`<button data-approach="${k}" aria-pressed="${S.approach===k}">${l}</button>`).join('');
+ document.getElementById('role').value=S.role;
+ if(f){const el=document.getElementById(f);if(el){el.focus();if(pos!=null&&el.setSelectionRange)try{el.setSelectionRange(pos,pos)}catch(e){}}}}
+let tt;function toast(m,err){const L=document.getElementById('layer');L.querySelector('.toast')?.remove();L.insertAdjacentHTML('beforeend',`<div class="toast ${err?'error':''}" role="status">${m}</div>`);clearTimeout(tt);tt=setTimeout(()=>L.querySelector('.toast')?.remove(),3200)}
+function confirmDlg(msg,ok){const L=document.getElementById('layer');L.insertAdjacentHTML('beforeend',`<div class="overlay"><div class="modal" role="dialog" aria-modal="true"><h2>Confirmar exclusão</h2><p>${msg}</p><div class="actions"><button class="btn" id="no">Cancelar</button><button class="btn danger solid" id="yes">Excluir</button></div></div></div>`);const o=L.querySelector('.overlay');o.querySelector('#no').onclick=()=>o.remove();o.querySelector('#yes').onclick=()=>{o.remove();ok()};o.querySelector('#no').focus()}
+function move(id,to){const t=S.tasks.find(x=>x.id===id);if(to<0||to>3||t.s===to)return;t.s=to;render();toast(`Tarefa movida para ${STAGES[to]}.`)}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.approach){S.approach=d.approach;render()}
+ else if(d.go){S.view=d.go;render()}
+ else if(d.board){S.project=+d.board;S.view=logged()?'board':'login';render()}
+ else if(d.move){const[id,k]=d.move.split(':').map(Number);move(id,S.tasks.find(x=>x.id===id).s+k)}
+ else if(d.del){const p=S.projects.find(x=>x.id===+d.del);confirmDlg(`Excluir o projeto ${p.name} e suas tarefas? Esta ação não pode ser desfeita.`,()=>{S.projects=S.projects.filter(x=>x!==p);S.tasks=S.tasks.filter(t=>t.p!==p.id);if(S.project===p.id&&S.projects[0])S.project=S.projects[0].id;render();toast('Projeto excluído.')})}
+ else if(d.delnote){confirmDlg('Excluir esta anotação?',()=>{S.notes=S.notes.filter(n=>n.id!==+d.delnote);render();toast('Anotação excluída.')})}
+ else if(d.act==='logout'){S.role='Visitante';S.view='home';render();toast('Você saiu da sua conta.')}
+ else if(d.act==='newproject'){const id=Date.now();S.projects.unshift({id,name:'Novo projeto '+(S.projects.length+1),team:'Atlas',end:'—'});render();toast('Projeto cadastrado com quatro estágios.')}
+ else if(d.act==='testia'){toast('Conexão bem-sucedida com a API.')}
+});
+document.addEventListener('input',e=>{if(e.target.id==='fName'){S.fName=e.target.value;render(true)}});
+document.addEventListener('change',e=>{const t=e.target;if(t.id==='role'){S.role=t.value;const ok=nav().flatMap(g=>g.items).some(([v])=>v===S.view);if(!ok)S.view='home';render()}else if(t.id==='fTeam'){S.fTeam=t.value;render()}else if(t.id==='fPrio'){S.fPrio=t.value;render()}else if(t.id==='pick'){S.project=+t.value;render()}});
+document.addEventListener('submit',e=>{e.preventDefault();const id=e.target.id;
+ if(id==='login'){S.role='Gerente';S.view='home';render();toast('Login realizado.')}
+ else if(id==='cfg')toast('Configuração salva.');
+ else if(id==='ask'){const q=document.getElementById('q').value.trim();if(!q)return;S.chat.push({t:q},{bot:1,t:'No quadro do projeto, use as setas do cartão ou arraste a tarefa para outra coluna. Ela só pode ir para estágios do mesmo projeto.'});render()}});
+let drag;document.addEventListener('dragstart',e=>{const t=e.target.closest?.('[data-task]');if(t)drag=+t.dataset.task});
+document.addEventListener('dragover',e=>{const c=e.target.closest?.('[data-col]');if(c&&drag){e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over'));c.classList.add('over')}});
+document.addEventListener('drop',e=>{const c=e.target.closest?.('[data-col]');if(c&&drag){e.preventDefault();move(drag,+c.dataset.col);drag=null}});
+document.addEventListener('dragend',()=>{drag=null;document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over'))});
+render();
+</script>
+</body>
+</html>
