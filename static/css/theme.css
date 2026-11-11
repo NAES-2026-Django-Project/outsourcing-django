@@ -82,3 +82,28 @@ h2 { font-size: 16px; font-weight: 700; margin: 0; }
 .diagram { max-width: 100%; height: auto; background: #fff; border-radius: 6px; }
 
 @media (max-width: 991.98px) { .sidebar { border-right: 0; } .page { padding: 16px; } .topbar { padding: 10px 16px; } }
+
+.status-sucesso { color: var(--ok); }
+.status-erro, .status-bloqueada { color: var(--danger); }
+.status-recusada { color: var(--warn); }
+.progress { --bs-progress-bar-bg: var(--accent); --bs-progress-bg: var(--accent-soft); }
+.markdown > :last-child { margin-bottom: 0; }
+
+.assistente { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+.assistente-apoio { display: flex; flex-direction: column; gap: 12px; }
+.chat { display: flex; flex-direction: column; height: min(70vh, 640px); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.chat-mensagens { flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 78%; padding: 10px 14px; border-radius: 10px; overflow-wrap: anywhere; }
+.msg.eu { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 3px; }
+.msg.bot { align-self: flex-start; background: var(--accent-soft); border-bottom-left-radius: 3px; }
+.msg.bot ul, .msg.bot ol { padding-left: 20px; margin-bottom: 6px; }
+.msg.bot pre { white-space: pre-wrap; }
+.msg.erro { align-self: stretch; max-width: none; border: 1px solid var(--danger); color: var(--danger); font-size: 14px; }
+.digitando { align-self: flex-start; color: var(--muted); font-size: 14px; }
+.chat-envio { border-top: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.chat-envio > form { display: flex; gap: 8px; align-items: flex-end; }
+.chat-envio textarea { resize: none; }
+.chat-dica { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.chip { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 99px; padding: 3px 10px; font-size: 13px; text-align: left; }
+.chip:hover { border-color: var(--accent); }
+@media (max-width: 991.98px) { .assistente { grid-template-columns: 1fr; } .msg { max-width: 92%; } }

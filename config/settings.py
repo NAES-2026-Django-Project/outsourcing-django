@@ -17,6 +17,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+GEMINI_API_KEY = env('GEMINI_API_KEY', default='')
 
 if not DEBUG:
     # O App Engine termina o HTTPS antes de chegar à aplicação.
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     # Terceiros
     'crispy_forms',
     'crispy_bootstrap5',

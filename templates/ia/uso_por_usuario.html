@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}IA por usuário · Outsourcing{% endblock %}
+{% block content %}
+<h1>IA por usuário</h1>
+<p class="mb-0 text-secondary">Consumo do mês atual. Cota padrão: <span class="num">{{ cota_padrao }}</span> tokens.</p>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Usuário</th><th>Chamadas no mês</th><th>Tokens no mês</th><th>Cota</th><th></th></tr></thead>
+      <tbody>
+        {% for usuario in usuarios %}
+          <tr>
+            <td>{{ usuario }}<br><small class="text-secondary">{{ usuario.email }}</small></td>
+            <td class="num">{{ usuario.chamadas_mes }}</td>
+            <td class="num">{{ usuario.tokens_mes }}</td>
+            <td class="num">{{ usuario.limite }}{% if not usuario.cota_propria %} <small class="text-secondary">(padrão)</small>{% endif %}</td>
+            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="{% url 'ia:cota_usuario' usuario.pk %}">Editar cota</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

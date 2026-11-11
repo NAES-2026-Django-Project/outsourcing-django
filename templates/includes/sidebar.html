@@ -16,7 +16,15 @@
         <a class="nav-item-link {% if 'equipe' in nome %}active{% endif %}" href="{% url 'projects:equipes' %}">Equipes</a>
       {% endif %}
       {% if request.user.eh_administrador %}
-        <a class="nav-item-link {% if 'usuario' in nome %}active{% endif %}" href="{% url 'accounts:usuarios' %}">Usuários</a>
+        <a class="nav-item-link {% if nome == 'usuarios' or nome == 'usuario_papel' %}active{% endif %}" href="{% url 'accounts:usuarios' %}">Usuários</a>
+      {% endif %}
+      <div class="nav-group">Inteligência artificial</div>
+      <a class="nav-item-link {% if nome == 'assistente' %}active{% endif %}" href="{% url 'ia:assistente' %}">Assistente</a>
+      <a class="nav-item-link {% if nome == 'meu_consumo' %}active{% endif %}" href="{% url 'ia:meu_consumo' %}">Meu consumo</a>
+      {% if request.user.eh_administrador %}
+        <a class="nav-item-link {% if nome == 'configuracao' %}active{% endif %}" href="{% url 'ia:configuracao' %}">Configuração da IA</a>
+        <a class="nav-item-link {% if 'requisic' in nome %}active{% endif %}" href="{% url 'ia:requisicoes' %}">Requisições</a>
+        <a class="nav-item-link {% if nome == 'uso_por_usuario' or nome == 'cota_usuario' %}active{% endif %}" href="{% url 'ia:uso_por_usuario' %}">IA por usuário</a>
       {% endif %}
       <div class="nav-group">Sistema</div>
       <a class="nav-item-link {% if nome == 'conta' or nome == 'dados' or nome == 'perfil' or nome == 'endereco' or nome == 'senha' %}active{% endif %}" href="{% url 'accounts:conta' %}">Minha conta</a>

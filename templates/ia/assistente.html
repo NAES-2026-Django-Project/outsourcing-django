@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static humanize ia_markdown %}
+{% block title %}Assistente · Outsourcing{% endblock %}
+{% block content %}
+<h1>Assistente</h1>
+<div class="assistente">
+  <section class="chat" aria-label="Conversa com o assistente">
+    <div class="chat-mensagens" id="mensagens" aria-live="polite">
+      {% if not mensagens %}
+        <div class="msg bot">Olá! Sou o assistente do Outsourcing. Pergunte como usar o sistema: quadros, tarefas, anotações, apontamentos e mais.</div>
+      {% endif %}
+      {% for mensagem in mensagens %}
+        {% if mensagem.papel == "user" %}
+          <div class="msg eu">{{ mensagem.conteudo|linebreaksbr }}</div>
+        {% else %}
+          <div class="msg bot markdown">{{ mensagem.conteudo|markdown_seguro }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <div class="chat-envio">
+      <form id="form-assistente" method="post" action="{% url 'ia:perguntar' %}">
+        {% csrf_token %}
+        <label class="visually-hidden" for="pergunta">Pergunta</label>
+        <textarea class="form-control" id="pergunta" name="pergunta" rows="2" maxlength="2000" placeholder="Pergunte sobre o sistema" required></textarea>
+        <button class="btn btn-primary" type="submit">Enviar</button>
+      </form>
+      <div class="chat-dica">
+        <span>Enter envia, Shift+Enter quebra a linha. O assistente considera as 5 últimas mensagens.</span>
+        <form method="post" action="{% url 'ia:limpar' %}">
+          {% csrf_token %}
+          <button class="btn btn-outline-secondary btn-sm">Limpar histórico</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <aside class="assistente-apoio">
+    <div class="card card-body gap-2">
+      <h2>Sua cota</h2>
+      <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar {% if percentual >= 90 %}bg-danger{% endif %}" id="cota-barra" style="width: {{ percentual }}%"></div>
+      </div>
+      <small class="text-secondary num" id="cota-texto">{{ consumo|intcomma }} de {{ limite|intcomma }} tokens este mês</small>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ia:meu_consumo' %}">Ver detalhes</a>
+    </div>
+    <div class="card card-body gap-2">
+      <h2>Perguntas frequentes</h2>
+      <div class="d-flex flex-column align-items-start gap-1">
+        {% for sugestao in sugestoes %}
+          <button class="chip" type="button" data-sugestao="{{ sugestao }}">{{ sugestao }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card card-body gap-2">
+      <h2>O que o assistente faz</h2>
+      <ul class="mb-0 ps-3">
+        <li>Explica telas e regras do sistema</li>
+        <li>Não acessa seus dados</li>
+        <li>Não executa ações por você</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/assistente.js' %}"></script>
+{% endblock %}

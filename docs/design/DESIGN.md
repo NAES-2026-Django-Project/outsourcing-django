@@ -47,3 +47,4 @@ Bootstrap 5 com as variáveis `--bs-*` sobrescritas em `static/css/theme.css` co
 | Data | Tela | Decisão | Motivo |
 |---|---|---|---|
 | 11/11/2026 | Layout base | Abordagem A: barra lateral fixa com grupos de menu e barra superior com busca e usuário | Comporta todos os menus, inclusive os de IA, e segue o padrão de painéis em Bootstrap. Protótipo em `prototypes/layout-base.html` |
+| 11/11/2026 | Assistente de IA | Abordagem C: página de conversa com coluna de apoio (cota, perguntas frequentes e limites) | Atende à exigência de uma tela no visual do site e deixa o consumo e os limites visíveis. Protótipo em `prototypes/assistente.html` |

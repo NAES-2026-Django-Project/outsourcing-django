@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Meu consumo de IA · Outsourcing{% endblock %}
+{% block content %}
+<h1>Meu consumo de IA</h1>
+<div class="card card-body gap-2">
+  <h2>Desde {{ inicio_do_mes|date:"d/m/Y" }}</h2>
+  <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar {% if percentual >= 90 %}bg-danger{% endif %}" style="width: {{ percentual }}%"></div>
+  </div>
+  <p class="mb-0 num">{{ consumo }} de {{ limite }} tokens usados ({{ percentual }}%). A cota renova no dia 1º de cada mês.</p>
+</div>
+<div class="card card-body">
+  <h2>Minhas últimas chamadas</h2>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Data</th><th>Origem</th><th>Situação</th><th>Tokens</th></tr></thead>
+      <tbody>
+        {% for chamada in chamadas %}
+          <tr>
+            <td class="num">{{ chamada.criado_em|date:"d/m/Y H:i" }}</td>
+            <td>{{ chamada.get_origem_display }}</td>
+            <td><span class="pill status-{{ chamada.status }}">{{ chamada.get_status_display }}</span></td>
+            <td class="num">{{ chamada.total_tokens }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">Você ainda não usou o assistente.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

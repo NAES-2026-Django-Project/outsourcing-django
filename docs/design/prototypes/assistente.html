@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outsourcing: assistente de IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra lateral fixa (decisão do layout base) + três formas de abrir o assistente. Tokens de docs/design/DESIGN.md. */
+:root{
+  --paper:#f3f6f5;--surface:#ffffff;--ink:#16262e;--muted:#5b6b70;--line:#d7dfdd;
+  --accent:#0b6e69;--on-accent:#ffffff;--accent-soft:#dcefed;--highlight:#c8791a;
+  --ok:#2e7d4f;--warn:#a86f12;--danger:#b3392f;
+  --display:"Manrope","Segoe UI",sans-serif;--body:"IBM Plex Sans","Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11191c;--surface:#1a2529;--ink:#e6edeb;--muted:#9aaaae;--line:#2e3c40;
+  --accent:#4fbdb4;--on-accent:#06211f;--accent-soft:#1d3a3a;--highlight:#e5a14a;
+  --ok:#6cc08d;--warn:#e0ad55;--danger:#ec8177;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11191c;--surface:#1a2529;--ink:#e6edeb;--muted:#9aaaae;--line:#2e3c40;
+  --accent:#4fbdb4;--on-accent:#06211f;--accent-soft:#1d3a3a;--highlight:#e5a14a;
+  --ok:#6cc08d;--warn:#e0ad55;--danger:#ec8177;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--body);display:flex;flex-direction:column}
+h1,h2{font-family:var(--display);line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:24px;font-weight:800}h2{font-size:16px;font-weight:700}
+p{margin:0;max-width:65ch}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.proto{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 16px;background:var(--ink);color:var(--paper);font-size:13px}
+.proto label{display:flex;gap:6px;align-items:center}
+.proto select{background:var(--paper);color:var(--ink);border:0;border-radius:4px;padding:2px 6px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;padding:2px 10px;cursor:pointer;opacity:.75}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper);opacity:1;font-weight:600}
+.shell{flex:1;min-height:0;display:grid;grid-template-columns:232px 1fr}
+aside{background:var(--surface);border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
+.brand{font-family:var(--display);font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px;padding:2px 10px 8px}
+.brand i{width:22px;height:22px;border-radius:5px;background:var(--accent);display:grid;grid-template-columns:repeat(3,3px);gap:2px;padding:5px 4px;align-items:start}
+.brand i b{background:var(--on-accent);border-radius:1px;height:12px}.brand i b:nth-child(2){height:8px}.brand i b:nth-child(3){height:5px}
+.group{font-size:12px;color:var(--muted);font-weight:600;padding:12px 10px 4px}
+.navlink{display:block;width:100%;padding:7px 10px;border:0;border-radius:6px;background:none;text-align:left;cursor:pointer}
+.navlink:hover{background:var(--accent-soft)}
+.navlink[aria-current="page"]{background:var(--accent);color:var(--on-accent);font-weight:600}
+.main{min-width:0;display:flex;flex-direction:column;min-height:0;position:relative}
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--line)}
+.topbar input{flex:1;max-width:340px}
+.spacer{flex:1}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:inline-grid;place-items:center;font-weight:600;font-size:12px}
+.page{flex:1;min-height:0;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.sm{padding:2px 8px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+input,textarea,select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:0}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:space-between}
+.muted{color:var(--muted)}
+.meter{height:8px;border-radius:99px;background:var(--accent-soft);overflow:hidden;min-width:120px}
+.meter b{display:block;height:100%;background:var(--accent);transition:width .3s}
+.meter.alto b{background:var(--danger)}
+.usage{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* Conversa */
+.chat{display:flex;flex-direction:column;min-height:0;flex:1;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.msgs{flex:1;min-height:180px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:78%;padding:10px 14px;border-radius:10px;line-height:1.5}
+.msg.me{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-bottom-right-radius:3px}
+.msg.bot{align-self:flex-start;background:var(--accent-soft);border-bottom-left-radius:3px}
+.msg.bot p+p,.msg.bot p+ul,.msg.bot ul+p{margin-top:6px}
+.msg.bot ul,.msg.bot ol{margin:4px 0;padding-left:20px}
+.msg.erro{align-self:stretch;max-width:none;background:transparent;border:1px solid var(--danger);color:var(--danger);font-size:14px}
+.msg small{display:block;font-size:12px;opacity:.75;margin-top:4px}
+.typing{align-self:flex-start;color:var(--muted);font-size:14px}
+.typing span{animation:pisca 1s infinite}
+@keyframes pisca{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){.typing span{animation:none}.meter b{transition:none}}
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px}
+.composer form{display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;resize:none;min-height:42px;max-height:140px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:3px 10px;font-size:13px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.hint{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+/* Abordagem B: painel lateral */
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);border-left:1px solid var(--line);box-shadow:-8px 0 24px rgb(0 0 0/.12);display:flex;flex-direction:column;z-index:3}
+.drawer .chat{border:0;border-radius:0}
+.drawer header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+/* Abordagem C: duas colunas */
+.split{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;flex:1;min-height:0}
+.side{display:flex;flex-direction:column;gap:12px;overflow:auto}
+.side ul{margin:0;padding-left:18px}
+.side li+li{margin-top:4px}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}th{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;border-radius:99px;padding:0 8px;font-size:12px;font-weight:600;border:1px solid currentColor}
+.toast{position:fixed;right:16px;bottom:16px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:6px;padding:10px 14px;box-shadow:0 6px 20px rgb(0 0 0/.18);z-index:9}
+@media (max-width:860px){.split{grid-template-columns:1fr}.side{order:-1}}
+@media (max-width:760px){.shell{grid-template-columns:1fr}aside{display:none}.page{padding:16px}.msg{max-width:92%}}
+</style>
+</head>
+<body>
+<div class="proto">
+  <strong>Protótipo</strong>
+  <div class="seg" id="abordagens" role="group" aria-label="Abordagem"></div>
+  <label for="cenario">Cenário <select id="cenario"><option value="normal">Normal</option><option value="cota">Cota quase no fim</option><option value="erro">API indisponível</option></select></label>
+</div>
+<div class="shell">
+  <aside>
+    <div class="brand"><i><b></b><b></b><b></b></i>Outsourcing</div>
+    <div class="group">Trabalho</div>
+    <button class="navlink">Início</button><button class="navlink">Quadros</button><button class="navlink" data-tela="tarefas">Tarefas</button><button class="navlink">Minhas anotações</button>
+    <div class="group">Inteligência artificial</div>
+    <button class="navlink" data-tela="assistente">Assistente</button><button class="navlink" data-tela="consumo">Meu consumo</button>
+    <div class="group">Sistema</div>
+    <button class="navlink">Minha conta</button><button class="navlink">Sobre</button>
+  </aside>
+  <div class="main" id="main"></div>
+</div>
+<div id="camada"></div>
+<script>
+const S={abordagem:'a',tela:'assistente',drawer:true,cenario:'normal',consumo:16400,limite:200000,ocupado:false,
+  msgs:[{bot:1,t:'Olá! Sou o assistente do Outsourcing. Pergunte como usar o sistema: quadros, tarefas, anotações, apontamentos e mais.'}]};
+const SUGESTOES=['Como mover uma tarefa?','Quem pode criar projetos?','Minhas anotações são privadas?','Como apontar horas?'];
+const RESPOSTAS={
+  'mover':'No **quadro do projeto**, use as setas ◀ ▶ do cartão da tarefa:\n\n- ◀ leva ao estágio anterior\n- ▶ leva ao próximo estágio\n\nA tarefa só pode ir para estágios **do mesmo projeto**.',
+  'projeto':'Somente **Administradores** e **Gerentes** criam projetos. O gerente escolhe uma das equipes que gerencia, e o projeto nasce com quatro estágios: Backlog, Em andamento, Concluído e Aprovado.',
+  'anota':'Sim. As **anotações** e os **apontamentos de horas** são privados: só quem cadastrou consegue listar, ver, editar ou excluir, inclusive em relação a administradores.',
+  'hora':'Abra a tarefa e clique em **Apontar horas**, ou use o menu **Meus apontamentos**. Informe a data, as horas (de 0,25 a 24) e uma descrição opcional.'};
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+function md(t){return esc(t).split(/\n\n+/).map(b=>/^- /m.test(b)?'<ul>'+b.split('\n').map(l=>'<li>'+l.replace(/^- /,'')+'</li>').join('')+'</ul>':'<p>'+b+'</p>').join('').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')}
+const fmt=n=>n.toLocaleString('pt-BR');
+const pct=()=>Math.min(100,Math.round(S.consumo*100/S.limite));
+const medidor=()=>`<div class="usage" title="Cota mensal de tokens"><div class="meter ${pct()>=90?'alto':''}"><b style="width:${pct()}%"></b></div>${fmt(S.consumo)} de ${fmt(S.limite)} tokens</div>`;
+function conversa(compacta){
+  const lista=S.msgs.map(m=>m.erro?`<div class="msg erro" role="alert">${esc(m.t)}</div>`:`<div class="msg ${m.bot?'bot':'me'}">${m.bot?md(m.t):esc(m.t)}${m.tok?`<small>${fmt(m.tok)} tokens</small>`:''}</div>`).join('')+(S.ocupado?'<div class="typing">O assistente está escrevendo<span>…</span></div>':'');
+  return `<div class="chat"><div class="msgs" id="msgs" aria-live="polite">${lista}</div><div class="composer">
+    ${S.msgs.length<=1&&!compacta?`<div class="chips">${SUGESTOES.map(s=>`<button class="chip" data-sug="${esc(s)}">${esc(s)}</button>`).join('')}</div>`:''}
+    <form id="form"><textarea id="pergunta" rows="2" maxlength="2000" placeholder="Pergunte sobre o sistema" aria-label="Pergunta"></textarea><button class="btn primary" ${S.ocupado?'disabled':''}>Enviar</button></form>
+    <div class="hint"><span>Enter envia, Shift+Enter quebra linha. O assistente considera as 5 últimas mensagens.</span><button class="btn sm" data-act="limpar">Limpar histórico</button></div></div></div>`;
+}
+const telaTarefas=()=>`<div class="head"><h1>Tarefas</h1><button class="btn primary">Nova tarefa</button></div><div class="card"><table><thead><tr><th>Tarefa</th><th>Projeto</th><th>Prioridade</th></tr></thead><tbody>
+  <tr><td>Integrar emissão de segunda via</td><td>Portal do Cliente</td><td><span class="pill" style="color:var(--danger)">Urgente</span></td></tr>
+  <tr><td>Ajustar filtros do histórico</td><td>Portal do Cliente</td><td><span class="pill" style="color:var(--warn)">Alta</span></td></tr>
+  <tr><td>Mapear rotas de coleta</td><td>App de Entregas</td><td><span class="pill" style="color:var(--warn)">Alta</span></td></tr></tbody></table></div>`;
+const telaConsumo=()=>`<h1>Meu consumo de IA</h1><div class="card"><h2>Desde 01/11/2026</h2><div class="meter ${pct()>=90?'alto':''}" style="height:12px"><b style="width:${pct()}%"></b></div><p>${fmt(S.consumo)} de ${fmt(S.limite)} tokens usados (${pct()}%). A cota renova no dia 1º de cada mês.</p></div>`;
+function pagina(){
+  if(S.abordagem==='b'){
+    const fundo=S.tela==='consumo'?telaConsumo():telaTarefas();
+    return `<div class="topbar"><input placeholder="Buscar tarefas" aria-label="Buscar"><span class="spacer"></span><button class="btn ${S.drawer?'primary':''}" data-act="drawer">Assistente</button><span class="avatar">MS</span>Marina Souza</div>
+      <div class="page">${fundo}</div>
+      ${S.drawer?`<section class="drawer" aria-label="Assistente"><header><h2>Assistente</h2><span class="spacer"></span><button class="btn sm" data-act="drawer" aria-label="Fechar">Fechar</button></header><div style="padding:8px 16px;border-bottom:1px solid var(--line)">${medidor()}</div>${conversa(true)}</section>`:''}`;
+  }
+  const topo=`<div class="topbar"><input placeholder="Buscar tarefas" aria-label="Buscar"><span class="spacer"></span><span class="avatar">MS</span>Marina Souza</div>`;
+  if(S.tela==='consumo')return topo+`<div class="page">${telaConsumo()}</div>`;
+  if(S.tela==='tarefas')return topo+`<div class="page">${telaTarefas()}</div>`;
+  if(S.abordagem==='a')return topo+`<div class="page"><div class="head"><h1>Assistente</h1>${medidor()}</div>${conversa(false)}</div>`;
+  return topo+`<div class="page"><h1>Assistente</h1><div class="split">${conversa(true)}<div class="side">
+    <div class="card"><h2>Sua cota</h2>${medidor()}<button class="btn sm" data-tela="consumo">Ver detalhes</button></div>
+    <div class="card"><h2>Perguntas frequentes</h2><div class="chips" style="flex-direction:column;align-items:flex-start">${SUGESTOES.map(s=>`<button class="chip" data-sug="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>
+    <div class="card"><h2>O que o assistente faz</h2><ul><li>Explica telas e regras do sistema</li><li>Não acessa seus dados</li><li>Não executa ações por você</li></ul></div></div></div></div>`;
+}
+function render(){
+  document.getElementById('abordagens').innerHTML=[['a','A · Página de conversa'],['b','B · Painel lateral'],['c','C · Conversa com apoio']].map(([k,l])=>`<button data-abordagem="${k}" aria-pressed="${S.abordagem===k}">${l}</button>`).join('');
+  document.querySelectorAll('aside .navlink').forEach(b=>b.toggleAttribute('aria-current',false));
+  const atual=S.abordagem==='b'&&S.tela==='assistente'?'tarefas':S.tela;
+  document.querySelector(`aside [data-tela="${atual}"]`)?.setAttribute('aria-current','page');
+  document.getElementById('main').innerHTML=pagina();
+  const m=document.getElementById('msgs');if(m)m.scrollTop=m.scrollHeight;
+}
+function toast(t){const c=document.getElementById('camada');c.innerHTML=`<div class="toast" role="status">${esc(t)}</div>`;setTimeout(()=>c.innerHTML='',2800)}
+function enviar(texto){
+  texto=texto.trim();if(!texto||S.ocupado)return;
+  S.msgs=S.msgs.filter(m=>!m.erro);
+  if(S.cenario==='cota'&&S.consumo>=S.limite){S.msgs.push({erro:1,t:'Você atingiu sua cota mensal de tokens. Ela renova no dia 1º do próximo mês.'});render();return}
+  S.msgs.push({t:texto});S.ocupado=true;render();
+  setTimeout(()=>{
+    S.ocupado=false;
+    if(S.cenario==='erro'){S.msgs.pop();S.msgs.push({erro:1,t:'Não foi possível conectar à API da Anthropic. Sua pergunta não foi enviada; tente novamente mais tarde.'});render();document.getElementById('pergunta').value=texto;return}
+    const chave=Object.keys(RESPOSTAS).find(k=>texto.toLowerCase().includes(k));
+    const tok=1200+Math.round(Math.random()*900);
+    S.msgs.push({bot:1,t:chave?RESPOSTAS[chave]:'Posso ajudar apenas com o uso do **Outsourcing**. Tente perguntar sobre quadros, tarefas, projetos, anotações ou apontamentos.',tok});
+    S.consumo+=tok;render();
+  },900);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.abordagem){S.abordagem=d.abordagem;S.tela='assistente';S.drawer=true;render()}
+  else if(d.tela){S.tela=d.tela;if(S.abordagem==='b'&&d.tela==='assistente')S.drawer=true;render()}
+  else if(d.sug){enviar(d.sug)}
+  else if(d.act==='drawer'){S.drawer=!S.drawer;render()}
+  else if(d.act==='limpar'){S.msgs=S.msgs.slice(0,1);render();toast('Histórico do assistente apagado.')}
+});
+document.addEventListener('submit',e=>{e.preventDefault();const t=document.getElementById('pergunta');enviar(t.value)});
+document.addEventListener('keydown',e=>{if(e.target.id==='pergunta'&&e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviar(e.target.value)}});
+document.getElementById('cenario').addEventListener('change',e=>{S.cenario=e.target.value;S.consumo=S.cenario==='cota'?197800:16400;S.msgs=S.msgs.filter(m=>!m.erro);render()});
+render();
+</script>
+</body>
+</html>

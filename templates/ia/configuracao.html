@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Configuração da IA · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Configuração da IA</h1>
+  <form method="post" action="{% url 'ia:testar' %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-secondary">Testar conexão</button>
+  </form>
+</div>
+<div class="card card-body narrow gap-1">
+  <div><strong>Chave da API:</strong>
+    {% if config.chave_mascarada %}{{ config.chave_mascarada }} <span class="text-secondary">({{ config.origem_chave }})</span>{% else %}<span class="text-danger">não cadastrada</span>{% endif %}
+  </div>
+  <div class="text-secondary">Última alteração: {{ config.atualizado_em|date:"d/m/Y H:i" }}</div>
+</div>
+<div class="card narrow">
+  <div class="card-body">
+    <form method="post" autocomplete="off">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button class="btn btn-primary">Salvar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
