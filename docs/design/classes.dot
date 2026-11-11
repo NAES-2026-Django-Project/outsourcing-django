@@ -1,6 +1,6 @@
 digraph model_graph {
   // Dotfile by Django-Extensions graph_models
-  // Created: 2026-11-11 00:52
+  // Created: 2026-11-11 01:05
   // Cli Options: accounts projects --dot --disable-abstract-fields -X AbstractUser,AbstractBaseUser,PermissionsMixin,Group,Permission,BaseModel -o docs/design/classes.dot
 
   fontname = "Roboto"
@@ -488,6 +488,70 @@ digraph model_graph {
     </TABLE>
     >]
 
+  projects_models_TimeEntry [label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    TimeEntry<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+  
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>author</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+  
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>task</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+  
+  
+  
+  
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">date</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">DateField</FONT>
+    </TD></TR>
+  
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">description</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+  
+  
+  
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">hours</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">DecimalField</FONT>
+    </TD></TR>
+  
+  
+  
+  
+  
+    </TABLE>
+    >]
+
 
 
 
@@ -529,6 +593,12 @@ digraph model_graph {
 
   projects_models_Note -> accounts_models_User
   [label=" author (task_notes)"] [arrowhead=none, arrowtail=dot, dir=both];
+
+  projects_models_TimeEntry -> projects_models_Task
+  [label=" task (time_entries)"] [arrowhead=none, arrowtail=dot, dir=both];
+
+  projects_models_TimeEntry -> accounts_models_User
+  [label=" author (time_entries)"] [arrowhead=none, arrowtail=dot, dir=both];
 
 
 }

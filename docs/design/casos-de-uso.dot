@@ -25,6 +25,7 @@ digraph casos_de_uso {
     mover [label="Mover tarefa entre estágios"];
     tarefas [label="Gerenciar tarefas"];
     notas [label="Gerenciar anotações privadas"];
+    horas [label="Apontar horas privadas"];
     assistente [label="Usar assistente de IA"];
     consumo [label="Ver meu consumo de IA"];
     projetos [label="Gerenciar seus projetos"];
@@ -36,7 +37,7 @@ digraph casos_de_uso {
   }
 
   visitante -> {sobre cadastro login};
-  dev -> {login conta quadro mover tarefas notas assistente consumo};
-  gerente -> {login conta quadro mover tarefas notas assistente consumo projetos estagios verequipes};
-  admin -> {login conta quadro mover tarefas notas assistente consumo projetos estagios equipes usuarios configia};
+  dev -> {login conta quadro mover tarefas notas horas assistente consumo};
+  gerente -> {login conta quadro mover tarefas notas horas assistente consumo projetos estagios verequipes};
+  admin -> {login conta quadro mover tarefas notas horas assistente consumo projetos estagios equipes usuarios configia};
 }
