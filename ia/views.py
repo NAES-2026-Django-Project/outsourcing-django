@@ -22,6 +22,12 @@ from .services import (
 )
 
 TAMANHO_MAXIMO_PERGUNTA = 2000
+SUGESTOES = [
+    'Como mover uma tarefa no quadro?',
+    'Quem pode criar projetos?',
+    'Minhas anotações são privadas?',
+    'Como apontar horas em uma tarefa?',
+]
 
 
 def resumo_de_consumo(usuario):
@@ -40,6 +46,7 @@ class AssistenteView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         ultimas = MensagemAssistente.objects.filter(usuario=self.request.user).order_by('-criado_em', '-id')[:50]
         context['mensagens'] = list(reversed(ultimas))
+        context['sugestoes'] = SUGESTOES
         context.update(resumo_de_consumo(self.request.user))
         return context
 
