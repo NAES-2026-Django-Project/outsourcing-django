@@ -17,6 +17,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+ANTHROPIC_API_KEY = env('ANTHROPIC_API_KEY', default='')
 
 if not DEBUG:
     # O App Engine termina o HTTPS antes de chegar à aplicação.
