@@ -16,7 +16,7 @@ Atue como um profissional de engenharia de software especializado em interface e
 2. Leia `docs/escopo-legado.md` e os models envolvidos para usar dados e regras realistas, com textos em português.
 3. Defina **pelo menos três abordagens** realmente diferentes para o escopo pedido (por exemplo: quadro kanban, lista com painel de detalhe, tabela densa), cada uma baseada em experiência de usuário e padrões de mercado.
 4. Construa **um protótipo funcional clicável** publicado como Claude artifact, com um seletor para alternar entre as abordagens. Navegação, formulários, estados vazios, erros e mensagens devem responder a cliques. Antes de publicar, siga as orientações de artefatos disponíveis na sessão.
-5. Use Bootstrap 5 e os tokens de `DESIGN.md`, para que o protótipo seja transferível para templates Django.
+5. Use os tokens de `DESIGN.md` e padrões de componentes equivalentes aos do Bootstrap 5, para que o protótipo seja transferível para templates Django. Artifacts bloqueiam folhas de estilo de CDN, então o CSS fica embutido na página.
 6. Salve o HTML em `docs/design/prototypes/<slug>.html`.
 7. Apresente o link e, para cada abordagem, prós, contras e quando é indicada, com uma recomendação.
 8. Pergunte ao desenvolvedor qual abordagem seguir. Não implemente os templates antes da escolha.
