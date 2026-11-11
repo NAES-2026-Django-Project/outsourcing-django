@@ -3,7 +3,7 @@ from django import forms
 from accounts.constants import DESENVOLVEDOR, GERENTE
 from accounts.models import User
 
-from .models import Note, Project, Stage, Task, Team
+from .models import Note, Project, Stage, Task, Team, TimeEntry
 
 
 class DateInput(forms.DateInput):
@@ -79,6 +79,17 @@ class NoteForm(forms.ModelForm):
     class Meta:
         model = Note
         fields = ['task', 'content']
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['task'].queryset = Task.objects.visiveis_para(user)
+
+
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeEntry
+        fields = ['task', 'date', 'hours', 'description']
+        widgets = {'date': DateInput()}
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)

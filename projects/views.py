@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, ProtectedError
+from django.db.models import Count, ProtectedError, Sum
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -10,8 +10,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from accounts.mixins import AdministradorOuGerenteMixin, SomenteAdministradorMixin
 
-from .forms import NoteForm, ProjectForm, StageForm, TaskForm, TeamForm
-from .models import Note, Project, Stage, Task, Team
+from .forms import NoteForm, ProjectForm, StageForm, TaskForm, TeamForm, TimeEntryForm
+from .models import Note, Project, Stage, Task, Team, TimeEntry
 
 ITENS_POR_PAGINA = 10
 
@@ -206,6 +206,7 @@ class TaskDetailView(TaskQuerysetMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['minhas_anotacoes'] = self.object.notes.do_autor(self.request.user)
+        context['meus_apontamentos'] = self.object.time_entries.do_autor(self.request.user)
         return context
 
 
@@ -277,6 +278,60 @@ class NoteDeleteView(NoteAutorMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:anotacoes')
     success_message = 'Anotação excluída.'
     extra_context = {'titulo': 'Excluir anotação', 'voltar': reverse_lazy('projects:anotacoes')}
+
+
+# Apontamentos de horas: privados do autor.
+
+class TimeEntryAutorMixin(LoginRequiredMixin):
+    def get_queryset(self):
+        return TimeEntry.objects.do_autor(self.request.user).select_related('task__stage__project')
+
+
+class TimeEntryListView(TimeEntryAutorMixin, ListView):
+    template_name = 'projects/timeentry_list.html'
+    context_object_name = 'apontamentos'
+    paginate_by = ITENS_POR_PAGINA
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_horas'] = self.get_queryset().aggregate(total=Sum('hours'))['total']
+        return context
+
+
+class TimeEntryDetailView(TimeEntryAutorMixin, DetailView):
+    template_name = 'projects/timeentry_detail.html'
+    context_object_name = 'apontamento'
+
+
+class TimeEntryCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+    model = TimeEntry
+    form_class = TimeEntryForm
+    success_url = reverse_lazy('projects:apontamentos')
+    success_message = 'Apontamento cadastrado.'
+    extra_context = {'titulo': 'Apontar horas', 'botao': 'Cadastrar', 'voltar': reverse_lazy('projects:apontamentos')}
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.request.GET.get('tarefa'):
+            initial['task'] = self.request.GET['tarefa']
+        return initial
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class TimeEntryUpdateView(TimeEntryAutorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+    form_class = TimeEntryForm
+    success_url = reverse_lazy('projects:apontamentos')
+    success_message = 'Apontamento alterado.'
+    extra_context = {'titulo': 'Editar apontamento', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:apontamentos')}
+
+
+class TimeEntryDeleteView(TimeEntryAutorMixin, ExclusaoMixin, DeleteView):
+    success_url = reverse_lazy('projects:apontamentos')
+    success_message = 'Apontamento excluído.'
+    extra_context = {'titulo': 'Excluir apontamento', 'voltar': reverse_lazy('projects:apontamentos')}
 
 
 # Quadro kanban e movimento

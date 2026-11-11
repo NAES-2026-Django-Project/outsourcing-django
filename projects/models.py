@@ -1,7 +1,11 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 
 class BaseModel(models.Model):
@@ -177,3 +181,32 @@ class Note(BaseModel):
 
     def __str__(self):
         return f'Anotação em {self.task}'
+
+
+class TimeEntryQuerySet(models.QuerySet):
+    def do_autor(self, user):
+        """Apontamentos são privados: nem administradores veem os de outras pessoas."""
+        return self.filter(author=user)
+
+
+class TimeEntry(BaseModel):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='time_entries', verbose_name='tarefa')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='time_entries', verbose_name='autor',
+    )
+    date = models.DateField('data', default=timezone.localdate)
+    hours = models.DecimalField(
+        'horas', max_digits=4, decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.25')), MaxValueValidator(Decimal('24'))],
+    )
+    description = models.CharField('descrição', max_length=200, blank=True)
+
+    objects = TimeEntryQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = 'apontamento de horas'
+        verbose_name_plural = 'apontamentos de horas'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f'{self.hours}h em {self.task}'

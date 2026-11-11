@@ -8,6 +8,7 @@
       <a class="nav-item-link {% if 'quadro' in nome %}active{% endif %}" href="{% url 'projects:quadros' %}">Quadros</a>
       <a class="nav-item-link {% if 'tarefa' in nome %}active{% endif %}" href="{% url 'projects:tarefas' %}">Tarefas</a>
       <a class="nav-item-link {% if 'anotac' in nome %}active{% endif %}" href="{% url 'projects:anotacoes' %}">Minhas anotações</a>
+      <a class="nav-item-link {% if 'apontamento' in nome %}active{% endif %}" href="{% url 'projects:apontamentos' %}">Meus apontamentos</a>
       {% if request.user.eh_administrador or request.user.eh_gerente %}
         <div class="nav-group">Gestão</div>
         <a class="nav-item-link {% if 'projeto' in nome %}active{% endif %}" href="{% url 'projects:projetos' %}">Meus projetos</a>

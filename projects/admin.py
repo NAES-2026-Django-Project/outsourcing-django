@@ -1,5 +1,6 @@
 from django.contrib import admin
 
-from .models import Note, Project, Stage, Task, Team
+from .models import Project, Stage, Task, Team
 
-admin.site.register([Team, Project, Stage, Task, Note])
+# Note e TimeEntry ficam de fora: são registros privados de quem os cadastrou.
+admin.site.register([Team, Project, Stage, Task])

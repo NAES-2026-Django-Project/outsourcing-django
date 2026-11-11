@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Apontamento · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Apontamento</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamento_editar' apontamento.pk %}">Editar</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamentos' %}">Voltar</a>
+  </div>
+</div>
+<div class="card card-body gap-2">
+  <div><strong>Tarefa:</strong> <a href="{% url 'projects:tarefa_detalhe' apontamento.task_id %}">{{ apontamento.task.title }}</a></div>
+  <div><strong>Projeto:</strong> {{ apontamento.task.stage.project.name }}</div>
+  <div><strong>Data:</strong> {{ apontamento.date|date:"d/m/Y" }}</div>
+  <div><strong>Horas:</strong> <span class="num">{{ apontamento.hours }}</span></div>
+  <div><strong>Descrição:</strong> {{ apontamento.description|default:"Sem descrição" }}</div>
+</div>
+{% endblock %}
