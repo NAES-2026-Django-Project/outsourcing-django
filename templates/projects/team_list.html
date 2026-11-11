@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Equipes · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Equipes</h1>
+  {% if request.user.eh_administrador %}<a class="btn btn-primary" href="{% url 'projects:equipe_criar' %}">Nova equipe</a>{% endif %}
+</div>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Equipe</th><th>Gerente</th><th>Membros</th><th></th></tr></thead>
+      <tbody>
+        {% for equipe in equipes %}
+          <tr>
+            <td><a href="{% url 'projects:equipe_detalhe' equipe.pk %}">{{ equipe.name }}</a></td>
+            <td>{{ equipe.manager }}</td>
+            <td class="num">{{ equipe.total_membros }}</td>
+            <td class="text-end">
+              {% if request.user.eh_administrador %}
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:equipe_editar' equipe.pk %}">Editar</a>
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4">Nenhuma equipe encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

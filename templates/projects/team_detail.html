@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ equipe.name }} · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ equipe.name }}</h1>
+  <a class="btn btn-outline-secondary" href="{% url 'projects:equipes' %}">Voltar</a>
+</div>
+<div class="card card-body gap-2">
+  <div><strong>Gerente:</strong> {{ equipe.manager }}</div>
+  <div><strong>Membros:</strong> {% for m in equipe.members.all %}{{ m }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
+  <div><strong>Projetos:</strong> {% for p in equipe.projects.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
+</div>
+{% endblock %}

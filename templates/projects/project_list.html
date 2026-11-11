@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Meus projetos · Outsourcing{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Meus projetos</h1>
+  <a class="btn btn-primary" href="{% url 'projects:projeto_criar' %}">Novo projeto</a>
+</div>
+<div class="card card-body">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Projeto</th><th>Equipe</th><th>Início</th><th>Término</th><th>Tarefas</th><th></th></tr></thead>
+      <tbody>
+        {% for projeto in projetos %}
+          <tr>
+            <td><a href="{% url 'projects:projeto_detalhe' projeto.pk %}">{{ projeto.name }}</a></td>
+            <td>{{ projeto.team.name }}</td>
+            <td class="num">{{ projeto.start_date|date:"d/m/Y" }}</td>
+            <td class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
+            <td class="num">{{ projeto.total_tarefas }}</td>
+            <td class="text-end text-nowrap">
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadro' projeto.pk %}">Quadro</a>
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:projeto_editar' projeto.pk %}">Editar</a>
+              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:projeto_excluir' projeto.pk %}">Excluir</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">Você ainda não cadastrou projetos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}
