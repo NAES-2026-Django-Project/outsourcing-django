@@ -25,3 +25,12 @@ $(document).on('click', '[data-excluir]', function (event) {
     },
   });
 });
+
+// jQuery Mask: telefone com 8 ou 9 dígitos e CEP.
+const mascaraTelefone = (valor) => (valor.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009');
+$('#id_phone').mask(mascaraTelefone, {
+  onKeyPress(valor, evento, campo, opcoes) {
+    campo.mask(mascaraTelefone.apply({}, arguments), opcoes);
+  },
+});
+$('#id_cep').mask('00000-000');
