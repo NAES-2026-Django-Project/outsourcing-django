@@ -64,11 +64,11 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | Bootbox e jQuery Mask em `static/js/app.js`, verificados no navegador |
 | [ ] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | |
 | [x] | T3-2.1 | `AGENTS.md` e pelo menos três skills, uma para mensagens de commit | 2 | `AGENTS.md`, `.claude/skills/` |
-| [ ] | T3-2.2a | App `ia` como única porta de entrada para a IA | 13 | |
-| [ ] | T3-2.2b | Banco guarda configuração editável em tela, auditoria de cada chamada e cota mensal de tokens | 13 | |
-| [ ] | T3-2.2c | Telas de requisições, configuração (com "Testar conexão"), IA por usuário e meu consumo | 14 | |
-| [ ] | T3-2.3a | Assistente usa `chamar_ia`, com contexto em `contexto_projeto.md` e instruções com limites | 15 | |
-| [ ] | T3-2.3b | Histórico por usuário, enviando à IA só as últimas mensagens (janela de 5) | 15 | |
-| [ ] | T3-2.3c | Perguntas por AJAX com CSRF, em tela no visual do site, com Markdown sanitizado | 15 | |
+| [x] | T3-2.2a | App `ia` como única porta de entrada para a IA | 13 | `ia/services.py::chamar_ia` é o único uso do SDK `anthropic` no código |
+| [x] | T3-2.2b | Banco guarda configuração editável em tela, auditoria de cada chamada e cota mensal de tokens | 13 | `ConfiguracaoIA`, `ChamadaIA` e `CotaUsuario` em `ia/models.py`; `ChamarIATests` |
+| [x] | T3-2.2c | Telas de requisições, configuração (com "Testar conexão"), IA por usuário e meu consumo | 14 | Telas em `ia/views.py` e `templates/ia/`; `TelasIATests` |
+| [x] | T3-2.3a | Assistente usa `chamar_ia`, com contexto em `contexto_projeto.md` e instruções com limites | 15 | `perguntar_ao_assistente` usa `chamar_ia` com `contexto_projeto.md` e instruções com limites |
+| [x] | T3-2.3b | Histórico por usuário, enviando à IA só as últimas mensagens (janela de 5) | 15 | `MensagemAssistente` por usuário e `janela_de_mensagens` (5); `AssistenteTests` |
+| [x] | T3-2.3c | Perguntas por AJAX com CSRF, em tela no visual do site, com Markdown sanitizado | 15 | `static/js/assistente.js` (jQuery AJAX com `X-CSRFToken`), `ia/markdown.py` (nh3), `templates/ia/assistente.html`; verificado no navegador |
 | [ ] | T3-2.4 | Auditoria do código na plataforma TestAI | 16 | |
 | [ ] | T3-2.5 | Sistema funcional, com interface amigável e fluxo de navegação coerente | 16 | |
