@@ -7,9 +7,11 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django_filters.views import FilterView
 
 from accounts.mixins import AdministradorOuGerenteMixin, SomenteAdministradorMixin
 
+from .filters import ProjectFilter, TaskFilter
 from .forms import NoteForm, ProjectForm, StageForm, TaskForm, TeamForm, TimeEntryForm
 from .models import Note, Project, Stage, Task, Team, TimeEntry
 
@@ -92,7 +94,8 @@ class ProjectDonoMixin(AdministradorOuGerenteMixin):
         return Project.objects.do_dono(self.request.user).select_related('team', 'created_by')
 
 
-class ProjectListView(ProjectDonoMixin, ListView):
+class ProjectListView(ProjectDonoMixin, FilterView):
+    filterset_class = ProjectFilter
     template_name = 'projects/project_list.html'
     context_object_name = 'projetos'
     paginate_by = ITENS_POR_PAGINA
@@ -193,7 +196,8 @@ class TaskQuerysetMixin(LoginRequiredMixin):
         return Task.objects.visiveis_para(self.request.user).select_related('stage__project', 'assigned_to')
 
 
-class TaskListView(TaskQuerysetMixin, ListView):
+class TaskListView(TaskQuerysetMixin, FilterView):
+    filterset_class = TaskFilter
     template_name = 'projects/task_list.html'
     context_object_name = 'tarefas'
     paginate_by = ITENS_POR_PAGINA

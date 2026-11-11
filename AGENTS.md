@@ -39,7 +39,9 @@ python manage.py test
 coverage run manage.py test && coverage report
 python manage.py runserver
 python manage.py collectstatic --noinput
-python manage.py graph_models accounts projects -o docs/design/classes.png
+python manage.py graph_models accounts projects --dot --disable-abstract-fields -X AbstractUser,AbstractBaseUser,PermissionsMixin,Group,Permission,BaseModel -o docs/design/classes.dot
+dot -Tpng -Gdpi=110 docs/design/classes.dot -o static/img/diagrama-classes.png
+python scripts/gerar_app_local.py && gcloud app deploy app.local.yaml
 ```
 
 `.env` é obrigatório (`SECRET_KEY`, `DATABASE_URL`); veja `.env.example`.

@@ -18,7 +18,7 @@
             <td class="text-end">
               {% if request.user.eh_administrador %}
                 <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:equipe_editar' equipe.pk %}">Editar</a>
-                <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
+                <a class="btn btn-outline-danger btn-sm" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
               {% endif %}
             </td>
           </tr>

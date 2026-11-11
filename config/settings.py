@@ -18,6 +18,12 @@ DEBUG = env('DEBUG')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
+if not DEBUG:
+    # O App Engine termina o HTTPS antes de chegar à aplicação.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 TESTING = 'test' in sys.argv
 DEBUG_TOOLBAR_ENABLED = DEBUG and not TESTING
 

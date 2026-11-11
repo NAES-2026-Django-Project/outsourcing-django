@@ -20,7 +20,7 @@
             <td>{{ apontamento.description|default:"Sem descrição" }}</td>
             <td class="text-end text-nowrap">
               <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_editar' apontamento.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" href="{% url 'projects:apontamento_excluir' apontamento.pk %}">Excluir</a>
+              <a class="btn btn-outline-danger btn-sm" data-excluir="este apontamento" href="{% url 'projects:apontamento_excluir' apontamento.pk %}">Excluir</a>
             </td>
           </tr>
         {% empty %}

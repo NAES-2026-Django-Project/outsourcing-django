@@ -12,8 +12,8 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | DEF-4 | Layout com Bootstrap, Tailwind, Bulma ou semelhante | 4 | `templates/base.html` |
 | [x] | DEF-5 | Controle de acesso às páginas com autenticação | 5, 7 | `AcessoTests` |
 | [x] | DEF-6 | Controle de acesso por grupos em mais de uma view | 7 | `accounts/mixins.py`, `AcessoTests` |
-| [ ] | DEF-7 | Plugins ou ferramentas com jQuery, Vue, React, Angular ou semelhante | 11 | |
-| [ ] | DEF-8 | Controle de versões com Git | 1 | |
+| [x] | DEF-7 | Plugins ou ferramentas com jQuery, Vue, React, Angular ou semelhante | 11 | jQuery, Bootbox e jQuery Mask em `templates/base.html` e `static/js/app.js` |
+| [x] | DEF-8 | Controle de versões com Git | 1 | Repositório no GitHub, `main` com merges das ondas |
 
 ## 1º trimestre
 
@@ -50,18 +50,18 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | T2-2.1 | QuerySets para retornar objetos a outras views (recentes etc.) | 4 | `HomeView` |
 | [x] | T2-2.2 | Acesso às views por grupo (`GroupRequiredMixin`) | 7 | `accounts/mixins.py` |
 | [x] | T2-2.3 | Paginação nas ListView (`paginate_by`) e links no template | 7 | `paginate_by`, `templates/includes/pagination.html` |
-| [ ] | T2-2.4 | Ativar e utilizar Django Debug Toolbar | 1, 10 | |
-| [ ] | T2-2.5 | Otimizar queries repetidas com `select_related` ou `prefetch_related` | 10 | |
+| [x] | T2-2.4 | Ativar e utilizar Django Debug Toolbar | 1, 10 | `config/settings.py`, `docs/otimizacao-queries.md` |
+| [x] | T2-2.5 | Otimizar queries repetidas com `select_related` ou `prefetch_related` | 10 | `docs/otimizacao-queries.md`, `QueriesTests` |
 
 ## 3º trimestre
 
 | | ID | Critério | Etapa | Evidência |
 |---|---|---|---|---|
-| [ ] | T3-1.1 | Debug Toolbar, identificar queries repetidas e otimizá-las | 10 | |
-| [ ] | T3-1.2 | Django Filter em pelo menos duas ListView, com paginação por `templatetag` própria que preserve a busca | 9 | |
+| [x] | T3-1.1 | Debug Toolbar, identificar queries repetidas e otimizá-las | 10 | `docs/otimizacao-queries.md`, `QueriesTests` |
+| [x] | T3-1.2 | Django Filter em pelo menos duas ListView, com paginação por `templatetag` própria que preserve a busca | 9 | `projects/filters.py`, `projects/templatetags/paginacao.py`, `FiltrosTests` |
 | [x] | T3-1.3 | Registros associados ao usuário em pelo menos duas classes (só ele lista, vê, altera e exclui) | 7 | `Note` e `TimeEntry`: `do_autor` em `projects/models.py`, `NoteAutorMixin` e `TimeEntryAutorMixin` em `projects/views.py`, fora do Django admin; `PosseAnotacaoTests`, `PosseApontamentoTests` |
 | [x] | T3-1.4 | Framework de mensagens em cadastro, alteração e exclusão | 7, 11 | `SuccessMessageMixin` nas views, `MensagensECrudTests` |
-| [ ] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | |
+| [x] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | Bootbox e jQuery Mask em `static/js/app.js`, verificados no navegador |
 | [ ] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | |
 | [x] | T3-2.1 | `AGENTS.md` e pelo menos três skills, uma para mensagens de commit | 2 | `AGENTS.md`, `.claude/skills/` |
 | [ ] | T3-2.2a | App `ia` como única porta de entrada para a IA | 13 | |
