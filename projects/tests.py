@@ -1,5 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
+from django.contrib import admin
 from django.contrib.messages import get_messages
 from django.test import TestCase
 from django.urls import reverse
@@ -7,7 +9,7 @@ from django.urls import reverse
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR, GERENTE
 from accounts.tests import criar_usuario
 
-from .models import Note, Project, Stage, Task, Team
+from .models import Note, Project, Stage, Task, Team, TimeEntry
 
 
 class Base(TestCase):
@@ -166,6 +168,85 @@ class PosseAnotacaoTests(Base):
         self.client.force_login(self.estranho)
         response = self.client.post(reverse('projects:anotacao_criar'), {'task': self.tarefa.pk, 'content': 'X'})
         self.assertIn('task', response.context['form'].errors)
+
+
+class PosseApontamentoTests(Base):
+    def setUp(self):
+        super().setUp()
+        self.apontamento = TimeEntry.objects.create(task=self.tarefa, author=self.dev, hours='2.50', description='Privado')
+
+    def dados(self, **extra):
+        return {'task': self.tarefa.pk, 'date': '2026-11-10', 'hours': '1.50', **extra}
+
+    def test_form_valid_grava_o_autor_mesmo_informando_outro(self):
+        self.client.force_login(self.gerente)
+        self.client.post(reverse('projects:apontamento_criar'), self.dados(description='Meu', author=self.dev.pk))
+        self.assertEqual(TimeEntry.objects.get(description='Meu').author, self.gerente)
+
+    def test_lista_somente_os_proprios_e_soma_as_horas(self):
+        TimeEntry.objects.create(task=self.tarefa, author=self.gerente, hours='1.00')
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('projects:apontamentos'))
+        self.assertEqual(list(response.context['apontamentos']), [self.apontamento])
+        self.assertEqual(response.context['total_horas'], Decimal('2.50'))
+
+    def test_nao_autor_recebe_404_mesmo_administrador(self):
+        for usuario in [self.gerente, self.admin]:
+            self.client.force_login(usuario)
+            for nome in ['apontamento_detalhe', 'apontamento_editar', 'apontamento_excluir']:
+                with self.subTest(usuario=usuario.email, nome=nome):
+                    self.assertEqual(self.client.get(reverse(f'projects:{nome}', args=[self.apontamento.pk])).status_code, 404)
+
+    def test_nao_autor_nao_altera_nem_exclui_por_post(self):
+        self.client.force_login(self.admin)
+        editar = self.client.post(reverse('projects:apontamento_editar', args=[self.apontamento.pk]), self.dados())
+        excluir = self.client.post(reverse('projects:apontamento_excluir', args=[self.apontamento.pk]))
+        self.assertEqual((editar.status_code, excluir.status_code), (404, 404))
+        self.apontamento.refresh_from_db()
+        self.assertEqual(self.apontamento.hours, Decimal('2.50'))
+
+    def test_autor_altera_e_exclui_com_mensagens(self):
+        self.client.force_login(self.dev)
+        response = self.client.post(reverse('projects:apontamento_editar', args=[self.apontamento.pk]), self.dados())
+        self.assertIn('Apontamento alterado.', self.mensagens(response))
+        self.apontamento.refresh_from_db()
+        self.assertEqual(self.apontamento.hours, Decimal('1.50'))
+        response = self.client.post(reverse('projects:apontamento_excluir', args=[self.apontamento.pk]))
+        self.assertIn('Apontamento excluído.', self.mensagens(response))
+        self.assertFalse(TimeEntry.objects.filter(pk=self.apontamento.pk).exists())
+
+    def test_detalhe_da_tarefa_nao_mostra_apontamento_alheio(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:tarefa_detalhe', args=[self.tarefa.pk]))
+        self.assertNotContains(response, 'Privado')
+
+    def test_nao_aponta_em_tarefa_de_projeto_alheio(self):
+        self.client.force_login(self.estranho)
+        response = self.client.post(reverse('projects:apontamento_criar'), self.dados())
+        self.assertIn('task', response.context['form'].errors)
+
+    def test_horas_fora_do_limite_sao_recusadas(self):
+        self.client.force_login(self.dev)
+        for horas in ['0', '24.25']:
+            with self.subTest(horas):
+                response = self.client.post(reverse('projects:apontamento_criar'), self.dados(hours=horas))
+                self.assertIn('hours', response.context['form'].errors)
+
+    def test_registros_privados_ficam_fora_do_django_admin(self):
+        self.assertFalse(admin.site.is_registered(TimeEntry))
+        self.assertFalse(admin.site.is_registered(Note))
+
+    def test_anonimo_vai_ao_login(self):
+        response = self.client.get(reverse('projects:apontamentos'))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse('accounts:login'), response.url)
+
+    def test_telas_renderizam_para_o_autor(self):
+        self.client.force_login(self.dev)
+        args = [self.apontamento.pk]
+        for nome, a in [('apontamentos', []), ('apontamento_criar', []), ('apontamento_detalhe', args), ('apontamento_editar', args), ('apontamento_excluir', args)]:
+            with self.subTest(nome):
+                self.assertEqual(self.client.get(reverse(f'projects:{nome}', args=a)).status_code, 200)
 
 
 class MovimentoTests(Base):
