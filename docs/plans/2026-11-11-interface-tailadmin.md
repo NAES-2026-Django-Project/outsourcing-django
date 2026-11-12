@@ -1,6 +1,6 @@
 # Nova interface inspirada no TailAdmin: DESIGN.md e protótipo clicável
 
-- Status: em andamento
+- Status: concluído
 - Critérios: T3-2.5 (reforço), DEF-4, T1-1.5
 - Entrada: protótipo clicável de todas as interfaces, inspirado no TailAdmin, e DESIGN.md reformulado
 
@@ -33,7 +33,7 @@ Referências extraídas do TailAdmin para seguir de perto:
 
 - [x] O inventário das telas atuais saiu de `templates/` e dos `urls.py` (lista na seção 2).
 - [x] Tokens do TailAdmin lidos em `src/styles.css`: brand, gray, success, error, warning, blue-light, sombras e escala de texto.
-- [ ] Ler os tópicos `pages` e `design` do guia de artifacts antes de publicar.
+- [x] Ler os tópicos `pages` e `design` do guia de artifacts antes de publicar.
 - Nenhuma dependência nova no Django nesta rodada. O Bootstrap Icons via CDN e a fonte Outfit (Google Fonts) ficam registrados no DESIGN.md para a implementação.
 
 ## 2. Etapas e commits
@@ -41,7 +41,7 @@ Referências extraídas do TailAdmin para seguir de perto:
 Branch: `docs/design-tailadmin`.
 
 ### A. Reescrever `docs/design/DESIGN.md`
-- [ ] `docs(design): reescrever a identidade visual inspirada no TailAdmin`
+- [x] `docs(design): reescrever a identidade visual inspirada no TailAdmin`
 
 Seções do novo DESIGN.md:
 
@@ -84,7 +84,7 @@ Seções do novo DESIGN.md:
 14. **Decisões:** mantém o histórico e adiciona a linha de 11/11/2026 sobre a adoção do TailAdmin. O layout com barra lateral (A) e o assistente com coluna de apoio (C) continuam valendo, com o novo visual.
 
 ### B. Protótipo clicável com todas as telas
-- [ ] `docs(design): protótipo clicável da nova interface`
+- [x] `docs(design): protótipo clicável da nova interface`
 
 Arquivo: `docs/design/prototypes/interface-tailadmin.html`, publicado como Claude artifact.
 
@@ -115,7 +115,7 @@ Interações funcionando:
 - **Tema e menu:** alternância entre tema claro e escuro; barra lateral recolhível no desktop e em gaveta com fundo escurecido no celular.
 
 ### C. Registro
-- [ ] Atualizar a linha de decisão no DESIGN.md com o link do artifact. Salvar este plano em `docs/plans/2026-11-11-interface-tailadmin.md`, com `docs(plans): planejar a nova interface`.
+- [x] Atualizar a linha de decisão no DESIGN.md com o link do artifact. Salvar este plano em `docs/plans/2026-11-11-interface-tailadmin.md`, com `docs(plans): planejar a nova interface`.
 
 ## 3. Revisão de escopo (verificação do protótipo)
 
@@ -149,3 +149,9 @@ Não há código Django nesta rodada, então a prova é no navegador:
   - todos os `templates/` atuais;
   - `static/css/theme.css`;
   - `projects/management/commands/popular_demo.py`, para os dados de exemplo.
+
+## Resultado
+
+- Artifact: https://claude.ai/artifact/Qo296wGA8fiFjxLpa6wzMJ
+- Verificado: 42 rotas nos três papéis sem erro; sem transbordamento em 375px e 768px; tabelas viram cartões e o menu vira gaveta no celular; fluxos de mover, criar pelo +, validar, excluir com modal, filtrar, perguntar ao assistente e testar conexão; tema escuro; console sem erros.
+- Próximo passo: plano de implementação nos templates Django (`theme.css`, `base.html`, `includes/` e telas), após a aprovação do protótipo.
