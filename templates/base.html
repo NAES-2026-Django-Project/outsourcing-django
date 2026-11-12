@@ -1,54 +1,85 @@
-{% load static %}<!DOCTYPE html>
+{% load static ui %}<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}Outsourcing{% endblock %}</title>
-  <script>document.documentElement.dataset.bsTheme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';</script>
+  <script>
+    (function () {
+      var tema = null;
+      try { tema = localStorage.getItem('tema'); } catch (e) {}
+      // Tema claro é o padrão; o escuro só vale depois que a pessoa escolhe no botão do cabeçalho.
+      document.documentElement.dataset.bsTheme = tema === 'dark' ? 'dark' : 'light';
+      try { if (localStorage.getItem('menu-recolhido') === '1') document.documentElement.classList.add('menu-recolhido'); } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
   <link href="{% static 'css/theme.css' %}" rel="stylesheet">
 </head>
 <body>
-  <div class="app-shell">
+  {% block corpo %}
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <div class="app-shell" id="app-shell">
     <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Menu principal">
       {% include "includes/sidebar.html" %}
     </aside>
     <div class="app-main">
       <header class="topbar">
-        <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">Menu</button>
+        <button class="btn btn-outline-secondary btn-icon" type="button" id="alternar-menu" aria-controls="sidebar" aria-label="Abrir ou recolher o menu" title="Menu">{% icone "list" %}</button>
         {% if request.user.is_authenticated %}
-          <form method="get" action="{% url 'projects:tarefas' %}" role="search" class="flex-grow-1" style="max-width: 340px">
-            <input class="form-control form-control-sm" type="search" name="title" placeholder="Buscar tarefas" aria-label="Buscar tarefas" value="{{ request.GET.title }}">
+          <form method="get" action="{% url 'projects:tarefas' %}" role="search" class="busca">
+            {% icone "search" %}
+            <label class="visually-hidden" for="busca-topo">Buscar tarefas</label>
+            <input class="form-control" id="busca-topo" type="search" name="title" placeholder="Buscar tarefas…" value="{{ request.GET.title }}">
           </form>
+          <a class="btn btn-outline-secondary btn-icon busca-icone" href="{% url 'projects:tarefas' %}" aria-label="Buscar tarefas" title="Buscar tarefas">{% icone "search" %}</a>
         {% endif %}
         <span class="flex-grow-1"></span>
+        <button class="btn btn-outline-secondary btn-icon" type="button" id="alternar-tema" aria-label="Alternar tema claro ou escuro" title="Alternar tema">{% icone "moon-stars" "tema-escuro" %}{% icone "sun" "tema-claro" %}</button>
         {% if request.user.is_authenticated %}
-          <a class="d-flex align-items-center gap-2 text-decoration-none" href="{% url 'accounts:conta' %}">
-            <span class="avatar">{{ request.user.first_name|slice:":1"|upper }}{{ request.user.last_name|slice:":1"|upper }}</span>
-            <span class="text-body">{{ request.user }}</span>
-          </a>
-          <form method="post" action="{% url 'accounts:logout' %}">
-            {% csrf_token %}
-            <button class="btn btn-outline-secondary btn-sm">Sair</button>
-          </form>
+          <div class="dropdown">
+            <button class="user-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {% avatar request.user %}
+              <span class="user-nome">{{ request.user }}</span>
+              {% icone "chevron-down" %}
+            </button>
+            <div class="dropdown-menu dropdown-menu-end">
+              <div class="px-3 pb-2">
+                <p class="forte mb-0">{{ request.user }}</p>
+                <p class="small text-secondary mb-0">{{ request.user.email }}</p>
+              </div>
+              <a class="dropdown-item" href="{% url 'accounts:conta' %}">{% icone "person-circle" %}Minha conta</a>
+              <a class="dropdown-item" href="{% url 'ia:meu_consumo' %}">{% icone "speedometer2" %}Meu consumo</a>
+              <div class="dropdown-divider"></div>
+              <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button class="dropdown-item">{% icone "box-arrow-right" %}Sair</button>
+              </form>
+            </div>
+          </div>
         {% else %}
-          <a class="btn btn-primary btn-sm" href="{% url 'accounts:login' %}">Entrar</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'accounts:login' %}">{% icone "box-arrow-in-right" %}<span>Entrar</span></a>
         {% endif %}
       </header>
-      <main class="page">
+      <main class="page" id="conteudo" tabindex="-1">
         {% block content %}{% endblock %}
       </main>
     </div>
   </div>
+  {% endblock %}
   {% include "includes/messages.html" %}
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootbox@6.0.0/dist/bootbox.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/i18n/pt-BR.js"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block scripts %}{% endblock %}
 </body>

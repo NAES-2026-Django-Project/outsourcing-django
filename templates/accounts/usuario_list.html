@@ -1,24 +1,30 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Usuários · Outsourcing{% endblock %}
 {% block content %}
-<h1>Usuários</h1>
-<div class="card card-body">
+<header>
+  {% trilha atual="Usuários" %}
+  <div class="page-head">
+    <div><h1>Usuários</h1><p class="page-desc">Contas do sistema e seus papéis. O cadastro público sempre entra como Desenvolvedor.</p></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Usuários" contador=paginator.count|stringformat:"d"|add:" usuários" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Situação</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Usuário</th><th>Papel</th><th>Situação</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for usuario in usuarios %}
           <tr>
-            <td>{{ usuario }}</td>
-            <td>{{ usuario.email }}</td>
-            <td>{% for g in usuario.groups.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% empty %}Sem grupo{% endfor %}</td>
-            <td>{{ usuario.is_active|yesno:"Ativo,Inativo" }}</td>
-            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:usuario_papel' usuario.pk %}">Editar</a></td>
+            <td class="principal" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
+            <td data-label="Papel">{% for g in usuario.groups.all %}{% etiqueta_grupo g.name %} {% empty %}<span class="tag tag-gray sem-ponto">Sem grupo</span>{% endfor %}</td>
+            <td data-label="Situação">{% if usuario.is_active %}<span class="tag tag-success">Ativo</span>{% else %}<span class="tag tag-gray">Inativo</span>{% endif %}</td>
+            <td class="acts"><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:usuario_papel' usuario.pk %}">{% icone "person-gear" %}<span>Alterar papel</span></a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

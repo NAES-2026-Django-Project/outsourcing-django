@@ -1,25 +1,35 @@
 {% extends "base.html" %}
+{% load ui humanize %}
 {% block title %}IA por usuário · Outsourcing{% endblock %}
 {% block content %}
-<h1>IA por usuário</h1>
-<p class="mb-0 text-secondary">Consumo do mês atual. Cota padrão: <span class="num">{{ cota_padrao }}</span> tokens.</p>
-<div class="card card-body">
+<header>
+  {% trilha atual="IA por usuário" %}
+  <div class="page-head">
+    <div><h1>IA por usuário</h1><p class="page-desc">Consumo do mês atual. Cota padrão: <span class="num">{{ cota_padrao|intcomma }}</span> tokens.</p></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Consumo por usuário" contador=paginator.count|stringformat:"d"|add:" usuários" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Usuário</th><th>Chamadas no mês</th><th>Tokens no mês</th><th>Cota</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Usuário</th><th class="r">Chamadas</th><th class="r">Tokens</th><th>Cota</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for usuario in usuarios %}
+          {% widthratio usuario.tokens_mes usuario.limite 100 as pct %}
           <tr>
-            <td>{{ usuario }}<br><small class="text-secondary">{{ usuario.email }}</small></td>
-            <td class="num">{{ usuario.chamadas_mes }}</td>
-            <td class="num">{{ usuario.tokens_mes }}</td>
-            <td class="num">{{ usuario.limite }}{% if not usuario.cota_propria %} <small class="text-secondary">(padrão)</small>{% endif %}</td>
-            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" href="{% url 'ia:cota_usuario' usuario.pk %}">Editar cota</a></td>
+            <td class="principal" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
+            <td data-label="Chamadas" class="num r">{{ usuario.chamadas_mes }}</td>
+            <td data-label="Tokens" class="num r">{{ usuario.tokens_mes|intcomma }}</td>
+            <td data-label="Cota" style="min-width: 180px">
+              <div class="progress" role="progressbar" aria-label="Consumo da cota de {{ usuario }}" aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar {% if pct|add:0 >= 90 %}critico{% elif pct|add:0 >= 70 %}alerta{% endif %}" style="width: {{ pct }}%"></div></div>
+              <span class="small text-secondary num">{{ usuario.limite|intcomma }}{% if not usuario.cota_propria %} (padrão){% endif %}</span>
+            </td>
+            <td class="acts"><a class="btn btn-outline-secondary btn-sm" href="{% url 'ia:cota_usuario' usuario.pk %}">{% icone "pencil" %}<span>Editar cota</span></a></td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

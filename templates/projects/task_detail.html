@@ -1,43 +1,63 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}{{ tarefa.title }} · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>{{ tarefa.title }}</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'projects:quadro' tarefa.stage.project_id %}">Abrir quadro</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}?next={{ request.path|urlencode }}">Editar</a>
-    {% url 'projects:quadro' tarefa.stage.project_id as url_quadro %}
-    <a class="btn btn-outline-danger" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}?next={{ url_quadro|urlencode }}">Excluir</a>
-  </div>
-</div>
-<div class="card card-body gap-2">
-  <div>{{ tarefa.description|default:"Sem descrição."|linebreaksbr }}</div>
-  <div><strong>Projeto:</strong> {{ tarefa.stage.project.name }}</div>
-  <div><strong>Estágio:</strong> {{ tarefa.stage.name }}</div>
-  <div><strong>Prioridade:</strong> <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span></div>
-  <div><strong>Responsável:</strong> {{ tarefa.assigned_to|default:"Sem responsável" }}</div>
-  <div><strong>Prazo:</strong> {{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}</div>
-</div>
-<div class="card card-body gap-2">
+{% url 'projects:quadro' tarefa.stage.project_id as url_quadro %}
+<header>
+  {% trilha 'projects:tarefas' 'Tarefas' atual=tarefa.title %}
   <div class="page-head">
-    <h2>Minhas anotações</h2>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">Nova anotação</a>
+    <div><h1>{{ tarefa.title }}</h1></div>
+    <div class="acoes">
+      <a class="btn btn-outline-secondary" href="{{ url_quadro }}">{% icone "kanban" %}<span>Abrir quadro</span></a>
+      <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+      <a class="btn btn-outline-danger" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}?next={{ url_quadro|urlencode }}">{% icone "trash3" %}<span>Excluir</span></a>
+    </div>
   </div>
-  {% for nota in minhas_anotacoes %}
-    <div><a href="{% url 'projects:anotacao_detalhe' nota.pk %}">{{ nota.created_at|date:"d/m/Y H:i" }}</a> · {{ nota.content|truncatechars:120 }}</div>
-  {% empty %}
-    <p class="mb-0 text-secondary">Você ainda não fez anotações nesta tarefa.</p>
-  {% endfor %}
-</div>
-<div class="card card-body gap-2">
-  <div class="page-head">
-    <h2>Meus apontamentos</h2>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">Apontar horas</a>
+</header>
+<div class="grade grade-lado">
+  <section class="card">
+    <div class="card-head"><h2>Resumo</h2>{% etiqueta_estagio tarefa.stage %}</div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>Projeto</dt><dd><a href="{{ url_quadro }}">{{ tarefa.stage.project.name }}</a></dd></div>
+        <div><dt>Prioridade</dt><dd>{% etiqueta_prioridade tarefa %}</dd></div>
+        <div><dt>Responsável</dt><dd>{% if tarefa.assigned_to %}<span class="pessoa">{% avatar tarefa.assigned_to "sm" %}{{ tarefa.assigned_to }}</span>{% else %}Sem responsável{% endif %}</dd></div>
+        <div><dt>Prazo</dt><dd class="num {% if tarefa.vencida %}text-danger{% endif %}">{{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}{% if tarefa.vencida %} · vencida{% endif %}</dd></div>
+        <div class="full"><dt>Descrição</dt><dd>{{ tarefa.description|default:"Sem descrição."|linebreaksbr }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  <div class="pilha">
+    <section class="card">
+      <div class="card-head">
+        <div><h3>Minhas anotações</h3><p class="small">Só você vê.</p></div>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">{% icone "plus-lg" %}<span>Nova anotação</span></a>
+      </div>
+      <div class="card-body card-flush">
+        <div class="linhas">
+          {% for nota in minhas_anotacoes %}
+            <div class="linha"><div class="grow"><a class="small num" href="{% url 'projects:anotacao_detalhe' nota.pk %}">{{ nota.created_at|date:"d/m/Y H:i" }}</a><p class="mb-0">{{ nota.content|truncatechars:160 }}</p></div></div>
+          {% empty %}
+            <p class="text-secondary my-3">Você ainda não fez anotações nesta tarefa.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head">
+        <div><h3>Meus apontamentos</h3><p class="small">Só você vê.</p></div>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">{% icone "clock-history" %}<span>Apontar horas</span></a>
+      </div>
+      <div class="card-body card-flush">
+        <div class="linhas">
+          {% for apontamento in meus_apontamentos %}
+            <div class="linha"><a class="num" href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a><span class="grow ellipsis text-secondary">{{ apontamento.description }}</span><span class="tag tag-brand sem-ponto num">{{ apontamento.hours|floatformat:"-2" }}h</span></div>
+          {% empty %}
+            <p class="text-secondary my-3">Você ainda não apontou horas nesta tarefa.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
   </div>
-  {% for apontamento in meus_apontamentos %}
-    <div><a href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a> · <span class="num">{{ apontamento.hours }}h</span>{% if apontamento.description %} · {{ apontamento.description }}{% endif %}</div>
-  {% empty %}
-    <p class="mb-0 text-secondary">Você ainda não apontou horas nesta tarefa.</p>
-  {% endfor %}
 </div>
 {% endblock %}

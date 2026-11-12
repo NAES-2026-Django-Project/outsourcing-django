@@ -1,12 +1,10 @@
-{% load crispy_forms_tags %}
-<form method="get" class="card card-body">
-  <div class="row g-2 align-items-end">
-    {% for campo in filter.form %}
-      <div class="col-sm-6 col-lg">{{ campo|as_crispy_field }}</div>
-    {% endfor %}
-  </div>
-  <div class="d-flex gap-2">
-    <button class="btn btn-primary btn-sm">Filtrar</button>
+{% load crispy_forms_tags ui %}
+<form method="get" class="filters" id="filtros">
+  {% for campo in filter.form %}
+    <div>{{ campo|as_crispy_field }}</div>
+  {% endfor %}
+  <div class="acoes">
+    <button class="btn btn-primary btn-sm">{% icone "funnel" %}<span>Filtrar</span></button>
     <a class="btn btn-outline-secondary btn-sm" href="{{ request.path }}">Limpar</a>
   </div>
 </form>

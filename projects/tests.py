@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import date
 from decimal import Decimal
 from unittest.mock import patch
@@ -599,3 +600,39 @@ class PopularDemoTests(TestCase):
             with self.assertRaises(CommandError):
                 self.popular()
         self.assertFalse(self.contas_demo().exists())
+
+
+class FormulariosDeMembrosTests(Base):
+    """Membros de equipe e de projeto num dropdown de seleção múltipla com pílulas (Select2), aceitando várias pessoas."""
+
+    def test_equipe_salva_varios_membros_pelo_dropdown_com_pilulas(self):
+        outro_dev = criar_usuario('dev2@exemplo.com', DESENVOLVEDOR)
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('projects:equipe_criar'))
+        html = response.content.decode()
+        self.assertRegex(html, r'<select name="members"[^>]*data-pilulas="1"[^>]*multiple')
+        self.assertEqual(len(re.findall(r'<option value="\d+">[^<]+ · [^<]+@exemplo\.com</option>', html)), 3)
+        self.assertContains(response, 'select2.min.js')
+        response = self.client.post(reverse('projects:equipe_criar'), {
+            'name': 'Cometa', 'manager': self.gerente.pk, 'members': [self.dev.pk, outro_dev.pk],
+        })
+        self.assertRedirects(response, reverse('projects:equipes'))
+        self.assertEqual(set(Team.objects.get(name='Cometa').members.all()), {self.dev, outro_dev})
+
+    def test_projeto_usa_o_mesmo_dropdown_para_os_membros(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:projeto_editar', args=[self.projeto.pk]))
+        html = response.content.decode()
+        self.assertRegex(html, r'<select name="assigned_members"[^>]*data-pilulas="1"[^>]*multiple')
+        self.assertRegex(html, rf'<option value="{self.dev.pk}" selected>')
+
+
+class ArrastarNoQuadroTests(Base):
+    def test_quadro_marca_colunas_e_cartoes_para_arrastar(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('projects:quadro', args=[self.projeto.pk]))
+        for estagio in self.estagios:
+            self.assertContains(response, f'class="board-lista" data-estagio="{estagio.pk}"')
+        self.assertContains(response, f'data-mover="{reverse("projects:tarefa_mover", args=[self.tarefa.pk])}"')
+        self.assertContains(response, 'sortablejs@1.15.2/Sortable.min.js')
+        self.assertContains(response, 'js/quadro.js')

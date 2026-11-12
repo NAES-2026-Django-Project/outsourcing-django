@@ -1,19 +1,36 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}{{ equipe.name }} · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>{{ equipe.name }}</h1>
-  <div class="d-flex gap-2">
+<header>
+  {% trilha 'projects:equipes' 'Equipes' atual=equipe.name %}
+  <div class="page-head">
+    <div><h1>Equipe {{ equipe.name }}</h1></div>
     {% if request.user.eh_administrador %}
-      <a class="btn btn-outline-secondary" href="{% url 'projects:equipe_editar' equipe.pk %}?next={{ request.path|urlencode }}">Editar</a>
-      <a class="btn btn-outline-danger" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
+      <div class="acoes">
+        <a class="btn btn-outline-secondary" href="{% url 'projects:equipe_editar' equipe.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+        <a class="btn btn-outline-danger" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}">{% icone "trash3" %}<span>Excluir</span></a>
+      </div>
     {% endif %}
-    <a class="btn btn-outline-secondary" href="{% url 'projects:equipes' %}">Voltar</a>
   </div>
-</div>
-<div class="card card-body gap-2">
-  <div><strong>Gerente:</strong> {{ equipe.manager }}</div>
-  <div><strong>Membros:</strong> {% for m in equipe.members.all %}{{ m }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
-  <div><strong>Projetos:</strong> {% for p in equipe.projects.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
+</header>
+<div class="grade grade-2">
+  <section class="card">
+    <div class="card-head"><h2>Pessoas</h2></div>
+    <div class="card-body card-flush"><div class="linhas">
+      <div class="linha">{% avatar equipe.manager %}<div class="grow"><span class="forte d-block">{{ equipe.manager }}</span><span class="small text-secondary ellipsis">{{ equipe.manager.email }}</span></div><span class="tag tag-info sem-ponto">Gerente</span></div>
+      {% for membro in equipe.members.all %}
+        <div class="linha">{% avatar membro %}<div class="grow"><span class="forte d-block">{{ membro }}</span><span class="small text-secondary ellipsis">{{ membro.email }}</span></div><span class="tag tag-gray sem-ponto">Membro</span></div>
+      {% endfor %}
+    </div></div>
+  </section>
+  <section class="card">
+    <div class="card-head"><h2>Projetos</h2></div>
+    <div class="card-body card-flush"><div class="linhas">
+      {% for projeto in equipe.projects.all %}
+        <div class="linha"><span class="stat-ico sm">{% icone "folder2-open" %}</span><a class="grow" href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a><span class="small text-secondary num">{{ projeto.end_date|date:"d/m/Y" }}</span></div>
+      {% empty %}<p class="text-secondary my-3">Nenhum projeto.</p>{% endfor %}
+    </div></div>
+  </section>
 </div>
 {% endblock %}

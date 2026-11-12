@@ -1,7 +1,11 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Página não encontrada · Outsourcing{% endblock %}
 {% block content %}
-<h1>Página não encontrada</h1>
-<p>O endereço não existe ou você não tem acesso a este registro.</p>
-<div><a class="btn btn-primary" href="{% url 'pages:home' %}">Voltar ao início</a></div>
+<section class="erro-pagina">
+  <p class="erro-codigo num">404</p>
+  <h1>Página não encontrada</h1>
+  <p>O endereço não existe ou você não tem acesso a este registro.</p>
+  <a class="btn btn-primary" href="{% url 'pages:home' %}">{% icone "house" %}<span>Voltar ao início</span></a>
+</section>
 {% endblock %}

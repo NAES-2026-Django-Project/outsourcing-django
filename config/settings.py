@@ -106,6 +106,14 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'static_gcloud'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
+if not TESTING:
+    # Nomes com hash (app.3f2a….js): cada deploy gera URLs novas, então o cache de 10 minutos do App Engine
+    # nunca serve uma versão antiga. Com DEBUG=True o Django continua usando os nomes normais.
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'},
+    }
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'

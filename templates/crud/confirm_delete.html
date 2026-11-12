@@ -1,15 +1,25 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}{{ titulo }} · Outsourcing{% endblock %}
 {% block content %}
-<h1>{{ titulo }}</h1>
-<div class="card narrow">
+<header>
+  {% trilha atual=titulo %}
+  <div class="page-head"><div><h1>{{ titulo }}</h1></div></div>
+</header>
+<form method="post" class="card form-card">
+  {% csrf_token %}
   <div class="card-body">
-    <p>Excluir <strong>{{ object }}</strong>? Esta ação não pode ser desfeita.</p>
-    <form method="post" class="d-flex gap-2">
-      {% csrf_token %}
-      <button class="btn btn-danger">Excluir</button>
-      <a class="btn btn-outline-secondary" href="{{ voltar }}">Cancelar</a>
-    </form>
+    <div class="d-flex gap-3 align-items-start">
+      <span class="modal-ico">{% icone "exclamation-triangle" %}</span>
+      <div>
+        <h2>Excluir {{ object }}?</h2>
+        <p class="text-secondary mb-0">Esta ação não pode ser desfeita.</p>
+      </div>
+    </div>
   </div>
-</div>
+  <div class="card-foot form-foot justify-content-end">
+    <a class="btn btn-outline-secondary" href="{{ voltar }}">Cancelar</a>
+    <button class="btn btn-danger">{% icone "trash3" %}<span>Excluir</span></button>
+  </div>
+</form>
 {% endblock %}

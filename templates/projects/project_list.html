@@ -1,35 +1,41 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Meus projetos · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Meus projetos</h1>
-  <a class="btn btn-primary" href="{% url 'projects:projeto_criar' %}">Novo projeto</a>
-</div>
-{% include "includes/filtros.html" %}
-<div class="card card-body">
+<header>
+  {% trilha atual="Meus projetos" %}
+  <div class="page-head">
+    <div><h1>Meus projetos</h1><p class="page-desc">Projetos que você criou. Os participantes os veem pelo quadro.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'projects:projeto_criar' %}">{% icone "plus-lg" %}<span>Novo projeto</span></a></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Projetos" contador=paginator.count|stringformat:"d"|add:" projetos" com_filtros=True %}
+  {% include "includes/filtros.html" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Projeto</th><th>Equipe</th><th>Início</th><th>Término</th><th>Tarefas</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Projeto</th><th>Equipe</th><th>Início</th><th>Término</th><th class="r">Tarefas</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for projeto in projetos %}
           <tr>
-            <td><a href="{% url 'projects:projeto_detalhe' projeto.pk %}">{{ projeto.name }}</a></td>
-            <td>{{ projeto.team.name }}</td>
-            <td class="num">{{ projeto.start_date|date:"d/m/Y" }}</td>
-            <td class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
-            <td class="num">{{ projeto.total_tarefas }}</td>
-            <td class="text-end text-nowrap">
-              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadro' projeto.pk %}">Quadro</a>
-              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:projeto_editar' projeto.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" data-excluir="o projeto {{ projeto.name }} e suas tarefas" href="{% url 'projects:projeto_excluir' projeto.pk %}">Excluir</a>
-            </td>
+            <td class="principal" data-label="Projeto"><a class="lead-link" href="{% url 'projects:projeto_detalhe' projeto.pk %}">{{ projeto.name }}</a></td>
+            <td data-label="Equipe"><span class="tag tag-gray sem-ponto">{{ projeto.team.name }}</span></td>
+            <td data-label="Início" class="num">{{ projeto.start_date|date:"d/m/Y" }}</td>
+            <td data-label="Término" class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
+            <td data-label="Tarefas" class="num r">{{ projeto.total_tarefas }}</td>
+            <td class="acts"><div class="acoes">
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:quadro' projeto.pk %}" aria-label="Abrir o quadro de {{ projeto.name }}" title="Abrir quadro">{% icone "kanban" %}</a>
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:projeto_editar' projeto.pk %}" aria-label="Editar {{ projeto.name }}" title="Editar">{% icone "pencil" %}</a>
+              <a class="btn btn-outline-danger btn-sm btn-icon" data-excluir="o projeto {{ projeto.name }} e suas tarefas" href="{% url 'projects:projeto_excluir' projeto.pk %}" aria-label="Excluir {{ projeto.name }}" title="Excluir">{% icone "trash3" %}</a>
+            </div></td>
           </tr>
         {% empty %}
-          <tr><td colspan="6">Nenhum projeto encontrado.</td></tr>
+          {% url 'projects:projeto_criar' as url_novo %}
+          <tr><td class="vazio" colspan="6">{% include "includes/empty_state.html" with icone_nome="folder2-open" titulo="Nenhum projeto encontrado" texto="Crie um projeto para a sua equipe; o quadro já vem com os estágios padrão." acao_url=url_novo acao_texto="Novo projeto" %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

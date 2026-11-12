@@ -1,21 +1,59 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Minha conta · Outsourcing{% endblock %}
 {% block content %}
-<h1>Minha conta</h1>
-<div class="card card-body narrow gap-2">
-  <div><strong>{{ request.user }}</strong> · {{ request.user.papel }}</div>
-  <div>{{ request.user.email }}</div>
-  <div>{{ request.user.phone|default:"Telefone não informado" }}</div>
-  <div>
-    {% with e=request.user.address %}
-      {% if e.city %}{{ e.city }}{% if e.state %}, {{ e.state }}{% endif %}{% else %}Endereço não informado{% endif %}
-    {% endwith %}
+<header>
+  {% trilha atual="Minha conta" %}
+  <div class="page-head"><div><h1>Minha conta</h1></div></div>
+</header>
+<section class="card">
+  <div class="card-body flex-row flex-wrap align-items-center" style="gap: 20px">
+    {% avatar request.user "lg" %}
+    <div class="flex-grow-1" style="min-width: 200px">
+      <h2>{{ request.user }}</h2>
+      <p class="text-secondary mb-2">{{ request.user.email }}</p>
+      {% etiqueta_papel request.user %}
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'accounts:senha' %}">{% icone "shield-lock" %}<span>Alterar senha</span></a>
   </div>
-  <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:dados' %}">Editar dados</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:perfil' %}">Editar perfil</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:endereco' %}">Editar endereço</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:senha' %}">Alterar senha</a>
-  </div>
+</section>
+<div class="grade grade-2">
+  <section class="card">
+    <div class="card-head"><h3>Dados pessoais</h3><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:dados' %}">{% icone "pencil" %}<span>Editar</span></a></div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>Nome</dt><dd>{{ request.user.first_name }}</dd></div>
+        <div><dt>Sobrenome</dt><dd>{{ request.user.last_name }}</dd></div>
+        <div class="full"><dt>E-mail</dt><dd>{{ request.user.email }}</dd></div>
+        <div><dt>Telefone</dt><dd>{{ request.user.phone|default:"Não informado" }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  {% with e=request.user.address %}
+  <section class="card">
+    <div class="card-head"><h3>Endereço</h3><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:endereco' %}">{% icone "pencil" %}<span>Editar</span></a></div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>CEP</dt><dd class="num">{{ e.cep|default:"Não informado" }}</dd></div>
+        <div><dt>Cidade</dt><dd>{{ e.city|default:"Não informada" }}</dd></div>
+        <div><dt>Estado</dt><dd>{{ e.state|default:"Não informado" }}</dd></div>
+        <div><dt>País</dt><dd>{{ e.country|default:"Não informado" }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  {% endwith %}
+  {% with p=request.user.profile %}
+  <section class="card">
+    <div class="card-head"><h3>Perfil e redes</h3><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:perfil' %}">{% icone "pencil" %}<span>Editar</span></a></div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>LinkedIn</dt><dd>{% if p.linkedin_url %}<a href="{{ p.linkedin_url }}" rel="noopener">{{ p.linkedin_url }}</a>{% else %}Não informado{% endif %}</dd></div>
+        <div><dt>Instagram</dt><dd>{% if p.instagram_url %}<a href="{{ p.instagram_url }}" rel="noopener">{{ p.instagram_url }}</a>{% else %}Não informado{% endif %}</dd></div>
+        <div><dt>Facebook</dt><dd>{% if p.facebook_url %}<a href="{{ p.facebook_url }}" rel="noopener">{{ p.facebook_url }}</a>{% else %}Não informado{% endif %}</dd></div>
+        <div><dt>Twitter</dt><dd>{% if p.twitter_url %}<a href="{{ p.twitter_url }}" rel="noopener">{{ p.twitter_url }}</a>{% else %}Não informado{% endif %}</dd></div>
+      </dl>
+    </div>
+  </section>
+  {% endwith %}
 </div>
 {% endblock %}

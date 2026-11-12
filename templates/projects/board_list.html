@@ -1,24 +1,32 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Quadros · Outsourcing{% endblock %}
 {% block content %}
-<h1>Quadros</h1>
-<div class="card card-body">
+<header>
+  {% trilha atual="Quadros" %}
+  <div class="page-head">
+    <div><h1>Quadros</h1><p class="page-desc">Os quadros kanban dos projetos em que você participa.</p></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Projetos" contador=paginator.count|stringformat:"d"|add:" quadros" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Projeto</th><th>Equipe</th><th>Término</th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Projeto</th><th>Equipe</th><th>Término</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for projeto in projetos %}
           <tr>
-            <td><a href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a></td>
-            <td>{{ projeto.team.name }}</td>
-            <td class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
+            <td class="principal" data-label="Projeto"><a class="lead-link" href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a></td>
+            <td data-label="Equipe"><span class="tag tag-gray sem-ponto">{{ projeto.team.name }}</span></td>
+            <td data-label="Término" class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
+            <td class="acts"><a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadro' projeto.pk %}">{% icone "kanban" %}<span>Abrir quadro</span></a></td>
           </tr>
         {% empty %}
-          <tr><td colspan="3">Você ainda não participa de projetos.</td></tr>
+          <tr><td class="vazio" colspan="4">{% include "includes/empty_state.html" with icone_nome="kanban" titulo="Você ainda não participa de projetos" texto="Peça ao gerente da sua equipe para incluir você em um projeto." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

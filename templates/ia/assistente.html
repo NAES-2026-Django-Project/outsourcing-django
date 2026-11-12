@@ -1,10 +1,20 @@
 {% extends "base.html" %}
-{% load static humanize ia_markdown %}
+{% load static humanize ia_markdown ui %}
 {% block title %}Assistente · Outsourcing{% endblock %}
 {% block content %}
-<h1>Assistente</h1>
+<header>
+  {% trilha atual="Assistente" %}
+  <div class="page-head"><div><h1>Assistente</h1><p class="page-desc">Tire dúvidas sobre as telas e regras do Outsourcing.</p></div></div>
+</header>
 <div class="assistente">
-  <section class="chat" aria-label="Conversa com o assistente">
+  <section class="card chat" aria-label="Conversa com o assistente">
+    <div class="card-head">
+      <div class="d-flex align-items-center gap-3"><span class="avatar">{% icone "chat-dots" %}</span><div><h2>Assistente do Outsourcing</h2><p class="small">Considera as 5 últimas mensagens da conversa.</p></div></div>
+      <form method="post" action="{% url 'ia:limpar' %}">
+        {% csrf_token %}
+        <button class="btn btn-outline-secondary btn-sm">{% icone "trash3" %}<span>Limpar histórico</span></button>
+      </form>
+    </div>
     <div class="chat-mensagens" id="mensagens" aria-live="polite">
       {% if not mensagens %}
         <div class="msg bot">Olá! Sou o assistente do Outsourcing. Pergunte como usar o sistema: quadros, tarefas, anotações, apontamentos e mais.</div>
@@ -21,43 +31,38 @@
       <form id="form-assistente" method="post" action="{% url 'ia:perguntar' %}">
         {% csrf_token %}
         <label class="visually-hidden" for="pergunta">Pergunta</label>
-        <textarea class="form-control" id="pergunta" name="pergunta" rows="2" maxlength="2000" placeholder="Pergunte sobre o sistema" required></textarea>
-        <button class="btn btn-primary" type="submit">Enviar</button>
+        <textarea class="form-control" id="pergunta" name="pergunta" rows="1" maxlength="2000" placeholder="Pergunte sobre o sistema" required></textarea>
+        <button class="btn btn-primary btn-icon" type="submit" aria-label="Enviar pergunta" title="Enviar">{% icone "send" %}</button>
       </form>
-      <div class="chat-dica">
-        <span>Enter envia, Shift+Enter quebra a linha. O assistente considera as 5 últimas mensagens.</span>
-        <form method="post" action="{% url 'ia:limpar' %}">
-          {% csrf_token %}
-          <button class="btn btn-outline-secondary btn-sm">Limpar histórico</button>
-        </form>
-      </div>
+      <div class="chat-dica"><span>Enter envia, Shift+Enter quebra a linha.</span></div>
     </div>
   </section>
   <aside class="assistente-apoio">
-    <div class="card card-body gap-2">
-      <h2>Sua cota</h2>
-      <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
-        <div class="progress-bar {% if percentual >= 90 %}bg-danger{% endif %}" id="cota-barra" style="width: {{ percentual }}%"></div>
+    <section class="card">
+      <div class="card-head"><h3>Sua cota</h3><a class="small" href="{% url 'ia:meu_consumo' %}">Ver detalhes</a></div>
+      <div class="card-body">
+        <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar {% if percentual >= 90 %}bg-danger{% endif %}" id="cota-barra" style="width: {{ percentual }}%"></div>
+        </div>
+        <small class="text-secondary num" id="cota-texto">{{ consumo|intcomma }} de {{ limite|intcomma }} tokens este mês</small>
       </div>
-      <small class="text-secondary num" id="cota-texto">{{ consumo|intcomma }} de {{ limite|intcomma }} tokens este mês</small>
-      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ia:meu_consumo' %}">Ver detalhes</a>
-    </div>
-    <div class="card card-body gap-2">
-      <h2>Perguntas frequentes</h2>
-      <div class="d-flex flex-column align-items-start gap-1">
+    </section>
+    <section class="card">
+      <div class="card-head"><h3>Perguntas frequentes</h3></div>
+      <div class="card-body"><div class="chips">
         {% for sugestao in sugestoes %}
           <button class="chip" type="button" data-sugestao="{{ sugestao }}">{{ sugestao }}</button>
         {% endfor %}
-      </div>
-    </div>
-    <div class="card card-body gap-2">
-      <h2>O que o assistente faz</h2>
-      <ul class="mb-0 ps-3">
-        <li>Explica telas e regras do sistema</li>
-        <li>Não acessa seus dados</li>
-        <li>Não executa ações por você</li>
-      </ul>
-    </div>
+      </div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h3>O que o assistente faz</h3></div>
+      <div class="card-body"><div class="linhas">
+        <div class="linha py-1 border-0">{% icone "check-circle" "text-success" %}<span>Explica telas e regras do sistema</span></div>
+        <div class="linha py-1 border-0">{% icone "x-circle" "text-secondary" %}<span>Não acessa seus dados</span></div>
+        <div class="linha py-1 border-0">{% icone "x-circle" "text-secondary" %}<span>Não executa ações por você</span></div>
+      </div></div>
+    </section>
   </aside>
 </div>
 {% endblock %}

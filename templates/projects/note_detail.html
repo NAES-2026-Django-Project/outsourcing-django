@@ -1,17 +1,24 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Anotação · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Anotação</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'projects:anotacao_editar' anotacao.pk %}?next={{ request.path|urlencode }}">Editar</a>
-    <a class="btn btn-outline-danger" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">Excluir</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:anotacoes' %}">Voltar</a>
+<header>
+  {% trilha 'projects:anotacoes' 'Minhas anotações' atual="Anotação" %}
+  <div class="page-head">
+    <div><h1>Anotação</h1><p class="page-desc">{% icone "eye-slash" %} Só você vê.</p></div>
+    <div class="acoes">
+      <a class="btn btn-outline-secondary" href="{% url 'projects:anotacao_editar' anotacao.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+      <a class="btn btn-outline-danger" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">{% icone "trash3" %}<span>Excluir</span></a>
+    </div>
   </div>
-</div>
-<div class="card card-body gap-2">
-  <div><strong>Tarefa:</strong> <a href="{% url 'projects:tarefa_detalhe' anotacao.task_id %}">{{ anotacao.task.title }}</a></div>
-  <div><strong>Criada em:</strong> {{ anotacao.created_at|date:"d/m/Y H:i" }}</div>
-  <div>{{ anotacao.content|linebreaksbr }}</div>
-</div>
+</header>
+<section class="card form-card">
+  <div class="card-body">
+    <dl class="pairs">
+      <div><dt>Tarefa</dt><dd><a href="{% url 'projects:tarefa_detalhe' anotacao.task_id %}">{{ anotacao.task.title }}</a></dd></div>
+      <div><dt>Criada em</dt><dd class="num">{{ anotacao.created_at|date:"d/m/Y H:i" }}</dd></div>
+      <div class="full"><dt>Conteúdo</dt><dd>{{ anotacao.content|linebreaksbr }}</dd></div>
+    </dl>
+  </div>
+</section>
 {% endblock %}

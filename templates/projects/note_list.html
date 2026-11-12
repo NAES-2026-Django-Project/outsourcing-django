@@ -1,32 +1,37 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Minhas anotações · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Minhas anotações</h1>
-  <a class="btn btn-primary" href="{% url 'projects:anotacao_criar' %}">Nova anotação</a>
-</div>
-<p class="mb-0 text-secondary">Somente você vê estas anotações.</p>
-<div class="card card-body">
+<header>
+  {% trilha atual="Minhas anotações" %}
+  <div class="page-head">
+    <div><h1>Minhas anotações</h1><p class="page-desc">{% icone "eye-slash" %} Visíveis só para você, nem administradores têm acesso.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'projects:anotacao_criar' %}">{% icone "plus-lg" %}<span>Nova anotação</span></a></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Anotações" contador=paginator.count|stringformat:"d"|add:" anotações" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Tarefa</th><th>Anotação</th><th>Data</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Anotação</th><th>Tarefa</th><th>Data</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for anotacao in anotacoes %}
           <tr>
-            <td>{{ anotacao.task.title }}</td>
-            <td><a href="{% url 'projects:anotacao_detalhe' anotacao.pk %}">{{ anotacao.content|truncatechars:80 }}</a></td>
-            <td class="num">{{ anotacao.created_at|date:"d/m/Y" }}</td>
-            <td class="text-end text-nowrap">
-              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_editar' anotacao.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">Excluir</a>
-            </td>
+            <td class="principal" data-label="Anotação"><a class="lead-link" href="{% url 'projects:anotacao_detalhe' anotacao.pk %}">{{ anotacao.content|truncatechars:80 }}</a></td>
+            <td data-label="Tarefa"><a href="{% url 'projects:tarefa_detalhe' anotacao.task_id %}">{{ anotacao.task.title }}</a></td>
+            <td data-label="Data" class="num">{{ anotacao.created_at|date:"d/m/Y" }}</td>
+            <td class="acts"><div class="acoes">
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:anotacao_editar' anotacao.pk %}" aria-label="Editar anotação" title="Editar">{% icone "pencil" %}</a>
+              <a class="btn btn-outline-danger btn-sm btn-icon" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}" aria-label="Excluir anotação" title="Excluir">{% icone "trash3" %}</a>
+            </div></td>
           </tr>
         {% empty %}
-          <tr><td colspan="4">Você ainda não tem anotações.</td></tr>
+          {% url 'projects:anotacao_criar' as url_novo %}
+          <tr><td class="vazio" colspan="4">{% include "includes/empty_state.html" with icone_nome="journal-text" titulo="Você ainda não tem anotações" texto="Abra uma tarefa e use Nova anotação, ou crie uma por aqui." acao_url=url_novo acao_texto="Nova anotação" %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

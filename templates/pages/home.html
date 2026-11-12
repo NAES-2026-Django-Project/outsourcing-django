@@ -1,58 +1,77 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block content %}
 {% if request.user.is_authenticated %}
-  <h1>Olá, {{ request.user.first_name }}</h1>
-  <div class="row g-3">
-    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_abertas }}</span><span class="text-secondary">Tarefas abertas</span></div></div>
-    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_urgentes }}</span><span class="text-secondary">Urgentes</span></div></div>
-    <div class="col-sm-4"><div class="card card-body"><span class="summary-value">{{ total_projetos }}</span><span class="text-secondary">Projetos em que participo</span></div></div>
+  <header class="page-head">
+    <div><h1>Olá, {{ request.user.first_name }}</h1><p class="page-desc">Resumo das tarefas e projetos em que você participa.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'projects:quadros' %}">{% icone "kanban" %}<span>Ver quadros</span></a></div>
+  </header>
+  <div class="grade grade-3">
+    <div class="card stat">
+      <div class="stat-ico">{% icone "list-check" %}</div>
+      <div class="stat-row"><div><p class="text-secondary mb-0">Tarefas abertas</p><p class="stat-num num">{{ total_abertas }}</p></div><span class="tag tag-gray sem-ponto">backlog e em andamento</span></div>
+    </div>
+    <div class="card stat">
+      <div class="stat-ico">{% icone "exclamation-triangle" %}</div>
+      <div class="stat-row"><div><p class="text-secondary mb-0">Urgentes</p><p class="stat-num num">{{ total_urgentes }}</p></div><span class="tag tag-error sem-ponto">prioridade urgente</span></div>
+    </div>
+    <div class="card stat">
+      <div class="stat-ico">{% icone "folder2-open" %}</div>
+      <div><p class="text-secondary mb-0">Projetos em que participo</p><p class="stat-num num">{{ total_projetos }}</p></div>
+    </div>
   </div>
-  <div class="row g-3">
-    <div class="col-lg-6">
-      <div class="card card-body gap-2">
-        <div class="page-head">
-          <h2>Tarefas recentes</h2>
-          <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:tarefas' %}">Ver tarefas</a>
-        </div>
+  <div class="grade grade-2">
+    <section class="card">
+      <div class="card-head"><h2>Tarefas recentes</h2><a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:tarefas' %}">Ver tarefas</a></div>
+      <div class="card-body card-flush"><div class="linhas">
         {% for tarefa in tarefas_recentes %}
-          <div class="d-flex align-items-center gap-2">
-            <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span>
-            <a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a>
-            <small class="ms-auto text-secondary">{{ tarefa.stage.project.name }}</small>
+          <div class="linha">
+            {% etiqueta_prioridade tarefa %}
+            <div class="grow"><a class="ellipsis" href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a><span class="small text-secondary ellipsis">{{ tarefa.stage.project.name }} · {{ tarefa.stage.name }}</span></div>
           </div>
         {% empty %}
-          <p class="mb-0 text-secondary">Nenhuma tarefa por aqui ainda.</p>
+          {% include "includes/empty_state.html" with icone_nome="list-check" titulo="Nenhuma tarefa por aqui ainda" texto="As tarefas dos seus projetos aparecem aqui." %}
         {% endfor %}
-      </div>
-    </div>
-    <div class="col-lg-6">
-      <div class="card card-body gap-2">
-        <div class="page-head">
-          <h2>Projetos recentes</h2>
-          <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadros' %}">Ver quadros</a>
-        </div>
+      </div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Projetos recentes</h2><a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadros' %}">Ver quadros</a></div>
+      <div class="card-body card-flush"><div class="linhas">
         {% for projeto in projetos_recentes %}
-          <div class="d-flex align-items-center gap-2">
-            <a href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a>
-            <small class="ms-auto text-secondary">Equipe {{ projeto.team.name }}</small>
+          {% widthratio projeto.tarefas_feitas projeto.total_tarefas|default:1 100 as progresso %}
+          <div class="linha">
+            <span class="stat-ico sm">{% icone "kanban" %}</span>
+            <div class="grow">
+              <a class="ellipsis" href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a>
+              <div class="progress mt-2" role="progressbar" aria-label="Progresso de {{ projeto.name }}" aria-valuenow="{{ progresso }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ progresso }}%"></div></div>
+            </div>
+            <span class="small text-secondary num" title="{{ projeto.tarefas_feitas }} de {{ projeto.total_tarefas }} tarefas concluídas ou aprovadas">{{ progresso }}%</span>
           </div>
         {% empty %}
           {% if request.user.eh_administrador or request.user.eh_gerente %}
-            <p class="mb-0 text-secondary">Você ainda não tem projetos. Crie um para a sua equipe e o quadro é montado com os estágios padrão.</p>
-            <div><a class="btn btn-primary btn-sm" href="{% url 'projects:projeto_criar' %}">Criar projeto</a></div>
+            {% url 'projects:projeto_criar' as url_novo %}
+            {% include "includes/empty_state.html" with icone_nome="folder2-open" titulo="Você ainda não tem projetos" texto="Crie um para a sua equipe e o quadro é montado com os estágios padrão." acao_url=url_novo acao_texto="Criar projeto" %}
           {% else %}
-            <p class="mb-0 text-secondary">Você ainda não participa de projetos. Peça ao gerente da sua equipe para incluir você em um projeto.</p>
+            {% include "includes/empty_state.html" with icone_nome="folder2-open" titulo="Você ainda não participa de projetos" texto="Peça ao gerente da sua equipe para incluir você em um projeto." %}
           {% endif %}
         {% endfor %}
-      </div>
-    </div>
+      </div></div>
+    </section>
   </div>
 {% else %}
-  <h1>Organize equipes, projetos e tarefas em um só lugar</h1>
-  <p>O Outsourcing acompanha o trabalho de cada equipe em quadros kanban, com papéis para administradores, gerentes e desenvolvedores.</p>
-  <div class="d-flex gap-2">
-    <a class="btn btn-primary" href="{% url 'accounts:login' %}">Entrar</a>
-    <a class="btn btn-outline-secondary" href="{% url 'accounts:cadastro' %}">Criar conta</a>
+  <section class="card hero">
+    <span class="tag tag-brand sem-ponto">Gestão de equipes e projetos</span>
+    <h1>Organize equipes, projetos e tarefas em um só lugar</h1>
+    <p>O Outsourcing acompanha o trabalho de cada equipe em quadros kanban, com papéis para administradores, gerentes e desenvolvedores, e um assistente de IA para tirar dúvidas.</p>
+    <div class="acoes">
+      <a class="btn btn-primary" href="{% url 'accounts:login' %}">{% icone "box-arrow-in-right" %}<span>Entrar</span></a>
+      <a class="btn btn-outline-secondary" href="{% url 'accounts:cadastro' %}">{% icone "person-plus" %}<span>Criar conta</span></a>
+    </div>
+  </section>
+  <div class="grade grade-3">
+    <section class="card recurso"><span class="stat-ico">{% icone "kanban" %}</span><h3>Quadros kanban</h3><p>Cada projeto tem Backlog, Em andamento, Concluído e Aprovado. As tarefas avançam com um clique.</p></section>
+    <section class="card recurso"><span class="stat-ico">{% icone "people" %}</span><h3>Papéis e permissões</h3><p>Administradores cuidam de usuários e equipes, gerentes dos projetos, desenvolvedores das tarefas.</p></section>
+    <section class="card recurso"><span class="stat-ico">{% icone "chat-dots" %}</span><h3>Assistente de IA</h3><p>Pergunte como usar qualquer tela. O consumo de cada usuário fica sob controle com cotas mensais.</p></section>
   </div>
 {% endif %}
 {% endblock %}

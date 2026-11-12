@@ -21,7 +21,7 @@ O Outsourcing é um sistema web de gestão de equipes, projetos e tarefas em qua
 ## Como fazer
 
 - **Ver o quadro**: menu "Quadros", depois o nome do projeto. Cada coluna é um estágio, e cada cartão mostra prioridade, responsável e prazo.
-- **Mover uma tarefa**: no quadro, clique na seta ▶ do cartão para levar a tarefa ao próximo estágio, ou na seta ◀ para voltar ao anterior. Não há arrastar e soltar. A tarefa só se move entre estágios do mesmo projeto, e uma mensagem confirma a mudança.
+- **Mover uma tarefa**: no quadro, arraste o cartão e solte em outra coluna, ou clique na seta ▶ do cartão para levar a tarefa ao próximo estágio e na seta ◀ para voltar ao anterior. No celular, segure o cartão por um instante antes de arrastar. A tarefa só se move entre estágios do mesmo projeto, e uma mensagem confirma a mudança.
 - **Buscar e filtrar**: a busca da barra superior procura tarefas pelo título. As telas "Tarefas" e "Meus projetos" têm filtros, e a paginação mantém a busca.
 - **Excluir um registro**: o botão Excluir pede confirmação em uma janela antes de apagar.
 - **Anotar ou apontar horas**: abra a tarefa e use "Nova anotação" ou "Apontar horas".

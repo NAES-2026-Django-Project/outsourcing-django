@@ -1,0 +1,7 @@
+{% load ui %}
+<div class="empty">
+  <div class="empty-ico">{% icone icone_nome|default:"inbox" %}</div>
+  <h3>{{ titulo }}</h3>
+  {% if texto %}<p>{{ texto }}</p>{% endif %}
+  {% if acao_url %}<a class="btn btn-primary" href="{{ acao_url }}">{% icone "plus-lg" %}<span>{{ acao_texto }}</span></a>{% endif %}
+</div>

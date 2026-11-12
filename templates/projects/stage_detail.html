@@ -1,18 +1,36 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}{{ estagio.name }} · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>{{ estagio.name }}</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'projects:estagio_editar' estagio.pk %}?next={{ request.path|urlencode }}">Editar</a>
-    <a class="btn btn-outline-danger" data-excluir="o estágio {{ estagio.name }}" href="{% url 'projects:estagio_excluir' estagio.pk %}">Excluir</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:estagios' %}">Voltar</a>
+<header>
+  {% trilha 'projects:estagios' 'Estágios' atual=estagio.name %}
+  <div class="page-head">
+    <div><h1>{{ estagio.name }}</h1><p class="page-desc">{{ estagio.project.name }}</p></div>
+    <div class="acoes">
+      <a class="btn btn-outline-secondary" href="{% url 'projects:estagio_editar' estagio.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+      <a class="btn btn-outline-danger" data-excluir="o estágio {{ estagio.name }}" href="{% url 'projects:estagio_excluir' estagio.pk %}">{% icone "trash3" %}<span>Excluir</span></a>
+    </div>
   </div>
-</div>
-<div class="card card-body gap-2">
-  <div><strong>Projeto:</strong> {{ estagio.project.name }}</div>
-  <div><strong>Tipo:</strong> {{ estagio.get_stage_type_display }}</div>
-  <div><strong>Ordem:</strong> {{ estagio.order }}</div>
-  <div><strong>Tarefas:</strong> {% for t in estagio.tasks.all %}<a href="{% url 'projects:tarefa_detalhe' t.pk %}">{{ t.title }}</a>{% if not forloop.last %}, {% endif %}{% empty %}Nenhuma{% endfor %}</div>
+</header>
+<div class="grade grade-2">
+  <section class="card">
+    <div class="card-head"><h2>Resumo</h2></div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>Projeto</dt><dd><a href="{% url 'projects:quadro' estagio.project_id %}">{{ estagio.project.name }}</a></dd></div>
+        <div><dt>Tipo</dt><dd>{% etiqueta_estagio estagio %}</dd></div>
+        <div><dt>Ordem</dt><dd class="num">{{ estagio.order }}</dd></div>
+        <div><dt>Tarefas</dt><dd class="num">{{ estagio.tasks.all|length }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  <section class="card">
+    <div class="card-head"><h3>Tarefas neste estágio</h3></div>
+    <div class="card-body card-flush"><div class="linhas">
+      {% for tarefa in estagio.tasks.all %}
+        <div class="linha">{% etiqueta_prioridade tarefa %}<a class="grow ellipsis" href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a></div>
+      {% empty %}<p class="text-secondary my-3">Nenhuma tarefa.</p>{% endfor %}
+    </div></div>
+  </section>
 </div>
 {% endblock %}

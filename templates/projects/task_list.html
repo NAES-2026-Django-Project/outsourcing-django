@@ -1,35 +1,40 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Tarefas · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Tarefas</h1>
-  <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}">Nova tarefa</a>
-</div>
-{% include "includes/filtros.html" %}
-<div class="card card-body">
+<header>
+  {% trilha atual="Tarefas" %}
+  <div class="page-head">
+    <div><h1>Tarefas</h1><p class="page-desc">Tarefas dos projetos em que você participa.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}">{% icone "plus-lg" %}<span>Nova tarefa</span></a></div>
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Todas as tarefas" contador=paginator.count|stringformat:"d"|add:" tarefas" com_filtros=True %}
+  {% include "includes/filtros.html" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Tarefa</th><th>Projeto</th><th>Estágio</th><th>Prioridade</th><th>Responsável</th><th>Prazo</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Tarefa</th><th>Projeto</th><th>Estágio</th><th>Prioridade</th><th>Responsável</th><th>Prazo</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for tarefa in tarefas %}
           <tr>
-            <td><a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a></td>
-            <td>{{ tarefa.stage.project.name }}</td>
-            <td>{{ tarefa.stage.name }}</td>
-            <td><span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span></td>
-            <td>{{ tarefa.assigned_to|default:"Sem responsável" }}</td>
-            <td class="num">{{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}</td>
-            <td class="text-end text-nowrap">
-              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:tarefa_editar' tarefa.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}">Excluir</a>
-            </td>
+            <td class="principal" data-label="Tarefa"><a class="lead-link" href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a></td>
+            <td data-label="Projeto">{{ tarefa.stage.project.name }}</td>
+            <td data-label="Estágio">{% etiqueta_estagio tarefa.stage %}</td>
+            <td data-label="Prioridade">{% etiqueta_prioridade tarefa %}</td>
+            <td data-label="Responsável"><span class="pessoa">{% avatar tarefa.assigned_to "sm" %}{{ tarefa.assigned_to.first_name|default:"Sem responsável" }}</span></td>
+            <td data-label="Prazo" class="num">{{ tarefa.due_date|date:"d/m/Y"|default:"Sem prazo" }}</td>
+            <td class="acts"><div class="acoes">
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:tarefa_editar' tarefa.pk %}" aria-label="Editar {{ tarefa.title }}" title="Editar">{% icone "pencil" %}</a>
+              <a class="btn btn-outline-danger btn-sm btn-icon" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}" aria-label="Excluir {{ tarefa.title }}" title="Excluir">{% icone "trash3" %}</a>
+            </div></td>
           </tr>
         {% empty %}
-          <tr><td colspan="7">Nenhuma tarefa encontrada.</td></tr>
+          <tr><td class="vazio" colspan="7">{% include "includes/empty_state.html" with icone_nome="list-check" titulo="Nenhuma tarefa encontrada" texto="Ajuste os filtros ou cadastre uma nova tarefa." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

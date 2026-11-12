@@ -1,34 +1,49 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Meus apontamentos · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Meus apontamentos</h1>
-  <a class="btn btn-primary" href="{% url 'projects:apontamento_criar' %}">Apontar horas</a>
+<header>
+  {% trilha atual="Meus apontamentos" %}
+  <div class="page-head">
+    <div><h1>Meus apontamentos</h1><p class="page-desc">Horas registradas por você nas tarefas. Só você vê.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'projects:apontamento_criar' %}">{% icone "plus-lg" %}<span>Apontar horas</span></a></div>
+  </div>
+</header>
+<div class="grade grade-3">
+  <div class="card stat">
+    <div class="stat-ico">{% icone "clock-history" %}</div>
+    <div><p class="text-secondary mb-0">Total apontado</p><p class="stat-num num">{{ total_horas|default:0|floatformat:"-2" }}h</p></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-ico">{% icone "list-ul" %}</div>
+    <div><p class="text-secondary mb-0">Registros</p><p class="stat-num num">{{ paginator.count }}</p></div>
+  </div>
 </div>
-<p class="mb-0 text-secondary">Somente você vê estes apontamentos. Total registrado: <span class="num">{{ total_horas|default:0 }}h</span>.</p>
-<div class="card card-body">
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Apontamentos" contador=paginator.count|stringformat:"d"|add:" registros" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Data</th><th>Tarefa</th><th>Projeto</th><th>Horas</th><th>Descrição</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Data</th><th>Tarefa</th><th>Projeto</th><th>Descrição</th><th class="r">Horas</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for apontamento in apontamentos %}
           <tr>
-            <td class="num"><a href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a></td>
-            <td>{{ apontamento.task.title }}</td>
-            <td>{{ apontamento.task.stage.project.name }}</td>
-            <td class="num">{{ apontamento.hours }}</td>
-            <td>{{ apontamento.description|default:"Sem descrição" }}</td>
-            <td class="text-end text-nowrap">
-              <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_editar' apontamento.pk %}">Editar</a>
-              <a class="btn btn-outline-danger btn-sm" data-excluir="este apontamento" href="{% url 'projects:apontamento_excluir' apontamento.pk %}">Excluir</a>
-            </td>
+            <td class="principal num" data-label="Data"><a class="lead-link" href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a></td>
+            <td data-label="Tarefa"><a href="{% url 'projects:tarefa_detalhe' apontamento.task_id %}">{{ apontamento.task.title }}</a></td>
+            <td data-label="Projeto">{{ apontamento.task.stage.project.name }}</td>
+            <td data-label="Descrição">{{ apontamento.description|default:"Sem descrição" }}</td>
+            <td data-label="Horas" class="num r forte">{{ apontamento.hours|floatformat:"-2" }}h</td>
+            <td class="acts"><div class="acoes">
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:apontamento_editar' apontamento.pk %}" aria-label="Editar apontamento" title="Editar">{% icone "pencil" %}</a>
+              <a class="btn btn-outline-danger btn-sm btn-icon" data-excluir="este apontamento" href="{% url 'projects:apontamento_excluir' apontamento.pk %}" aria-label="Excluir apontamento" title="Excluir">{% icone "trash3" %}</a>
+            </div></td>
           </tr>
         {% empty %}
-          <tr><td colspan="6">Você ainda não apontou horas.</td></tr>
+          {% url 'projects:apontamento_criar' as url_novo %}
+          <tr><td class="vazio" colspan="6">{% include "includes/empty_state.html" with icone_nome="clock-history" titulo="Você ainda não apontou horas" texto="Registre as horas trabalhadas a partir da tela da tarefa ou por aqui." acao_url=url_novo acao_texto="Apontar horas" %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

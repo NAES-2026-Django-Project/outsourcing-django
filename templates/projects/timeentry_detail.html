@@ -1,19 +1,26 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Apontamento · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Apontamento</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamento_editar' apontamento.pk %}?next={{ request.path|urlencode }}">Editar</a>
-    <a class="btn btn-outline-danger" data-excluir="este apontamento" href="{% url 'projects:apontamento_excluir' apontamento.pk %}">Excluir</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamentos' %}">Voltar</a>
+<header>
+  {% trilha 'projects:apontamentos' 'Meus apontamentos' atual="Apontamento" %}
+  <div class="page-head">
+    <div><h1>Apontamento</h1><p class="page-desc">{% icone "eye-slash" %} Só você vê.</p></div>
+    <div class="acoes">
+      <a class="btn btn-outline-secondary" href="{% url 'projects:apontamento_editar' apontamento.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+      <a class="btn btn-outline-danger" data-excluir="este apontamento" href="{% url 'projects:apontamento_excluir' apontamento.pk %}">{% icone "trash3" %}<span>Excluir</span></a>
+    </div>
   </div>
-</div>
-<div class="card card-body gap-2">
-  <div><strong>Tarefa:</strong> <a href="{% url 'projects:tarefa_detalhe' apontamento.task_id %}">{{ apontamento.task.title }}</a></div>
-  <div><strong>Projeto:</strong> {{ apontamento.task.stage.project.name }}</div>
-  <div><strong>Data:</strong> {{ apontamento.date|date:"d/m/Y" }}</div>
-  <div><strong>Horas:</strong> <span class="num">{{ apontamento.hours }}</span></div>
-  <div><strong>Descrição:</strong> {{ apontamento.description|default:"Sem descrição" }}</div>
-</div>
+</header>
+<section class="card form-card">
+  <div class="card-body">
+    <dl class="pairs">
+      <div><dt>Tarefa</dt><dd><a href="{% url 'projects:tarefa_detalhe' apontamento.task_id %}">{{ apontamento.task.title }}</a></dd></div>
+      <div><dt>Projeto</dt><dd>{{ apontamento.task.stage.project.name }}</dd></div>
+      <div><dt>Data</dt><dd class="num">{{ apontamento.date|date:"d/m/Y" }}</dd></div>
+      <div><dt>Horas</dt><dd class="num">{{ apontamento.hours|floatformat:"-2" }}h</dd></div>
+      <div class="full"><dt>Descrição</dt><dd>{{ apontamento.description|default:"Sem descrição" }}</dd></div>
+    </dl>
+  </div>
+</section>
 {% endblock %}

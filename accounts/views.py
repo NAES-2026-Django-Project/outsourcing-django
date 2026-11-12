@@ -11,7 +11,7 @@ from .models import Address, Profile, User
 
 class CadastroView(SuccessMessageMixin, CreateView):
     form_class = CadastroForm
-    template_name = 'crud/form.html'
+    template_name = 'accounts/cadastro.html'
     success_url = reverse_lazy('accounts:login')
     success_message = 'Conta criada. Entre com seu e-mail e senha.'
     extra_context = {'titulo': 'Criar conta', 'botao': 'Criar conta'}
@@ -21,7 +21,7 @@ class TrocarSenhaView(LoginRequiredMixin, SuccessMessageMixin, PasswordChangeVie
     template_name = 'crud/form.html'
     success_url = reverse_lazy('accounts:conta')
     success_message = 'Senha alterada.'
-    extra_context = {'titulo': 'Alterar senha', 'botao': 'Alterar senha'}
+    extra_context = {'titulo': 'Alterar senha', 'voltar': reverse_lazy('accounts:conta'), 'botao': 'Alterar senha'}
 
 
 class ContaView(LoginRequiredMixin, TemplateView):
@@ -39,7 +39,7 @@ class DadosPessoaisView(EditarContaBase):
     form_class = DadosPessoaisForm
     context_object_name = 'usuario'
     success_message = 'Dados pessoais atualizados.'
-    extra_context = {'titulo': 'Dados pessoais', 'botao': 'Salvar'}
+    extra_context = {'titulo': 'Dados pessoais', 'voltar': reverse_lazy('accounts:conta'), 'botao': 'Salvar'}
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -49,7 +49,7 @@ class PerfilView(EditarContaBase):
     model = Profile
     fields = ['instagram_url', 'facebook_url', 'linkedin_url', 'twitter_url']
     success_message = 'Perfil atualizado.'
-    extra_context = {'titulo': 'Perfil', 'botao': 'Salvar'}
+    extra_context = {'titulo': 'Perfil', 'voltar': reverse_lazy('accounts:conta'), 'botao': 'Salvar'}
 
     def get_object(self, queryset=None):
         return self.request.user.profile
@@ -59,7 +59,7 @@ class EnderecoView(EditarContaBase):
     model = Address
     fields = ['country', 'state', 'city', 'cep']
     success_message = 'Endereço atualizado.'
-    extra_context = {'titulo': 'Endereço', 'botao': 'Salvar'}
+    extra_context = {'titulo': 'Endereço', 'voltar': reverse_lazy('accounts:conta'), 'botao': 'Salvar'}
 
     def get_object(self, queryset=None):
         return self.request.user.address
@@ -82,4 +82,4 @@ class UsuarioPapelView(SomenteAdministradorMixin, SuccessMessageMixin, UpdateVie
     template_name = 'crud/form.html'
     success_url = reverse_lazy('accounts:usuarios')
     success_message = 'Usuário atualizado.'
-    extra_context = {'titulo': 'Papel do usuário', 'botao': 'Salvar'}
+    extra_context = {'titulo': 'Papel do usuário', 'voltar': reverse_lazy('accounts:usuarios'), 'botao': 'Salvar'}

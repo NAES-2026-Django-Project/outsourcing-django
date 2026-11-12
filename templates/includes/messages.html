@@ -1,8 +1,13 @@
+{% load ui %}
 {% if messages %}
 <div class="toast-area">
   {% for message in messages %}
-    <div class="toast {{ message.tags }}" role="status" aria-live="polite">
-      <div class="toast-body">{{ message }}</div>
+    <div class="toast {{ message.tags }}" role="status" aria-live="polite" aria-atomic="true">
+      <div class="toast-body">
+        <span class="toast-ico">{% if message.level_tag == 'error' %}{% icone "x-circle" %}{% elif message.level_tag == 'warning' %}{% icone "exclamation-triangle" %}{% elif message.level_tag == 'info' %}{% icone "info-circle" %}{% else %}{% icone "check-circle" %}{% endif %}</span>
+        <p>{{ message }}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
     </div>
   {% endfor %}
 </div>
