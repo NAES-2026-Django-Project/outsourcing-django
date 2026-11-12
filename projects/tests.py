@@ -526,47 +526,76 @@ class PopularDemoTests(TestCase):
     def popular(self, **kwargs):
         call_command('popular_demo', stdout=open(os.devnull, 'w'), **kwargs)
 
-    def test_cria_contas_projetos_e_tarefas_validas(self):
+    def contas_demo(self):
+        return User.objects.filter(email__endswith='@outsourcing.test')
+
+    def test_cria_equipes_projetos_e_contas(self):
         self.popular()
-        contas = User.objects.filter(email__endswith='@outsourcing.test')
-        self.assertEqual(contas.count(), 3)
-        gerente = contas.get(email='gerente@outsourcing.test')
-        self.assertEqual(gerente.nomes_grupos, {GERENTE})
-        self.assertTrue(gerente.check_password('senha-demo-123'))
-        self.assertEqual(contas.get(email='dev1@outsourcing.test').nomes_grupos, {DESENVOLVEDOR})
-        self.assertEqual(Project.objects.filter(created_by=gerente).count(), 2)
-        self.assertEqual(Task.objects.count(), 12)
+        contas = self.contas_demo()
+        self.assertEqual(contas.count(), 8)
+        self.assertEqual(contas.filter(groups__name=GERENTE).count(), 2)
+        self.assertEqual(contas.filter(groups__name=DESENVOLVEDOR).count(), 6)
+        self.assertTrue(contas.get(email='ana@outsourcing.test').check_password('senha-demo-123'))
+        self.assertEqual(Team.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 4)
+        for projeto in Project.objects.select_related('team', 'created_by'):
+            with self.subTest(projeto.name):
+                self.assertEqual(projeto.created_by, projeto.team.manager)
+                self.assertIn(GERENTE, projeto.created_by.nomes_grupos)
+                self.assertGreaterEqual(projeto.assigned_members.count(), 3)
+                self.assertEqual(Note.objects.filter(task__stage__project=projeto).count(), 2)
+
+    def test_cada_dev_tem_duas_tarefas_em_estagios_diferentes_por_projeto(self):
+        self.popular()
+        for projeto in Project.objects.all():
+            for dev in projeto.assigned_members.all():
+                with self.subTest(projeto=projeto.name, dev=dev.first_name):
+                    tarefas = Task.objects.filter(stage__project=projeto, assigned_to=dev)
+                    self.assertEqual(tarefas.count(), 2)
+                    self.assertEqual(len({tarefa.stage_id for tarefa in tarefas}), 2)
         for tarefa in Task.objects.all():
             tarefa.full_clean()  # responsável participa do projeto
-        dev1 = contas.get(email='dev1@outsourcing.test')
-        self.assertEqual(Note.objects.do_autor(dev1).count(), 2)
-        self.assertEqual(TimeEntry.objects.do_autor(dev1).count(), 3)
+
+    def test_mantem_a_conta_administradora_padrao(self):
+        from projects.management.commands.popular_demo import ADMIN_PADRAO
+        admin = User.objects.create_user(email=ADMIN_PADRAO, password='x', first_name='A', last_name='B')
+        self.popular()
+        admin.refresh_from_db()
+        self.assertTrue(admin.eh_administrador)
+        self.assertIn(ADMINISTRADOR, admin.nomes_grupos)
+        self.popular(remover=True)
+        self.assertTrue(User.objects.filter(pk=admin.pk).exists())
+
+    def test_sem_a_conta_administradora_nao_falha(self):
+        self.popular(admin='ninguem@exemplo.com')
+        self.assertEqual(Project.objects.count(), 4)
 
     def test_rodar_de_novo_nao_duplica_nem_desfaz_movimentos(self):
         self.popular()
-        tarefa = Task.objects.get(title='Abrir chamado pelo portal')
-        tarefa.stage = tarefa.stage.project.stages.get(stage_type='doing')
+        tarefa = Task.objects.filter(stage__stage_type='backlog').first()
+        tarefa.stage = tarefa.stage.project.stages.get(stage_type='done')
         tarefa.save()
         self.popular()
-        self.assertEqual(User.objects.filter(email__endswith='@outsourcing.test').count(), 3)
-        self.assertEqual(Project.objects.count(), 2)
-        self.assertEqual(Task.objects.count(), 12)
-        self.assertEqual(Note.objects.count(), 2)
-        self.assertEqual(TimeEntry.objects.count(), 3)
-        self.assertEqual(Task.objects.get(pk=tarefa.pk).stage.stage_type, 'doing')
+        self.assertEqual(self.contas_demo().count(), 8)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Task.objects.count(), 32)
+        self.assertEqual(Note.objects.count(), 8)
+        self.assertEqual(TimeEntry.objects.count(), 6)
+        self.assertEqual(Task.objects.get(pk=tarefa.pk).stage.stage_type, 'done')
 
     def test_remover_apaga_somente_os_dados_de_demonstracao(self):
-        outro = criar_usuario('real@exemplo.com', GERENTE)
+        real = criar_usuario('real@exemplo.com', GERENTE)
+        Team.objects.create(name='Equipe real', manager=real)
         self.popular()
         self.popular(remover=True)
-        self.assertFalse(User.objects.filter(email__endswith='@outsourcing.test').exists())
-        self.assertEqual(Team.objects.count(), 0)
+        self.assertFalse(self.contas_demo().exists())
+        self.assertEqual(list(Team.objects.values_list('name', flat=True)), ['Equipe real'])
         self.assertEqual(Project.objects.count(), 0)
         self.assertEqual(Task.objects.count(), 0)
-        self.assertTrue(User.objects.filter(pk=outro.pk).exists())
+        self.assertTrue(User.objects.filter(pk=real.pk).exists())
 
     def test_exige_a_senha(self):
         with patch.dict(os.environ, {'DEMO_SENHA': ''}):
             with self.assertRaises(CommandError):
                 self.popular()
-        self.assertFalse(User.objects.filter(email__endswith='@outsourcing.test').exists())
+        self.assertFalse(self.contas_demo().exists())
