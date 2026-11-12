@@ -1,0 +1,12 @@
+{% extends "auth_base.html" %}
+{% load crispy_forms_tags ui %}
+{% block title %}Criar conta · Outsourcing{% endblock %}
+{% block auth_conteudo %}
+<div><h1>Criar conta</h1><p class="text-secondary mb-0">Toda conta nova entra como Desenvolvedor. Um administrador pode mudar o papel depois.</p></div>
+<form method="post" novalidate class="card form-card">
+  {% csrf_token %}
+  <div class="card-body">{{ form|crispy }}</div>
+  <div class="card-foot form-foot"><button class="btn btn-primary w-100">{% icone "person-plus" %}<span>Criar conta</span></button></div>
+</form>
+<p class="text-center text-secondary mb-0">Já tem conta? <a href="{% url 'accounts:login' %}">Entrar</a></p>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block corpo %}
+<main class="auth" id="conteudo">
+  <div class="auth-form">
+    <div class="auth-form-inner">
+      <a class="brand" href="{% url 'pages:home' %}"><span class="brand-mark"><b></b><b></b><b></b></span><span>Outsourcing</span></a>
+      {% block auth_conteudo %}{% endblock %}
+    </div>
+  </div>
+  <aside class="auth-side" aria-label="Sobre o Outsourcing">
+    <div class="deco"></div>
+    <h2>Equipes, projetos e tarefas no mesmo quadro</h2>
+    <p>Acompanhe cada estágio, registre horas, guarde anotações privadas e tire dúvidas com o assistente de IA.</p>
+    <ul>
+      <li>{% icone "kanban" %}Quadros kanban por projeto</li>
+      <li>{% icone "shield-lock" %}Acesso por papel: administrador, gerente e desenvolvedor</li>
+      <li>{% icone "chat-dots" %}Assistente com cota mensal de uso</li>
+    </ul>
+  </aside>
+</main>
+{% endblock %}

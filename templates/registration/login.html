@@ -1,17 +1,15 @@
-{% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% extends "auth_base.html" %}
+{% load crispy_forms_tags ui %}
 {% block title %}Entrar · Outsourcing{% endblock %}
-{% block content %}
-<h1>Entrar</h1>
-<div class="card narrow">
+{% block auth_conteudo %}
+<div><h1>Entrar</h1><p class="text-secondary mb-0">Use o e-mail e a senha da sua conta.</p></div>
+<form method="post" class="card form-card">
+  {% csrf_token %}
   <div class="card-body">
-    <form method="post">
-      {% csrf_token %}
-      {{ form|crispy }}
-      <input type="hidden" name="next" value="{{ next }}">
-      <button class="btn btn-primary">Entrar</button>
-    </form>
-    <p class="mt-3 mb-0">Ainda não tem conta? <a href="{% url 'accounts:cadastro' %}">Criar conta</a></p>
+    {{ form|crispy }}
+    <input type="hidden" name="next" value="{{ next }}">
   </div>
-</div>
+  <div class="card-foot form-foot"><button class="btn btn-primary w-100">{% icone "box-arrow-in-right" %}<span>Entrar</span></button></div>
+</form>
+<p class="text-center text-secondary mb-0">Ainda não tem conta? <a href="{% url 'accounts:cadastro' %}">Criar conta</a></p>
 {% endblock %}

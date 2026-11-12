@@ -11,7 +11,7 @@ from .models import Address, Profile, User
 
 class CadastroView(SuccessMessageMixin, CreateView):
     form_class = CadastroForm
-    template_name = 'crud/form.html'
+    template_name = 'accounts/cadastro.html'
     success_url = reverse_lazy('accounts:login')
     success_message = 'Conta criada. Entre com seu e-mail e senha.'
     extra_context = {'titulo': 'Criar conta', 'botao': 'Criar conta'}
