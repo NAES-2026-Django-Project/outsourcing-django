@@ -1,6 +1,6 @@
 # Aplicar a nova interface (TailAdmin) nos templates Django
 
-- Status: em andamento
+- Status: concluído
 - Critérios: T3-2.5 (reforço); preservar DEF-4, DEF-7, T1-1.5, T2-1.4, T2-2.3, T3-1.2, T3-1.4, T3-1.5, T3-2.3c
 - Entrada: aplicar nos templates o visual do `docs/design/DESIGN.md` e do protótipo https://claude.ai/artifact/Qo296wGA8fiFjxLpa6wzMJ
 
@@ -38,13 +38,13 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
   - os ids do assistente: `#mensagens`, `#pergunta`, `#form-assistente`, `#cota-barra` e `#cota-texto`;
   - os links de paginação com `title=…&priority=…&page=N`;
   - o template `registration/login.html` e o "Criar conta".
-- [ ] Religar o PostgreSQL descartável (porta 54329) e o banco `naes_demo` com o `popular_demo`, para a verificação visual local.
+- [x] Religar o PostgreSQL descartável (porta 54329) e o banco `naes_demo` com o `popular_demo`, para a verificação visual local.
 
 ## 2. Etapas e commits
 
 ### A. Base visual
-- [ ] `docs(plans): planejar a aplicação da nova interface`. Salva este plano em `docs/plans/2026-11-12-aplicar-interface-tailadmin.md`.
-- [ ] `feat(ui): tokens do TailAdmin, Outfit e Bootstrap Icons`
+- [x] `docs(plans): planejar a aplicação da nova interface`. Salva este plano em `docs/plans/2026-11-12-aplicar-interface-tailadmin.md`.
+- [x] `feat(ui): tokens do TailAdmin, Outfit e Bootstrap Icons`
   - `static/css/theme.css` reescrito com os tokens da seção 3.2 do DESIGN.md. O Bootstrap 5.3 usa `data-bs-theme` no `<html>`, então os seletores são `:root`/`[data-bs-theme="light"]` e `[data-bs-theme="dark"]`.
   - Mapeamento para o Bootstrap:
     - `--bs-body-bg`, `--bs-body-color`, `--bs-border-color`, `--bs-secondary-color`;
@@ -60,7 +60,7 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - script inline que aplica o tema salvo no `localStorage` ou o `prefers-color-scheme`;
     - link "Pular para o conteúdo";
     - `{% block trilha %}` para a trilha de navegação.
-- [ ] `feat(ui): templatetags e parciais da interface`
+- [x] `feat(ui): templatetags e parciais da interface`
   - `pages/templatetags/ui.py` concentra o mapeamento da seção 3.3 do DESIGN.md num só lugar:
     - `{% icone "kanban" %}`;
     - `{% etiqueta_prioridade tarefa %}`, `{% etiqueta_estagio estagio %}`, `{% etiqueta_papel usuario %}` e `{% etiqueta_situacao chamada %}`;
@@ -70,7 +70,7 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - `empty_state.html`, com ícone, título, texto e ação opcional.
 
 ### B. Estrutura e componentes compartilhados
-- [ ] `feat(ui): barra lateral com ícones e cabeçalho com menu do usuário`
+- [x] `feat(ui): barra lateral com ícones e cabeçalho com menu do usuário`
   - `includes/sidebar.html`:
     - ícones da seção 10 do DESIGN.md e grupos em maiúsculas;
     - o mesmo controle por `request.user.is_authenticated` e por papel (T2-1.4).
@@ -82,7 +82,7 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - busca de tarefas (no celular, vira um botão de ícone);
     - alternância de tema;
     - menu do usuário (dropdown do Bootstrap) com Minha conta, Meu consumo e Sair (POST).
-- [ ] `feat(ui): toasts, modal de exclusão e paginação no novo visual`
+- [x] `feat(ui): toasts, modal de exclusão e paginação no novo visual`
   - `includes/messages.html`: toast com ícone por severidade.
   - `static/js/app.js`:
     - o Bootbox recebe `className`, ícone e botões no estilo do modal do DESIGN.md (T3-1.5 continua);
@@ -93,7 +93,7 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - todos os links continuam com `{% url_pagina %}` (T3-1.2).
 
 ### C. Telas
-- [ ] `feat(ui): listas com filtros no cartão e tabelas que viram cartões no celular`
+- [x] `feat(ui): listas com filtros no cartão e tabelas que viram cartões no celular`
   - O padrão é o mesmo em todas as listas:
     - `page_head` com a ação "Novo";
     - um cartão com cabeçalho (título e contador) e os filtros (`includes/filtros.html`), que no celular ficam recolhidos num botão "Filtros";
@@ -101,13 +101,13 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - a primeira coluna `lead`, as ações como botões de ícone, a paginação no rodapé e um estado vazio com o próximo passo.
   - Abaixo de 768px, o CSS transforma cada linha num cartão.
   - Listas: tarefas, projetos, estágios, equipes, anotações, apontamentos (com indicador do total de horas), quadros, usuários, requisições, IA por usuário e meu consumo.
-- [ ] `feat(ui): telas de detalhe e formulários`
+- [x] `feat(ui): telas de detalhe e formulários`
   - Os `*_detail.html` ganham:
     - trilha e `page_head` com Editar e Excluir;
     - um cartão de resumo em pares rótulo/valor (2 colunas);
     - cartões laterais para as seções relacionadas, como as anotações e os apontamentos da tarefa, ou os membros e estágios do projeto.
   - `crud/form.html`: cartão de até 720px, com rodapé Cancelar + Salvar, usando o `voltar` do `RetornoMixin`. `crud/confirm_delete.html` segue o mesmo visual do modal.
-- [ ] `feat(projects): quadro kanban no novo visual`
+- [x] `feat(projects): quadro kanban no novo visual`
   - Colunas em `--surface-2` com contador e "+".
   - Cartão de tarefa com:
     - faixa de prioridade;
@@ -117,25 +117,25 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
     - botões ◀ ▶ de ícone (os mesmos POSTs de hoje).
   - Rolagem horizontal com *snap* no celular.
   - Nova propriedade `Task.vencida` (prazo anterior a hoje e estágio que não é concluído nem aprovado).
-- [ ] `feat(pages): painel inicial com indicadores e progresso dos projetos`
+- [x] `feat(pages): painel inicial com indicadores e progresso dos projetos`
   - Três indicadores com ícone e a lista de tarefas recentes com etiquetas.
   - Projetos recentes com barra de progresso. O progresso vem de `annotate` com `Count` filtrado (concluído e aprovado) no próprio queryset, sem queries extras (o `QueriesTests` continua valendo).
-- [ ] `feat(accounts): entrar e criar conta em layout dividido, e Minha conta`
+- [x] `feat(accounts): entrar e criar conta em layout dividido, e Minha conta`
   - Novo `templates/auth_base.html`: formulário à esquerda, painel azul à direita, que some abaixo de 992px.
   - `registration/login.html` passa a estendê-lo. O cadastro ganha `accounts/cadastro.html` (só muda o `template_name` da view).
   - `accounts/conta.html`: cartão de perfil (avatar, nome, papel) e cartões Dados pessoais, Endereço e Perfil e redes, cada um com Editar.
-- [ ] `feat(ia): assistente e telas de IA no novo visual`
+- [x] `feat(ia): assistente e telas de IA no novo visual`
   - Assistente: balões e área de envio no novo visual, coluna de apoio com a barra de cota e chips. Os ids e o `data-sugestao` ficam iguais, então o `assistente.js` não muda.
   - Configuração da IA: formulário à esquerda e cartão "Conexão" à direita, com "Testar conexão" no cabeçalho.
   - Requisição: resumo, pergunta e resposta em cartões.
-- [ ] `feat(pages): página Sobre e páginas de erro no novo visual`
+- [x] `feat(pages): página Sobre e páginas de erro no novo visual`
   - Sobre: texto e os dois diagramas em cartões `figure`. As imagens ganham fundo branco para continuarem legíveis no tema escuro.
   - Erros:
     - 403 e 404 dentro do layout, com número grande, frase e "Voltar ao início";
     - 400 e 500 com o mesmo visual, em `erro_simples.html`.
 
 ### D. Testes e documentação
-- [ ] `test(ui): cobrir etiquetas, prazo vencido, progresso e estrutura das telas`
+- [x] `test(ui): cobrir etiquetas, prazo vencido, progresso e estrutura das telas`
   - As templatetags de `ui` produzem a classe e o texto certos para cada prioridade, estágio, papel e situação.
   - `Task.vencida` vale nos dois sentidos.
   - O progresso no painel mostra a porcentagem certa, sem queries extras.
@@ -143,21 +143,21 @@ Fica de fora: o seletor "ver como" do protótipo. Ele só existe para a demonstr
   - O `base.html` traz a fonte, os ícones, o botão de tema e o link "Pular para o conteúdo".
   - A paginação numerada preserva os filtros.
   - Login e cadastro usam o layout dividido.
-- [ ] `docs: registrar a nova interface no DESIGN.md e na matriz`
+- [x] `docs: registrar a nova interface no DESIGN.md e na matriz`
   - DESIGN.md: a seção 13 passa a descrever o que foi implementado.
   - `docs/criterios.md`: evidências de T3-2.5 atualizadas.
 
 ### E. Validação e entrega
-- [ ] Rodar a suíte completa e o `coverage`.
-- [ ] Verificar no navegador, no servidor local com o banco descartável e os dados do `popular_demo`:
+- [x] Rodar a suíte completa e o `coverage`.
+- [x] Verificar no navegador, no servidor local com o banco descartável e os dados do `popular_demo`:
   - os três papéis;
   - as larguras de 375, 768 e 1280px;
   - os temas claro e escuro;
   - a barra lateral recolhida e a gaveta;
   - os fluxos de mover, criar pelo "+", excluir com o Bootbox, filtrar e paginar, perguntar ao assistente e as máscaras;
   - o console sem erros e nenhuma página com rolagem horizontal.
-- [ ] `/validate-criterion` em DEF-4, DEF-7, T1-1.5, T2-1.4, T2-2.3, T3-1.2, T3-1.4, T3-1.5, T3-2.3c e T3-2.5.
-- [ ] Deploy no App Engine (`collectstatic`, `gerar_app_local.py`, `gcloud app deploy`) e conferência do site publicado logado.
+- [x] `/validate-criterion` em DEF-4, DEF-7, T1-1.5, T2-1.4, T2-2.3, T3-1.2, T3-1.4, T3-1.5, T3-2.3c e T3-2.5.
+- [x] Deploy no App Engine (`collectstatic`, `gerar_app_local.py`, `gcloud app deploy`) e conferência do site publicado logado.
 - [ ] Enviar ao GitHub e mesclar na `main` somente quando o desenvolvedor pedir: primeiro `docs/design-tailadmin`, depois `feat/interface-tailadmin`.
 
 ## 3. Revisão de escopo por testes
@@ -207,3 +207,19 @@ Ao final, rodar `/validate-criterion` nesses IDs.
   - o `static/js/assistente.js`;
   - o `includes/filtros.html` (só muda o visual);
   - o protótipo `docs/design/prototypes/interface-tailadmin.html`, como referência de marcação e CSS.
+
+## Resultado (12/11/2026)
+
+- 132 testes passando (8 novos em `InterfaceTests`), cobertura de 98%; `check` e `makemigrations --check` sem pendências.
+- Verificado no navegador (servidor local com o banco descartável e os dados do `popular_demo`):
+  - todas as páginas sem rolagem horizontal em 375px;
+  - desktop em 1366px;
+  - tema escuro e barra recolhida, com as escolhas salvas;
+  - gaveta no celular;
+  - modal do Bootbox;
+  - máscara de telefone;
+  - Cancelar dos formulários;
+  - tabelas que viram cartões e quadro com *snap*.
+- Correção encontrada na verificação: a trilha aparecia com o HTML escapado, e a classe `lead` colidia com a do Bootstrap.
+- `/validate-criterion`: DEF-4, DEF-7, T1-1.5, T2-1.4, T2-2.3, T3-1.2, T3-1.4, T3-1.5, T3-2.3c e T3-2.5 continuam cumpridos.
+- Publicado em https://outsourcing-naes-2026.rj.r.appspot.com e conferido logado: fonte, ícones, tokens e as páginas principais.
