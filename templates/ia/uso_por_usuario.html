@@ -17,7 +17,7 @@
         {% for usuario in usuarios %}
           {% widthratio usuario.tokens_mes usuario.limite 100 as pct %}
           <tr>
-            <td class="lead" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
+            <td class="principal" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
             <td data-label="Chamadas" class="num r">{{ usuario.chamadas_mes }}</td>
             <td data-label="Tokens" class="num r">{{ usuario.tokens_mes|intcomma }}</td>
             <td data-label="Cota" style="min-width: 180px">

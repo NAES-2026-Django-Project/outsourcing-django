@@ -17,7 +17,7 @@
       <tbody>
         {% for chamada in chamadas %}
           <tr>
-            <td class="lead num" data-label="Data"><a class="lead-link" href="{% url 'ia:requisicao_detalhe' chamada.pk %}">{{ chamada.criado_em|date:"d/m/Y H:i" }}</a></td>
+            <td class="principal num" data-label="Data"><a class="lead-link" href="{% url 'ia:requisicao_detalhe' chamada.pk %}">{{ chamada.criado_em|date:"d/m/Y H:i" }}</a></td>
             <td data-label="Usuário">{{ chamada.usuario|default:"Usuário removido" }}</td>
             <td data-label="Origem">{{ chamada.get_origem_display }}</td>
             <td data-label="Situação">{% etiqueta_situacao chamada %}</td>

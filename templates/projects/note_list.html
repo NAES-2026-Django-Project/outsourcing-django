@@ -17,7 +17,7 @@
       <tbody>
         {% for anotacao in anotacoes %}
           <tr>
-            <td class="lead" data-label="Anotação"><a class="lead-link" href="{% url 'projects:anotacao_detalhe' anotacao.pk %}">{{ anotacao.content|truncatechars:80 }}</a></td>
+            <td class="principal" data-label="Anotação"><a class="lead-link" href="{% url 'projects:anotacao_detalhe' anotacao.pk %}">{{ anotacao.content|truncatechars:80 }}</a></td>
             <td data-label="Tarefa"><a href="{% url 'projects:tarefa_detalhe' anotacao.task_id %}">{{ anotacao.task.title }}</a></td>
             <td data-label="Data" class="num">{{ anotacao.created_at|date:"d/m/Y" }}</td>
             <td class="acts"><div class="acoes">

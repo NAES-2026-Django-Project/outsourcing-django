@@ -17,7 +17,7 @@
       <tbody>
         {% for equipe in equipes %}
           <tr>
-            <td class="lead" data-label="Equipe"><a class="lead-link" href="{% url 'projects:equipe_detalhe' equipe.pk %}">{{ equipe.name }}</a></td>
+            <td class="principal" data-label="Equipe"><a class="lead-link" href="{% url 'projects:equipe_detalhe' equipe.pk %}">{{ equipe.name }}</a></td>
             <td data-label="Gerente"><span class="pessoa">{% avatar equipe.manager "sm" %}{{ equipe.manager }}</span></td>
             <td data-label="Membros" class="num r">{{ equipe.total_membros }}</td>
             <td class="acts">{% if request.user.eh_administrador %}<div class="acoes">

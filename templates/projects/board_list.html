@@ -16,7 +16,7 @@
       <tbody>
         {% for projeto in projetos %}
           <tr>
-            <td class="lead" data-label="Projeto"><a class="lead-link" href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a></td>
+            <td class="principal" data-label="Projeto"><a class="lead-link" href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a></td>
             <td data-label="Equipe"><span class="tag tag-gray sem-ponto">{{ projeto.team.name }}</span></td>
             <td data-label="Término" class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</td>
             <td class="acts"><a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadro' projeto.pk %}">{% icone "kanban" %}<span>Abrir quadro</span></a></td>

@@ -16,7 +16,7 @@
       <tbody>
         {% for usuario in usuarios %}
           <tr>
-            <td class="lead" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
+            <td class="principal" data-label="Usuário"><span class="pessoa">{% avatar usuario %}<span><span class="forte d-block">{{ usuario }}</span><span class="small text-secondary">{{ usuario.email }}</span></span></span></td>
             <td data-label="Papel">{% for g in usuario.groups.all %}{% etiqueta_grupo g.name %} {% empty %}<span class="tag tag-gray sem-ponto">Sem grupo</span>{% endfor %}</td>
             <td data-label="Situação">{% if usuario.is_active %}<span class="tag tag-success">Ativo</span>{% else %}<span class="tag tag-gray">Inativo</span>{% endif %}</td>
             <td class="acts"><a class="btn btn-outline-secondary btn-sm" href="{% url 'accounts:usuario_papel' usuario.pk %}">{% icone "person-gear" %}<span>Alterar papel</span></a></td>

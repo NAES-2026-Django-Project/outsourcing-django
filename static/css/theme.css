@@ -364,8 +364,8 @@ figure.card { margin: 0; }
   .table-cards tr:first-child { border-top: 0; }
   .table > tbody.table-cards-body td, .table-cards > tbody > tr > td { border: 0; padding: 0; text-align: left; background: none; }
   .table-cards td::before { content: attr(data-label); display: block; font-size: 12px; line-height: 18px; color: var(--muted); }
-  .table-cards td.lead { grid-column: 1 / -1; font-size: 15px; }
-  .table-cards td.lead::before, .table-cards td.acts::before, .table-cards td.vazio::before { display: none; }
+  .table-cards td.principal { grid-column: 1 / -1; font-size: 15px; }
+  .table-cards td.principal::before, .table-cards td.acts::before, .table-cards td.vazio::before { display: none; }
   .table-cards td.acts, .table-cards td.vazio { grid-column: 1 / -1; }
   .table-cards td.acts .acoes { justify-content: flex-start; }
   .table-cards td.r { text-align: left; }

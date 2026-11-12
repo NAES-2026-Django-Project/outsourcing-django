@@ -18,7 +18,7 @@
       <tbody>
         {% for tarefa in tarefas %}
           <tr>
-            <td class="lead" data-label="Tarefa"><a class="lead-link" href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a></td>
+            <td class="principal" data-label="Tarefa"><a class="lead-link" href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a></td>
             <td data-label="Projeto">{{ tarefa.stage.project.name }}</td>
             <td data-label="Estágio">{% etiqueta_estagio tarefa.stage %}</td>
             <td data-label="Prioridade">{% etiqueta_prioridade tarefa %}</td>

@@ -1,6 +1,6 @@
 """Componentes de interface do DESIGN.md (seções 3.3 e 10): ícones, etiquetas e iniciais."""
 from django import template
-from django.utils.html import format_html
+from django.utils.html import format_html, format_html_join
 
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR, GERENTE
 
@@ -68,9 +68,7 @@ def trilha(*partes, atual=''):
         except NoReverseMatch:
             url = destino
         itens.append((url, rotulo))
-    links = format_html('').join(
-        format_html('<a href="{}">{}</a><span aria-hidden="true">/</span>', url, rotulo) for url, rotulo in itens
-    )
+    links = format_html_join('', '<a href="{}">{}</a><span aria-hidden="true">/</span>', itens)
     return format_html('<nav class="crumbs" aria-label="Trilha">{}<span>{}</span></nav>', links, atual)
 
 

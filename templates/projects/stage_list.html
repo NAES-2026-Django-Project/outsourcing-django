@@ -17,7 +17,7 @@
       <tbody>
         {% for estagio in estagios %}
           <tr>
-            <td class="lead" data-label="Estágio"><a class="lead-link" href="{% url 'projects:estagio_detalhe' estagio.pk %}">{{ estagio.name }}</a></td>
+            <td class="principal" data-label="Estágio"><a class="lead-link" href="{% url 'projects:estagio_detalhe' estagio.pk %}">{{ estagio.name }}</a></td>
             <td data-label="Projeto">{{ estagio.project.name }}</td>
             <td data-label="Tipo">{% etiqueta_estagio estagio %}</td>
             <td data-label="Ordem" class="num r">{{ estagio.order }}</td>

@@ -34,7 +34,7 @@
       <tbody>
         {% for chamada in chamadas %}
           <tr>
-            <td class="lead num" data-label="Data">{{ chamada.criado_em|date:"d/m/Y H:i" }}</td>
+            <td class="principal num" data-label="Data">{{ chamada.criado_em|date:"d/m/Y H:i" }}</td>
             <td data-label="Origem">{{ chamada.get_origem_display }}</td>
             <td data-label="Situação">{% etiqueta_situacao chamada %}</td>
             <td data-label="Tokens" class="num r">{{ chamada.total_tokens|intcomma }}</td>

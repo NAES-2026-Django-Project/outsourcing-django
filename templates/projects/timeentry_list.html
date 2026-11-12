@@ -27,7 +27,7 @@
       <tbody>
         {% for apontamento in apontamentos %}
           <tr>
-            <td class="lead num" data-label="Data"><a class="lead-link" href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a></td>
+            <td class="principal num" data-label="Data"><a class="lead-link" href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a></td>
             <td data-label="Tarefa"><a href="{% url 'projects:tarefa_detalhe' apontamento.task_id %}">{{ apontamento.task.title }}</a></td>
             <td data-label="Projeto">{{ apontamento.task.stage.project.name }}</td>
             <td data-label="Descrição">{{ apontamento.description|default:"Sem descrição" }}</td>
