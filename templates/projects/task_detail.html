@@ -6,6 +6,8 @@
   <div class="d-flex gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'projects:quadro' tarefa.stage.project_id %}">Abrir quadro</a>
     <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}?next={{ request.path|urlencode }}">Editar</a>
+    {% url 'projects:quadro' tarefa.stage.project_id as url_quadro %}
+    <a class="btn btn-outline-danger" data-excluir="a tarefa {{ tarefa.title }}" href="{% url 'projects:tarefa_excluir' tarefa.pk %}?next={{ url_quadro|urlencode }}">Excluir</a>
   </div>
 </div>
 <div class="card card-body gap-2">

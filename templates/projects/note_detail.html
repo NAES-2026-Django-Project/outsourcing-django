@@ -5,6 +5,7 @@
   <h1>Anotação</h1>
   <div class="d-flex gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'projects:anotacao_editar' anotacao.pk %}?next={{ request.path|urlencode }}">Editar</a>
+    <a class="btn btn-outline-danger" data-excluir="esta anotação" href="{% url 'projects:anotacao_excluir' anotacao.pk %}">Excluir</a>
     <a class="btn btn-outline-secondary" href="{% url 'projects:anotacoes' %}">Voltar</a>
   </div>
 </div>

@@ -3,7 +3,11 @@
 {% block content %}
 <div class="page-head">
   <h1>{{ estagio.name }}</h1>
-  <a class="btn btn-outline-secondary" href="{% url 'projects:estagios' %}">Voltar</a>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'projects:estagio_editar' estagio.pk %}?next={{ request.path|urlencode }}">Editar</a>
+    <a class="btn btn-outline-danger" data-excluir="o estágio {{ estagio.name }}" href="{% url 'projects:estagio_excluir' estagio.pk %}">Excluir</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:estagios' %}">Voltar</a>
+  </div>
 </div>
 <div class="card card-body gap-2">
   <div><strong>Projeto:</strong> {{ estagio.project.name }}</div>
