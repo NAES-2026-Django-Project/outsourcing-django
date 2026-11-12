@@ -103,6 +103,7 @@ class InterfaceTests(TestCase):
 
     def test_layout_carrega_fonte_icones_tema_e_atalho(self):
         response = self.client.get(reverse('pages:sobre'))
+        self.assertContains(response, "tema === 'dark' ? 'dark' : 'light'")  # claro é o padrão
         for trecho in ['family=Outfit', 'bootstrap-icons@1.11.3', 'id="alternar-tema"', 'id="alternar-menu"', 'href="#conteudo"']:
             with self.subTest(trecho):
                 self.assertContains(response, trecho)
