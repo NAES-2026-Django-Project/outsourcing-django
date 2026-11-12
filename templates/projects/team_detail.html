@@ -3,7 +3,13 @@
 {% block content %}
 <div class="page-head">
   <h1>{{ equipe.name }}</h1>
-  <a class="btn btn-outline-secondary" href="{% url 'projects:equipes' %}">Voltar</a>
+  <div class="d-flex gap-2">
+    {% if request.user.eh_administrador %}
+      <a class="btn btn-outline-secondary" href="{% url 'projects:equipe_editar' equipe.pk %}?next={{ request.path|urlencode }}">Editar</a>
+      <a class="btn btn-outline-danger" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
+    {% endif %}
+    <a class="btn btn-outline-secondary" href="{% url 'projects:equipes' %}">Voltar</a>
+  </div>
 </div>
 <div class="card card-body gap-2">
   <div><strong>Gerente:</strong> {{ equipe.manager }}</div>
