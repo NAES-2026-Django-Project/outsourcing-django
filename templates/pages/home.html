@@ -10,7 +10,10 @@
   <div class="row g-3">
     <div class="col-lg-6">
       <div class="card card-body gap-2">
-        <h2>Tarefas recentes</h2>
+        <div class="page-head">
+          <h2>Tarefas recentes</h2>
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:tarefas' %}">Ver tarefas</a>
+        </div>
         {% for tarefa in tarefas_recentes %}
           <div class="d-flex align-items-center gap-2">
             <span class="pill prio-{{ tarefa.priority }}">{{ tarefa.get_priority_display }}</span>
@@ -24,14 +27,22 @@
     </div>
     <div class="col-lg-6">
       <div class="card card-body gap-2">
-        <h2>Projetos recentes</h2>
+        <div class="page-head">
+          <h2>Projetos recentes</h2>
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:quadros' %}">Ver quadros</a>
+        </div>
         {% for projeto in projetos_recentes %}
           <div class="d-flex align-items-center gap-2">
             <a href="{% url 'projects:quadro' projeto.pk %}">{{ projeto.name }}</a>
             <small class="ms-auto text-secondary">Equipe {{ projeto.team.name }}</small>
           </div>
         {% empty %}
-          <p class="mb-0 text-secondary">Você ainda não participa de projetos.</p>
+          {% if request.user.eh_administrador or request.user.eh_gerente %}
+            <p class="mb-0 text-secondary">Você ainda não tem projetos. Crie um para a sua equipe e o quadro é montado com os estágios padrão.</p>
+            <div><a class="btn btn-primary btn-sm" href="{% url 'projects:projeto_criar' %}">Criar projeto</a></div>
+          {% else %}
+            <p class="mb-0 text-secondary">Você ainda não participa de projetos. Peça ao gerente da sua equipe para incluir você em um projeto.</p>
+          {% endif %}
         {% endfor %}
       </div>
     </div>
