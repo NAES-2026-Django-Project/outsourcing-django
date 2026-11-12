@@ -24,13 +24,12 @@ python manage.py popular_demo            # cria ou completa os dados, sem duplic
 python manage.py popular_demo --remover  # apaga os dados de demonstração
 ```
 
-O comando cria a equipe "Demonstração", os projetos "Portal do Cliente" e "App de Entregas" com doze tarefas, e três contas com a senha de `DEMO_SENHA`:
+O comando cria duas equipes com dois projetos cada e oito contas com a senha de `DEMO_SENHA`. Cada desenvolvedor tem duas tarefas por projeto, em estágios diferentes, e cada projeto tem duas anotações. A conta `andreyviniciusjodar@gmail.com` é mantida no grupo Administrador (troque com `--admin <e-mail>`) e nunca é removida.
 
-| Conta | Papel |
-|---|---|
-| `gerente@outsourcing.test` | Gerente, dono dos dois projetos |
-| `dev1@outsourcing.test` | Desenvolvedor, com anotações e apontamentos |
-| `dev2@outsourcing.test` | Desenvolvedor |
+| Equipe | Gerente | Projetos | Desenvolvedores |
+|---|---|---|---|
+| Web | `gerente.web@outsourcing.test` | Portal do Cliente, Loja Virtual | `ana@`, `bruno@`, `carla@outsourcing.test` |
+| Mobile | `gerente.mobile@outsourcing.test` | App de Entregas, App de Agendamentos | `diego@`, `elisa@`, `fabio@outsourcing.test` (Carla também atua no App de Agendamentos) |
 
 ## Deploy no Google App Engine
 
