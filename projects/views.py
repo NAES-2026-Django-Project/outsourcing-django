@@ -5,6 +5,7 @@ from django.db.models import Count, ProtectedError, Sum
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_filters.views import FilterView
@@ -27,6 +28,28 @@ class FormComUsuarioMixin:
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class RetornoMixin:
+    """Volta à tela de origem (`?next=`) ao salvar, excluir ou cancelar. Só aceita endereços do próprio site."""
+
+    def get_next_url(self):
+        destino = self.request.POST.get('next') or self.request.GET.get('next')
+        if destino and url_has_allowed_host_and_scheme(
+            destino, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()
+        ):
+            return destino
+        return None
+
+    def get_success_url(self):
+        return self.get_next_url() or super().get_success_url()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        destino = self.get_next_url()
+        if destino:
+            context['voltar'] = destino
+        return context
 
 
 class ExclusaoMixin(SuccessMessageMixin):
@@ -64,7 +87,7 @@ class TeamDetailView(AdministradorOuGerenteMixin, TeamQuerysetMixin, DetailView)
         return super().get_queryset().prefetch_related('members', 'projects')
 
 
-class TeamCreateView(SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class TeamCreateView(RetornoMixin, SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = Team
     form_class = TeamForm
     success_url = reverse_lazy('projects:equipes')
@@ -72,7 +95,7 @@ class TeamCreateView(SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMess
     extra_context = {'titulo': 'Nova equipe', 'botao': 'Cadastrar', 'voltar': reverse_lazy('projects:equipes')}
 
 
-class TeamUpdateView(SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class TeamUpdateView(RetornoMixin, SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     model = Team
     form_class = TeamForm
     success_url = reverse_lazy('projects:equipes')
@@ -80,7 +103,7 @@ class TeamUpdateView(SomenteAdministradorMixin, FormComUsuarioMixin, SuccessMess
     extra_context = {'titulo': 'Editar equipe', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:equipes')}
 
 
-class TeamDeleteView(SomenteAdministradorMixin, ExclusaoMixin, DeleteView):
+class TeamDeleteView(RetornoMixin, SomenteAdministradorMixin, ExclusaoMixin, DeleteView):
     model = Team
     success_url = reverse_lazy('projects:equipes')
     success_message = 'Equipe excluída.'
@@ -112,7 +135,7 @@ class ProjectDetailView(ProjectDonoMixin, DetailView):
         return super().get_queryset().prefetch_related('assigned_members', 'stages')
 
 
-class ProjectCreateView(AdministradorOuGerenteMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class ProjectCreateView(RetornoMixin, AdministradorOuGerenteMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = Project
     form_class = ProjectForm
     success_url = reverse_lazy('projects:projetos')
@@ -124,14 +147,14 @@ class ProjectCreateView(AdministradorOuGerenteMixin, FormComUsuarioMixin, Succes
         return super().form_valid(form)
 
 
-class ProjectUpdateView(ProjectDonoMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class ProjectUpdateView(RetornoMixin, ProjectDonoMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = ProjectForm
     success_url = reverse_lazy('projects:projetos')
     success_message = 'Projeto alterado.'
     extra_context = {'titulo': 'Editar projeto', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:projetos')}
 
 
-class ProjectDeleteView(ProjectDonoMixin, ExclusaoMixin, DeleteView):
+class ProjectDeleteView(RetornoMixin, ProjectDonoMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:projetos')
     success_message = 'Projeto excluído.'
     extra_context = {'titulo': 'Excluir projeto', 'voltar': reverse_lazy('projects:projetos')}
@@ -162,7 +185,7 @@ class StageDetailView(StageQuerysetMixin, DetailView):
         return super().get_queryset().prefetch_related('tasks__assigned_to')
 
 
-class StageCreateView(AdministradorOuGerenteMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class StageCreateView(RetornoMixin, AdministradorOuGerenteMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = Stage
     form_class = StageForm
     success_url = reverse_lazy('projects:estagios')
@@ -170,14 +193,14 @@ class StageCreateView(AdministradorOuGerenteMixin, FormComUsuarioMixin, SuccessM
     extra_context = {'titulo': 'Novo estágio', 'botao': 'Cadastrar', 'voltar': reverse_lazy('projects:estagios')}
 
 
-class StageUpdateView(StageQuerysetMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class StageUpdateView(RetornoMixin, StageQuerysetMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = StageForm
     success_url = reverse_lazy('projects:estagios')
     success_message = 'Estágio alterado.'
     extra_context = {'titulo': 'Editar estágio', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:estagios')}
 
 
-class StageDeleteView(StageQuerysetMixin, ExclusaoMixin, DeleteView):
+class StageDeleteView(RetornoMixin, StageQuerysetMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:estagios')
     success_message = 'Estágio excluído.'
     extra_context = {'titulo': 'Excluir estágio', 'voltar': reverse_lazy('projects:estagios')}
@@ -214,7 +237,7 @@ class TaskDetailView(TaskQuerysetMixin, DetailView):
         return context
 
 
-class TaskCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class TaskCreateView(RetornoMixin, LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = Task
     form_class = TaskForm
     success_url = reverse_lazy('projects:tarefas')
@@ -222,14 +245,14 @@ class TaskCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixi
     extra_context = {'titulo': 'Nova tarefa', 'botao': 'Cadastrar', 'voltar': reverse_lazy('projects:tarefas')}
 
 
-class TaskUpdateView(TaskQuerysetMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class TaskUpdateView(RetornoMixin, TaskQuerysetMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = TaskForm
     success_url = reverse_lazy('projects:tarefas')
     success_message = 'Tarefa alterada.'
     extra_context = {'titulo': 'Editar tarefa', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:tarefas')}
 
 
-class TaskDeleteView(TaskQuerysetMixin, ExclusaoMixin, DeleteView):
+class TaskDeleteView(RetornoMixin, TaskQuerysetMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:tarefas')
     success_message = 'Tarefa excluída.'
     extra_context = {'titulo': 'Excluir tarefa', 'voltar': reverse_lazy('projects:tarefas')}
@@ -253,7 +276,7 @@ class NoteDetailView(NoteAutorMixin, DetailView):
     context_object_name = 'anotacao'
 
 
-class NoteCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class NoteCreateView(RetornoMixin, LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = Note
     form_class = NoteForm
     success_url = reverse_lazy('projects:anotacoes')
@@ -271,14 +294,14 @@ class NoteCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixi
         return super().form_valid(form)
 
 
-class NoteUpdateView(NoteAutorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class NoteUpdateView(RetornoMixin, NoteAutorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = NoteForm
     success_url = reverse_lazy('projects:anotacoes')
     success_message = 'Anotação alterada.'
     extra_context = {'titulo': 'Editar anotação', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:anotacoes')}
 
 
-class NoteDeleteView(NoteAutorMixin, ExclusaoMixin, DeleteView):
+class NoteDeleteView(RetornoMixin, NoteAutorMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:anotacoes')
     success_message = 'Anotação excluída.'
     extra_context = {'titulo': 'Excluir anotação', 'voltar': reverse_lazy('projects:anotacoes')}
@@ -307,7 +330,7 @@ class TimeEntryDetailView(TimeEntryAutorMixin, DetailView):
     context_object_name = 'apontamento'
 
 
-class TimeEntryCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
+class TimeEntryCreateView(RetornoMixin, LoginRequiredMixin, FormComUsuarioMixin, SuccessMessageMixin, CreateView):
     model = TimeEntry
     form_class = TimeEntryForm
     success_url = reverse_lazy('projects:apontamentos')
@@ -325,14 +348,14 @@ class TimeEntryCreateView(LoginRequiredMixin, FormComUsuarioMixin, SuccessMessag
         return super().form_valid(form)
 
 
-class TimeEntryUpdateView(TimeEntryAutorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
+class TimeEntryUpdateView(RetornoMixin, TimeEntryAutorMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = TimeEntryForm
     success_url = reverse_lazy('projects:apontamentos')
     success_message = 'Apontamento alterado.'
     extra_context = {'titulo': 'Editar apontamento', 'botao': 'Salvar', 'voltar': reverse_lazy('projects:apontamentos')}
 
 
-class TimeEntryDeleteView(TimeEntryAutorMixin, ExclusaoMixin, DeleteView):
+class TimeEntryDeleteView(RetornoMixin, TimeEntryAutorMixin, ExclusaoMixin, DeleteView):
     success_url = reverse_lazy('projects:apontamentos')
     success_message = 'Apontamento excluído.'
     extra_context = {'titulo': 'Excluir apontamento', 'voltar': reverse_lazy('projects:apontamentos')}

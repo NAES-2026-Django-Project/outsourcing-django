@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-head">
   <h1>{{ projeto.name }}</h1>
-  <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}">Nova tarefa</a>
+  <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}?next={{ request.path|urlencode }}">Nova tarefa</a>
 </div>
 <div class="board">
   {% for coluna in colunas %}

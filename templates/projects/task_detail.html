@@ -5,7 +5,7 @@
   <h1>{{ tarefa.title }}</h1>
   <div class="d-flex gap-2">
     <a class="btn btn-outline-secondary" href="{% url 'projects:quadro' tarefa.stage.project_id %}">Abrir quadro</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}">Editar</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:tarefa_editar' tarefa.pk %}?next={{ request.path|urlencode }}">Editar</a>
   </div>
 </div>
 <div class="card card-body gap-2">
@@ -19,7 +19,7 @@
 <div class="card card-body gap-2">
   <div class="page-head">
     <h2>Minhas anotações</h2>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_criar' %}?tarefa={{ tarefa.pk }}">Nova anotação</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:anotacao_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">Nova anotação</a>
   </div>
   {% for nota in minhas_anotacoes %}
     <div><a href="{% url 'projects:anotacao_detalhe' nota.pk %}">{{ nota.created_at|date:"d/m/Y H:i" }}</a> · {{ nota.content|truncatechars:120 }}</div>
@@ -30,7 +30,7 @@
 <div class="card card-body gap-2">
   <div class="page-head">
     <h2>Meus apontamentos</h2>
-    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_criar' %}?tarefa={{ tarefa.pk }}">Apontar horas</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:apontamento_criar' %}?tarefa={{ tarefa.pk }}&amp;next={{ request.path|urlencode }}">Apontar horas</a>
   </div>
   {% for apontamento in meus_apontamentos %}
     <div><a href="{% url 'projects:apontamento_detalhe' apontamento.pk %}">{{ apontamento.date|date:"d/m/Y" }}</a> · <span class="num">{{ apontamento.hours }}h</span>{% if apontamento.description %} · {{ apontamento.description }}{% endif %}</div>

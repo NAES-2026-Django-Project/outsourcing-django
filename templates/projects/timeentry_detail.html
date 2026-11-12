@@ -4,7 +4,7 @@
 <div class="page-head">
   <h1>Apontamento</h1>
   <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamento_editar' apontamento.pk %}">Editar</a>
+    <a class="btn btn-outline-secondary" href="{% url 'projects:apontamento_editar' apontamento.pk %}?next={{ request.path|urlencode }}">Editar</a>
     <a class="btn btn-outline-secondary" href="{% url 'projects:apontamentos' %}">Voltar</a>
   </div>
 </div>
