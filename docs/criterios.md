@@ -6,7 +6,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 
 | | ID | Critério | Etapa | Evidência |
 |---|---|---|---|---|
-| [x] | DEF-1 | Pelo menos seis classes no models (sem contar User) | 5, 6 | `accounts/models.py`, `projects/models.py` (8 classes) |
+| [x] | DEF-1 | Pelo menos seis classes no models (sem contar User) | 5, 6 | `accounts/models.py`, `projects/models.py`, `ia/models.py` (12 classes além de User) |
 | [x] | DEF-2 | Telas de inserir, alterar, excluir e listar para as classes, salvo regras de negócio | 7 | `projects/urls.py`, `projects/tests.py` |
 | [x] | DEF-3 | Um movimento implementado, além do CRUD (mover tarefa entre estágios) | 8 | `TaskMoveView`, `MovimentoTests` |
 | [x] | DEF-4 | Layout com Bootstrap, Tailwind, Bulma ou semelhante | 4 | `templates/base.html` |
@@ -20,11 +20,11 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | | ID | Critério | Etapa | Evidência |
 |---|---|---|---|---|
 | [x] | T1-1.1 | Criar um projeto Django | 1 | `config/` |
-| [x] | T1-1.2 | URL, view e template da página "sobre" com descrição em texto | 4 | `pages/views.py`, `templates/pages/sobre.html` |
+| [x] | T1-1.2 | URL, view e template da página "sobre" com descrição em texto | 4 | `pages/views.py`, `templates/pages/sobre.html` (inclui o assistente de IA) |
 | [x] | T1-1.3 | Diagrama de caso de uso como imagem no template | 4 | `static/img/diagrama-casos-de-uso.png` |
-| [x] | T1-1.4 | Diagrama de classes como imagem no template | 4 | `static/img/diagrama-classes.png` |
+| [x] | T1-1.4 | Diagrama de classes como imagem no template | 4 | `static/img/diagrama-classes.png`, gerado de `docs/design/classes.dot` com `accounts`, `projects` e `ia` (13 classes) |
 | [x] | T1-1.5 | Template/layout com framework front-end | 4 | `templates/base.html` |
-| [x] | T1-1.6 | Classes e atributos baseados no diagrama de classes | 5, 6 | `projects/models.py` |
+| [x] | T1-1.6 | Classes e atributos baseados no diagrama de classes | 5, 6 | `accounts/models.py`, `projects/models.py`, `ia/models.py`; o diagrama é gerado dos próprios models |
 | [x] | T1-1.7 | Reutilizar e personalizar templates (`extra_context` ou `get_context_data`) | 4, 7 | `SobreView.extra_context`, `HomeView.get_context_data` |
 | [x] | T1-2.1 | Views, urls e templates: CreateView | 7 | `projects/views.py` |
 | [x] | T1-2.2 | Views, urls e templates: UpdateView | 7 | `projects/views.py` |
