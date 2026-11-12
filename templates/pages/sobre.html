@@ -5,12 +5,13 @@
 <h1>{{ titulo }}</h1>
 <p>O Outsourcing é um sistema web para gestão de equipes, projetos e tarefas em quadro kanban, desenvolvido com Python e Django na arquitetura MVT para a disciplina de Novas Aplicações em Engenharia de Software do IFPR.</p>
 <p>Administradores cuidam de usuários e equipes. Gerentes criam projetos e organizam os estágios de suas equipes. Desenvolvedores acompanham as tarefas dos projetos em que participam, movem cada uma pelo quadro e mantêm anotações e apontamentos de horas privados.</p>
+<p>O sistema também tem um assistente de inteligência artificial (Google Gemini) que tira dúvidas sobre as telas e regras do Outsourcing. Ele guarda o histórico de cada usuário e responde em Markdown no próprio visual do site. Administradores configuram o modelo e a chave da API, testam a conexão, acompanham cada requisição e definem a cota mensal de tokens de cada usuário; todos podem ver o próprio consumo.</p>
 <div class="card card-body gap-2">
   <h2>Diagrama de casos de uso</h2>
   <img class="diagram" src="{% static 'img/diagrama-casos-de-uso.png' %}" alt="Diagrama de casos de uso com os atores Visitante, Desenvolvedor, Gerente e Administrador">
 </div>
 <div class="card card-body gap-2">
   <h2>Diagrama de classes</h2>
-  <img class="diagram" src="{% static 'img/diagrama-classes.png' %}" alt="Diagrama de classes com User, Profile, Address, Team, Project, Stage, Task, Note e TimeEntry">
+  <img class="diagram" src="{% static 'img/diagrama-classes.png' %}" alt="Diagrama de classes com User, Profile, Address, Team, Project, Stage, Task, Note, TimeEntry, ConfiguracaoIA, ChamadaIA, CotaUsuario e MensagemAssistente">
 </div>
 {% endblock %}
