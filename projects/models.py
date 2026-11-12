@@ -147,6 +147,15 @@ class Task(BaseModel):
     def __str__(self):
         return self.title
 
+    @property
+    def vencida(self):
+        """Prazo já passou e a tarefa ainda não foi concluída nem aprovada."""
+        return bool(
+            self.due_date
+            and self.due_date < timezone.localdate()
+            and self.stage.stage_type not in (StageType.DONE, StageType.APPROVED)
+        )
+
     def clean(self):
         if not self.assigned_to_id or not self.stage_id:
             return
