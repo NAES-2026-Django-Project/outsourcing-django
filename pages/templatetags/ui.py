@@ -78,3 +78,9 @@ def trilha(*partes, atual=''):
 def paginas(page_obj):
     """Números de página com reticências, centrados na página atual."""
     return list(page_obj.paginator.get_elided_page_range(page_obj.number, on_each_side=1, on_ends=1))
+
+
+@register.simple_tag
+def etiqueta_grupo(nome):
+    """Etiqueta de papel a partir do nome do grupo (usa os grupos já carregados, sem nova consulta)."""
+    return _etiqueta(nome, CORES_PAPEL.get(nome, 'gray'), ponto=False)

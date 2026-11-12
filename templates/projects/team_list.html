@@ -1,33 +1,36 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}Equipes · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>Equipes</h1>
-  {% if request.user.eh_administrador %}<a class="btn btn-primary" href="{% url 'projects:equipe_criar' %}">Nova equipe</a>{% endif %}
-</div>
-<div class="card card-body">
+<header>
+  {% trilha atual="Equipes" %}
+  <div class="page-head">
+    <div><h1>Equipes</h1><p class="page-desc">{% if request.user.eh_administrador %}Todas as equipes do sistema.{% else %}As equipes que você gerencia.{% endif %}</p></div>
+    {% if request.user.eh_administrador %}<div class="acoes"><a class="btn btn-primary" href="{% url 'projects:equipe_criar' %}">{% icone "plus-lg" %}<span>Nova equipe</span></a></div>{% endif %}
+  </div>
+</header>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Equipes" contador=paginator.count|stringformat:"d"|add:" equipes" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Equipe</th><th>Gerente</th><th>Membros</th><th></th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Equipe</th><th>Gerente</th><th class="r">Membros</th><th class="acts"><span class="visually-hidden">Ações</span></th></tr></thead>
       <tbody>
         {% for equipe in equipes %}
           <tr>
-            <td><a href="{% url 'projects:equipe_detalhe' equipe.pk %}">{{ equipe.name }}</a></td>
-            <td>{{ equipe.manager }}</td>
-            <td class="num">{{ equipe.total_membros }}</td>
-            <td class="text-end">
-              {% if request.user.eh_administrador %}
-                <a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:equipe_editar' equipe.pk %}">Editar</a>
-                <a class="btn btn-outline-danger btn-sm" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}">Excluir</a>
-              {% endif %}
-            </td>
+            <td class="lead" data-label="Equipe"><a class="lead-link" href="{% url 'projects:equipe_detalhe' equipe.pk %}">{{ equipe.name }}</a></td>
+            <td data-label="Gerente"><span class="pessoa">{% avatar equipe.manager "sm" %}{{ equipe.manager }}</span></td>
+            <td data-label="Membros" class="num r">{{ equipe.total_membros }}</td>
+            <td class="acts">{% if request.user.eh_administrador %}<div class="acoes">
+              <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:equipe_editar' equipe.pk %}" aria-label="Editar {{ equipe.name }}" title="Editar">{% icone "pencil" %}</a>
+              <a class="btn btn-outline-danger btn-sm btn-icon" data-excluir="a equipe {{ equipe.name }}" href="{% url 'projects:equipe_excluir' equipe.pk %}" aria-label="Excluir {{ equipe.name }}" title="Excluir">{% icone "trash3" %}</a>
+            </div>{% endif %}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="4">Nenhuma equipe encontrada.</td></tr>
+          <tr><td class="vazio" colspan="4">{% include "includes/empty_state.html" with icone_nome="people" titulo="Nenhuma equipe encontrada" texto="Um administrador cadastra as equipes e define o gerente de cada uma." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

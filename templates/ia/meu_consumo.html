@@ -1,33 +1,51 @@
 {% extends "base.html" %}
+{% load ui humanize %}
 {% block title %}Meu consumo de IA · Outsourcing{% endblock %}
 {% block content %}
-<h1>Meu consumo de IA</h1>
-<div class="card card-body gap-2">
-  <h2>Desde {{ inicio_do_mes|date:"d/m/Y" }}</h2>
-  <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar {% if percentual >= 90 %}bg-danger{% endif %}" style="width: {{ percentual }}%"></div>
+<header>
+  {% trilha atual="Meu consumo" %}
+  <div class="page-head">
+    <div><h1>Meu consumo de IA</h1><p class="page-desc">Tokens usados desde {{ inicio_do_mes|date:"d/m/Y" }}. A cota renova no dia 1º de cada mês.</p></div>
+    <div class="acoes"><a class="btn btn-primary" href="{% url 'ia:assistente' %}">{% icone "chat-dots" %}<span>Abrir assistente</span></a></div>
   </div>
-  <p class="mb-0 num">{{ consumo }} de {{ limite }} tokens usados ({{ percentual }}%). A cota renova no dia 1º de cada mês.</p>
+</header>
+<div class="grade grade-3">
+  <div class="card stat">
+    <div class="stat-ico">{% icone "speedometer2" %}</div>
+    <div><p class="text-secondary mb-0">Tokens usados no mês</p><p class="stat-num num">{{ consumo|intcomma }}</p></div>
+    <div class="progress" role="progressbar" aria-label="Consumo da cota" aria-valuenow="{{ percentual }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar {% if percentual >= 90 %}critico{% elif percentual >= 70 %}alerta{% endif %}" style="width: {{ percentual }}%"></div>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="stat-ico">{% icone "lightning-charge" %}</div>
+    <div><p class="text-secondary mb-0">Cota mensal</p><p class="stat-num num">{{ limite|intcomma }}</p></div>
+  </div>
+  <div class="card stat">
+    <div class="stat-ico">{% icone "pie-chart" %}</div>
+    <div><p class="text-secondary mb-0">Usado da cota</p><p class="stat-num num">{{ percentual }}%</p></div>
+  </div>
 </div>
-<div class="card card-body">
-  <h2>Minhas últimas chamadas</h2>
+<section class="card">
+  {% include "includes/lista_cabecalho.html" with titulo="Minhas últimas chamadas" contador=paginator.count|stringformat:"d"|add:" chamadas" %}
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead><tr><th>Data</th><th>Origem</th><th>Situação</th><th>Tokens</th></tr></thead>
+    <table class="table table-hover table-cards align-middle">
+      <thead><tr><th>Data</th><th>Origem</th><th>Situação</th><th class="r">Tokens</th></tr></thead>
       <tbody>
         {% for chamada in chamadas %}
           <tr>
-            <td class="num">{{ chamada.criado_em|date:"d/m/Y H:i" }}</td>
-            <td>{{ chamada.get_origem_display }}</td>
-            <td><span class="pill status-{{ chamada.status }}">{{ chamada.get_status_display }}</span></td>
-            <td class="num">{{ chamada.total_tokens }}</td>
+            <td class="lead num" data-label="Data">{{ chamada.criado_em|date:"d/m/Y H:i" }}</td>
+            <td data-label="Origem">{{ chamada.get_origem_display }}</td>
+            <td data-label="Situação">{% etiqueta_situacao chamada %}</td>
+            <td data-label="Tokens" class="num r">{{ chamada.total_tokens|intcomma }}</td>
           </tr>
         {% empty %}
-          <tr><td colspan="4">Você ainda não usou o assistente.</td></tr>
+          {% url 'ia:assistente' as url_assistente %}
+          <tr><td class="vazio" colspan="4">{% include "includes/empty_state.html" with icone_nome="chat-dots" titulo="Você ainda não usou o assistente" texto="Faça uma pergunta e o consumo aparece aqui." %}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
   {% include "includes/pagination.html" %}
-</div>
+</section>
 {% endblock %}

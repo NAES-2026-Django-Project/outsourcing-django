@@ -1,0 +1,8 @@
+{% load ui %}
+<div class="card-head">
+  <div>
+    <h2>{{ titulo }}</h2>
+    <p class="small num">{{ contador }}</p>
+  </div>
+  {% if com_filtros %}<button type="button" class="btn btn-outline-secondary btn-sm btn-filtros" data-alternar-filtros="filtros" aria-controls="filtros">{% icone "funnel" %}<span>Filtros</span></button>{% endif %}
+</div>
