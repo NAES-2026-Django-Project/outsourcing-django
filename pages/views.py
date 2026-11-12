@@ -1,6 +1,7 @@
+from django.db.models import Count, Q
 from django.views.generic import TemplateView
 
-from projects.models import Project, Task
+from projects.models import Project, StageType, Task
 
 
 class HomeView(TemplateView):
@@ -18,7 +19,13 @@ class HomeView(TemplateView):
                 'total_urgentes': abertas.filter(priority='urgent').count(),
                 'total_projetos': projetos.count(),
                 'tarefas_recentes': tarefas.order_by('-created_at')[:5],
-                'projetos_recentes': projetos.order_by('-created_at')[:5],
+                'projetos_recentes': projetos.annotate(
+                    total_tarefas=Count('stages__tasks', distinct=True),
+                    tarefas_feitas=Count(
+                        'stages__tasks', distinct=True,
+                        filter=Q(stages__stage_type__in=[StageType.DONE, StageType.APPROVED]),
+                    ),
+                ).order_by('-created_at')[:5],
             })
         return context
 
