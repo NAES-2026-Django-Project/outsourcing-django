@@ -15,6 +15,23 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+## Dados de demonstração
+
+Com `DEMO_SENHA` definida no `.env`:
+
+```bash
+python manage.py popular_demo            # cria ou completa os dados, sem duplicar
+python manage.py popular_demo --remover  # apaga os dados de demonstração
+```
+
+O comando cria a "Equipe Demonstração", os projetos "Portal do Cliente" e "App de Entregas" com doze tarefas, e três contas com a senha de `DEMO_SENHA`:
+
+| Conta | Papel |
+|---|---|
+| `gerente@outsourcing.test` | Gerente, dono dos dois projetos |
+| `dev1@outsourcing.test` | Desenvolvedor, com anotações e apontamentos |
+| `dev2@outsourcing.test` | Desenvolvedor |
+
 ## Deploy no Google App Engine
 
 Com o [Google Cloud CLI](https://cloud.google.com/sdk/docs/install) instalado e o projeto selecionado (`gcloud init`):
