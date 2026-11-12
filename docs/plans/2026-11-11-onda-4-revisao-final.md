@@ -1,6 +1,6 @@
 # Onda 4: revisão final, navegação e dados de demonstração
 
-- Status: em andamento
+- Status: concluído
 - Critérios: T3-2.5 (e revalidação de toda a matriz)
 - Entrada: Onda 4: revisão final (T3-2.5): sistema funcional, interface amigável e fluxo de navegação coerente; passe completo de /validate-criterion na matriz; deploy final. TestAI (T3-2.4) fica para depois.
 
@@ -24,7 +24,7 @@ Decisão do desenvolvedor: comando `manage.py popular_demo`, idempotente, com `-
 - [x] `makemigrations --check` sem mudanças; nenhuma migration pendente no Neon
 - [x] Deploy funcionando (Onda 2) e IA verificada em produção (Onda 3)
 - [x] Religar o PostgreSQL descartável de testes (porta 54329, hoje parado): `pg_ctl -D <scratchpad>/pg -o "-p 54329" start`
-- [ ] Ação do desenvolvedor: definir `DEMO_SENHA` no `.env`. É a senha das contas de demonstração; não deve ser colada no chat.
+- [x] Ação do desenvolvedor: definir `DEMO_SENHA` no `.env`. É a senha das contas de demonstração; não deve ser colada no chat.
 - Nenhum pacote novo. `popular_demo` lê `DEMO_SENHA` de `os.environ`, já carregado por `environ.Env.read_env` em `config/settings.py`.
 
 ## 2. Etapas e commits
@@ -90,9 +90,10 @@ Branch: `feat/onda-4-revisao-final`.
   - excluir pelo detalhe com Bootbox;
   - receber 403 com um papel sem permissão.
 - [x] `/validate-criterion` em toda a matriz, registrando o veredito e a evidência.
-- [ ] Rodar `popular_demo` no Neon. O banco é compartilhado com o site publicado.
-- [ ] Deploy final: `collectstatic`, `scripts/gerar_app_local.py` e `gcloud app deploy app.local.yaml`. Depois, conferir o site publicado logado.
-- [ ] `docs(criterios): marcar T3-2.5 como cumprido` e este plano como concluído.
+- [x] `feat(projects): ampliar os dados de demonstração` a pedido do desenvolvedor: 2 equipes, 4 projetos, 3 devs por projeto, 2 tarefas por dev em estágios diferentes, 2 anotações por projeto e a conta administradora padrão mantida.
+- [x] Rodar `popular_demo` no Neon. O banco é compartilhado com o site publicado.
+- [x] Deploy final: `collectstatic`, `scripts/gerar_app_local.py` e `gcloud app deploy app.local.yaml`. Depois, conferir o site publicado logado.
+- [x] `docs(criterios): marcar T3-2.5 como cumprido` e este plano como concluído.
 - [x] `fix(projects): evitar nome repetido da equipe de demonstração` (achado na navegação manual)
 - [x] Salvar este plano em `docs/plans/2026-11-11-onda-4-revisao-final.md` no primeiro commit da branch (`docs(plans): planejar a onda 4`).
 
