@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outsourcing, nova interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra lateral branca de 290px + cabeçalho fixo + conteúdo sobre cinza claro (TailAdmin). Tokens: docs/design/DESIGN.md §3.2 */
+:root {
+  --bg: #f9fafb; --surface: #ffffff; --surface-2: #f9fafb; --text: #1d2939; --text-2: #344054; --muted: #667085;
+  --border: #e4e7ec; --border-soft: #f2f4f7;
+  --brand: #465fff; --brand-hover: #3641f5; --brand-soft: #ecf3ff; --brand-text: #465fff; --brand-200: #c2d6ff;
+  --success: #12b76a; --success-soft: #ecfdf3; --success-text: #027a48;
+  --warning: #f79009; --warning-soft: #fffaeb; --warning-text: #b54708;
+  --error: #f04438; --error-soft: #fef3f2; --error-text: #b42318;
+  --info: #0ba5ec; --info-soft: #f0f9ff; --info-text: #026aa2;
+  --gray-soft: #f2f4f7; --gray-text: #344054;
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.05);
+  --shadow-sm: 0 1px 3px rgba(16,24,40,.1), 0 1px 2px rgba(16,24,40,.06);
+  --shadow-md: 0 4px 8px -2px rgba(16,24,40,.1), 0 2px 4px -2px rgba(16,24,40,.06);
+  --ring: 0 0 0 4px rgba(70,95,255,.14);
+  --overlay: rgba(16,24,40,.5);
+  --font: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101828; --surface: #1a2231; --surface-2: #202a3b; --text: #e4e7ec; --text-2: #c4cad4; --muted: #98a2b3;
+    --border: #1d2939; --border-soft: #243042;
+    --brand-hover: #7592ff; --brand-soft: rgba(70,95,255,.16); --brand-text: #7592ff; --brand-200: #3641f5;
+    --success-soft: rgba(18,183,106,.15); --success-text: #32d583;
+    --warning-soft: rgba(247,144,9,.15); --warning-text: #fdb022;
+    --error-soft: rgba(240,68,56,.15); --error-text: #f97066;
+    --info-soft: rgba(11,165,236,.15); --info-text: #36bffa;
+    --gray-soft: #243042; --gray-text: #c4cad4;
+    --overlay: rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101828; --surface: #1a2231; --surface-2: #202a3b; --text: #e4e7ec; --text-2: #c4cad4; --muted: #98a2b3;
+  --border: #1d2939; --border-soft: #243042;
+  --brand-hover: #7592ff; --brand-soft: rgba(70,95,255,.16); --brand-text: #7592ff; --brand-200: #3641f5;
+  --success-soft: rgba(18,183,106,.15); --success-text: #32d583;
+  --warning-soft: rgba(247,144,9,.15); --warning-text: #fdb022;
+  --error-soft: rgba(240,68,56,.15); --error-text: #f97066;
+  --info-soft: rgba(11,165,236,.15); --info-text: #36bffa;
+  --gray-soft: #243042; --gray-text: #c4cad4;
+  --overlay: rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 400 14px/20px var(--font); -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { margin: 0; text-wrap: balance; color: var(--text); }
+h1 { font-size: 24px; line-height: 32px; font-weight: 600; }
+h2 { font-size: 18px; line-height: 28px; font-weight: 600; }
+h3 { font-size: 16px; line-height: 24px; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--brand-text); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.num { font-variant-numeric: tabular-nums; }
+.strong { color: var(--text); font-weight: 500; }
+.search-btn { display: none; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; line-height: 18px; }
+.ico { width: 20px; height: 20px; flex: none; fill: currentColor; }
+.ico-sm { width: 16px; height: 16px; }
+.ico-lg { width: 24px; height: 24px; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 100; background: var(--brand); color: #fff; padding: 8px 12px; border-radius: 8px; }
+.skip:focus { top: 12px; }
+
+/* Estrutura */
+.shell { display: flex; min-height: 100%; }
+.sidebar { width: 290px; flex: none; background: var(--surface); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; transition: width .2s; z-index: 40; }
+.brand { display: flex; align-items: center; gap: 10px; height: 64px; padding: 0 24px; font-size: 20px; font-weight: 700; color: var(--text); flex: none; }
+.brand:hover { text-decoration: none; }
+.brand-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--brand); display: grid; grid-template-columns: repeat(3, 4px); gap: 3px; align-items: end; justify-content: center; padding-bottom: 8px; }
+.brand-mark b { display: block; width: 4px; background: #fff; border-radius: 2px; }
+.brand-mark b:nth-child(1) { height: 14px; } .brand-mark b:nth-child(2) { height: 9px; } .brand-mark b:nth-child(3) { height: 12px; }
+.nav { padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 4px; }
+.nav-group { font-size: 12px; line-height: 18px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); padding: 16px 12px 6px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; color: var(--text-2); font-weight: 500; min-height: 40px; }
+.nav-item .ico { color: var(--muted); }
+.nav-item:hover { background: var(--surface-2); text-decoration: none; }
+.nav-item.active { background: var(--brand-soft); color: var(--brand-text); }
+.nav-item.active .ico { color: var(--brand-text); }
+.collapsed .sidebar { width: 90px; }
+.collapsed .sidebar .brand span, .collapsed .nav-item span, .collapsed .nav-group span { display: none; }
+.collapsed .nav-group { text-align: center; padding-left: 0; padding-right: 0; }
+.collapsed .nav-group::before { content: "···"; }
+.collapsed .nav-item { justify-content: center; }
+.collapsed .brand { justify-content: center; padding: 0; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: 0; z-index: 30; height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; padding: 0 24px; }
+.search { position: relative; flex: 1; max-width: 430px; }
+.search .ico { position: absolute; left: 14px; top: 12px; color: var(--muted); }
+.search input { padding-left: 42px; }
+.topbar .grow { flex: 1; }
+.proto-tag { font-size: 12px; font-weight: 500; color: var(--warning-text); background: var(--warning-soft); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.user-btn { display: flex; align-items: center; gap: 10px; background: none; border: 0; color: var(--text-2); font: inherit; font-weight: 500; cursor: pointer; padding: 4px; border-radius: 8px; min-height: 44px; }
+.user-btn:hover { background: var(--surface-2); }
+.avatar { width: 36px; height: 36px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-text); display: inline-grid; place-items: center; font-weight: 600; font-size: 13px; flex: none; }
+.avatar.sm { width: 24px; height: 24px; font-size: 10px; }
+.avatar.lg { width: 72px; height: 72px; font-size: 24px; }
+.avatars { display: flex; }
+.avatars .avatar { border: 2px solid var(--surface); margin-left: -8px; }
+.avatars .avatar:first-child { margin-left: 0; }
+.menu { position: absolute; right: 0; top: calc(100% + 8px); width: 260px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); padding: 12px; display: none; z-index: 50; }
+.menu.open { display: block; }
+.menu-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; color: var(--text-2); background: none; border: 0; font: inherit; font-weight: 500; cursor: pointer; text-align: left; min-height: 40px; }
+.menu-item:hover { background: var(--surface-2); text-decoration: none; }
+.menu-item.on { color: var(--brand-text); background: var(--brand-soft); }
+.menu hr { border: 0; border-top: 1px solid var(--border-soft); margin: 8px 0; }
+.content { padding: 24px; width: 100%; max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.backdrop { position: fixed; inset: 0; background: var(--overlay); z-index: 35; display: none; }
+
+/* Cabeçalho da página */
+.crumbs { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; line-height: 18px; color: var(--muted); margin-bottom: 4px; }
+.crumbs a { color: var(--muted); }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.page-head p { color: var(--muted); margin-top: 4px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Botões */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px; border-radius: 8px; border: 1px solid transparent; font: 500 14px/20px var(--font); cursor: pointer; box-shadow: var(--shadow-xs); white-space: nowrap; text-decoration: none !important; }
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-secondary { background: var(--surface); color: var(--text-2); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-danger { background: var(--error); color: #fff; }
+.btn-danger:hover { background: #d92d20; }
+.btn-danger-outline { background: var(--surface); color: var(--error-text); border-color: var(--border); }
+.btn-danger-outline:hover { background: var(--error-soft); }
+.btn-sm { min-height: 36px; padding: 7px 12px; }
+.btn-icon { width: 36px; min-height: 36px; padding: 0; }
+.btn-ghost { background: none; box-shadow: none; color: var(--muted); }
+.btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+.btn:disabled { opacity: .6; cursor: progress; }
+
+/* Cartões */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; min-width: 0; }
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border-bottom: 1px solid var(--border-soft); flex-wrap: wrap; }
+.card-head p { color: var(--muted); }
+.card-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.card-foot { padding: 16px 24px; border-top: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.grid { display: grid; gap: 24px; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-side { grid-template-columns: minmax(0, 1fr) 320px; }
+.stat { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.stat-ico { width: 48px; height: 48px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; color: var(--text-2); }
+.stat-num { font-size: 30px; line-height: 38px; font-weight: 600; }
+.stat-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; margin: 0; }
+.pairs div { min-width: 0; }
+.pairs dt { font-size: 12px; line-height: 18px; color: var(--muted); margin-bottom: 4px; }
+.pairs dd { margin: 0; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+.pairs .full { grid-column: 1 / -1; }
+.list { display: flex; flex-direction: column; }
+.list-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-soft); min-width: 0; }
+.list-row:last-child { border-bottom: 0; }
+.list-row .grow { flex: 1; min-width: 0; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+
+/* Etiquetas */
+.badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: 12px; line-height: 18px; font-weight: 500; white-space: nowrap; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+.badge.plain::before { display: none; }
+.b-gray { background: var(--gray-soft); color: var(--gray-text); }
+.b-brand { background: var(--brand-soft); color: var(--brand-text); }
+.b-info { background: var(--info-soft); color: var(--info-text); }
+.b-success { background: var(--success-soft); color: var(--success-text); }
+.b-warning { background: var(--warning-soft); color: var(--warning-text); }
+.b-error { background: var(--error-soft); color: var(--error-text); }
+
+/* Formulários */
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field label, .label { font-weight: 500; color: var(--text-2); }
+.req { color: var(--error-text); }
+.input, select.input, textarea.input { width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: 400 14px/20px var(--font); box-shadow: var(--shadow-xs); }
+textarea.input { min-height: 120px; resize: vertical; }
+select.input { appearance: none; padding-right: 40px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 19px, calc(100% - 15px) 19px; background-size: 5px 5px; background-repeat: no-repeat; }
+.input::placeholder { color: var(--muted); }
+.input:focus { outline: none; border-color: var(--brand); box-shadow: var(--ring); }
+.input.invalid { border-color: var(--error); box-shadow: 0 0 0 4px rgba(240,68,56,.12); }
+.help { font-size: 12px; line-height: 18px; color: var(--muted); }
+.err { font-size: 12px; line-height: 18px; color: var(--error-text); display: flex; gap: 6px; align-items: center; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-card { max-width: 720px; width: 100%; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 32px; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--brand); }
+.checks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: end; padding: 16px 24px; border-bottom: 1px solid var(--border-soft); }
+.filters .input { min-height: 40px; padding-top: 8px; padding-bottom: 8px; }
+.filters select.input { background-position: calc(100% - 20px) 17px, calc(100% - 15px) 17px; }
+.filters .label { font-size: 12px; line-height: 18px; }
+.filters .actions { flex-wrap: nowrap; }
+.filter-toggle { display: none; }
+
+/* Tabela */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; line-height: 18px; font-weight: 500; color: var(--muted); background: var(--surface-2); padding: 12px 16px; white-space: nowrap; }
+td { padding: 14px 16px; border-top: 1px solid var(--border-soft); color: var(--text-2); vertical-align: middle; }
+tr:hover td { background: var(--surface-2); }
+td.r, th.r { text-align: right; }
+td .strong { color: var(--text); font-weight: 500; }
+td.acts { white-space: nowrap; text-align: right; }
+td.acts .actions { justify-content: flex-end; flex-wrap: nowrap; }
+.pager { display: flex; gap: 4px; align-items: center; }
+.pager button { min-width: 36px; height: 36px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--text-2); font: 500 14px var(--font); cursor: pointer; padding: 0 10px; }
+.pager button:hover:not(:disabled) { background: var(--surface-2); }
+.pager button.on { background: var(--brand-soft); color: var(--brand-text); }
+.pager button.edge { border-color: var(--border); }
+.pager button:disabled { opacity: .45; cursor: default; }
+
+/* Estado vazio */
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 40px 24px; }
+.empty-ico { width: 56px; height: 56px; border-radius: 999px; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); margin-bottom: 4px; }
+.empty p { color: var(--muted); max-width: 42ch; }
+
+/* Quadro */
+.board { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+.col { background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 280px; scroll-snap-align: start; }
+.col-head { display: flex; align-items: center; gap: 8px; padding: 4px 4px 0; }
+.col-head h3 { font-size: 14px; line-height: 20px; flex: 1; }
+.count { font-size: 12px; font-weight: 500; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0 8px; color: var(--muted); }
+.task { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--muted); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.task:hover { box-shadow: var(--shadow-sm); }
+.task.p-medium { border-left-color: var(--info); } .task.p-high { border-left-color: var(--warning); } .task.p-urgent { border-left-color: var(--error); } .task.p-low { border-left-color: #98a2b3; }
+.task a { color: var(--text); font-weight: 500; }
+.task-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; line-height: 18px; color: var(--muted); }
+.task-meta .due { display: inline-flex; gap: 4px; align-items: center; }
+.task-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.col-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 8px; border: 1px dashed var(--border); border-radius: 12px; }
+.notice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; background: var(--info-soft); color: var(--info-text); }
+.notice.warn { background: var(--warning-soft); color: var(--warning-text); }
+
+/* Assistente */
+.chat { display: flex; flex-direction: column; height: min(640px, calc(100vh - 220px)); min-height: 420px; }
+.msgs { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; }
+.msg.me { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--surface-2); color: var(--text); border-bottom-left-radius: 4px; }
+.msg.bot ul, .msg.bot ol { margin: 6px 0; padding-left: 20px; }
+.msg.bot p + p { margin-top: 6px; }
+.msg code { background: var(--border-soft); border-radius: 4px; padding: 0 4px; }
+.typing { display: inline-flex; gap: 4px; }
+.typing i { width: 6px; height: 6px; border-radius: 999px; background: var(--muted); animation: blink 1s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+.composer { border-top: 1px solid var(--border-soft); padding: 16px 24px; display: flex; flex-direction: column; gap: 8px; }
+.composer form { display: flex; gap: 8px; align-items: flex-end; }
+.composer textarea { min-height: 44px; height: 44px; resize: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--border); background: var(--surface); color: var(--text-2); border-radius: 999px; padding: 6px 12px; font: 500 13px var(--font); cursor: pointer; text-align: left; }
+.chip:hover { border-color: var(--brand); color: var(--brand-text); }
+.bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; border: 1px solid var(--border-soft); }
+.bar span { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.bar.warn span { background: var(--warning); } .bar.crit span { background: var(--error); }
+
+/* Autenticação e erros */
+.auth { display: grid; grid-template-columns: 1fr 1fr; min-height: 100%; }
+.auth-form { display: grid; place-items: center; padding: 40px 24px; }
+.auth-form .card { width: 100%; max-width: 440px; }
+.auth-side { background: var(--brand); color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: center; gap: 24px; position: relative; overflow: hidden; }
+.auth-side h2 { color: #fff; font-size: 30px; line-height: 38px; }
+.auth-side p { color: rgba(255,255,255,.85); max-width: 46ch; }
+.auth-side ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.auth-side li { display: flex; gap: 10px; align-items: center; }
+.auth-side .grid-deco { position: absolute; right: -60px; bottom: -60px; width: 280px; height: 280px; border-radius: 40px; border: 1px solid rgba(255,255,255,.2); transform: rotate(18deg); }
+.error-page { min-height: 100%; display: grid; place-items: center; padding: 40px 24px; text-align: center; }
+.error-code { font-size: 72px; line-height: 90px; font-weight: 700; color: var(--brand-text); }
+.hero { padding: 40px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+.hero h1 { font-size: 30px; line-height: 38px; max-width: 24ch; }
+.hero p { color: var(--muted); max-width: 60ch; font-size: 16px; line-height: 24px; }
+.feature { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.diagram svg { width: 100%; height: auto; display: block; }
+.diagram { overflow-x: auto; }
+
+/* Toast e modal */
+.toasts { position: fixed; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 80; width: min(380px, calc(100vw - 32px)); }
+.toast { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-md); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; color: var(--text); animation: in .2s ease-out; }
+.toast .t-ico { color: var(--success); } .toast.erro .t-ico { color: var(--error); } .toast.info .t-ico { color: var(--info); }
+.toast p { flex: 1; }
+@keyframes in { from { opacity: 0; transform: translateY(8px); } }
+.modal-bg { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(2px); display: grid; place-items: center; z-index: 90; padding: 16px; }
+.modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 100%; max-width: 440px; padding: 24px; display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--border); }
+.modal-ico { width: 48px; height: 48px; border-radius: 999px; background: var(--error-soft); color: var(--error-text); display: grid; place-items: center; }
+.modal .actions { justify-content: flex-end; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Responsivo */
+@media (max-width: 1199.98px) {
+  .grid-side { grid-template-columns: 1fr; }
+  .chat { height: 560px; }
+}
+@media (max-width: 991.98px) {
+  .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); transition: transform .2s; width: 290px !important; box-shadow: var(--shadow-md); }
+  .drawer-open .sidebar { transform: none; }
+  .drawer-open .backdrop { display: block; }
+  .collapsed .sidebar .brand span, .collapsed .nav-item span, .collapsed .nav-group span { display: initial; }
+  .collapsed .nav-group::before { content: none; }
+  .collapsed .nav-item { justify-content: flex-start; }
+  .collapsed .nav-group { text-align: left; padding: 16px 12px 6px; }
+  .collapsed .brand { justify-content: flex-start; padding: 0 24px; }
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .auth { grid-template-columns: 1fr; }
+  .auth-side { display: none; }
+  .board { grid-template-columns: repeat(4, 280px); }
+}
+@media (max-width: 767.98px) {
+  .content { padding: 16px; gap: 16px; }
+  .topbar { padding: 0 12px; gap: 8px; }
+  .search { display: none; }
+  .search-btn { display: inline-flex !important; }
+  .user-name, .proto-tag { display: none; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid { gap: 16px; }
+  .page-head { align-items: stretch; flex-direction: column; }
+  .page-head .actions { width: 100%; }
+  .page-head .actions .btn { flex: 1; }
+  .card-head, .card-body { padding: 16px; }
+  .card-foot { padding: 12px 16px; }
+  .form-grid, .pairs, .checks { grid-template-columns: 1fr; }
+  .form-foot { flex-direction: column-reverse; align-items: stretch; }
+  .form-foot .btn { width: 100%; }
+  .btn-icon { width: 44px; min-height: 44px; }
+  .filter-toggle { display: inline-flex; }
+  .filters { display: none; padding: 16px; }
+  .filters.open { display: grid; }
+  .board { grid-template-columns: repeat(4, 85%); }
+  .msg { max-width: 92%; }
+  .hero { padding: 24px; }
+  .hero h1 { font-size: 24px; line-height: 32px; }
+  /* Tabelas viram cartões */
+  table.responsive thead { display: none; }
+  table.responsive, table.responsive tbody, table.responsive tr, table.responsive td { display: block; width: 100%; }
+  table.responsive tr { padding: 12px 16px; border-top: 1px solid var(--border-soft); display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  table.responsive tr:first-child { border-top: 0; }
+  table.responsive td { border: 0; padding: 0; text-align: left !important; }
+  table.responsive td::before { content: attr(data-label); display: block; font-size: 12px; line-height: 18px; color: var(--muted); }
+  table.responsive td.lead { grid-column: 1 / -1; font-size: 15px; }
+  table.responsive td.lead::before { display: none; }
+  table.responsive td.acts { grid-column: 1 / -1; }
+  table.responsive td.acts::before { display: none; }
+  table.responsive td.acts .actions { justify-content: flex-start; }
+  table.responsive tr:hover td { background: none; }
+  .toasts { right: 16px; bottom: 16px; }
+}
+
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo" id="pular">Pular para o conteúdo</a>
+<div id="app"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modal-root"></div>
+<script>
+const ICONES = {"activity": "<path fill-rule=\"evenodd\" d=\"M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2\"/>", "arrow-left": "<path fill-rule=\"evenodd\" d=\"M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8\"/>", "bar-chart": "<path d=\"M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z\"/>", "bell": "<path d=\"M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6\"/>", "box-arrow-in-right": "<path fill-rule=\"evenodd\" d=\"M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z\"/> <path fill-rule=\"evenodd\" d=\"M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z\"/>", "box-arrow-right": "<path fill-rule=\"evenodd\" d=\"M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z\"/> <path fill-rule=\"evenodd\" d=\"M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z\"/>", "calendar3": "<path d=\"M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z\"/> <path d=\"M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2\"/>", "chat-dots": "<path d=\"M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2\"/> <path d=\"m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2\"/>", "check-circle": "<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/> <path d=\"m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05\"/>", "chevron-down": "<path fill-rule=\"evenodd\" d=\"M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708\"/>", "chevron-left": "<path fill-rule=\"evenodd\" d=\"M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0\"/>", "chevron-right": "<path fill-rule=\"evenodd\" d=\"M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708\"/>", "clock-history": "<path d=\"M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.58.116 1.17zm-.131 1.538q.05-.254.081-.51l.993.123a8 8 0 0 1-.23 1.155l-.964-.267q.069-.247.12-.501m-.952 2.379q.276-.436.486-.908l.914.405q-.24.54-.555 1.038zm-.964 1.205q.183-.183.35-.378l.758.653a8 8 0 0 1-.401.432z\"/> <path d=\"M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0z\"/> <path d=\"M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5\"/>", "exclamation-triangle": "<path d=\"M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z\"/> <path d=\"M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z\"/>", "eye-slash": "<path d=\"M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.588l.77.771A6 6 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755q-.247.248-.517.486z\"/> <path d=\"M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829\"/> <path d=\"M3.35 5.47q-.27.24-.518.487A13 13 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12z\"/>", "eye": "<path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z\"/> <path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0\"/>", "folder2-open": "<path d=\"M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7z\"/>", "funnel": "<path d=\"M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z\"/>", "hourglass-split": "<path d=\"M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13s.866-1.299 3-1.48zm1 0v3.17c2.134.181 3 1.48 3 1.48a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351z\"/>", "house": "<path d=\"M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z\"/>", "inbox": "<path d=\"M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z\"/>", "info-circle": "<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/> <path d=\"m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0\"/>", "journal-text": "<path d=\"M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5\"/> <path d=\"M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2\"/> <path d=\"M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z\"/>", "kanban": "<path d=\"M13.5 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm-11-1a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z\"/> <path d=\"M6.5 3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm-4 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm8 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1z\"/>", "layout-sidebar-inset": "<path d=\"M14 2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2z\"/> <path d=\"M3 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z\"/>", "layout-three-columns": "<path d=\"M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5zM1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5H5V1zM10 15V1H6v14zm1 0h3.5a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5H11z\"/>", "lightning-charge": "<path d=\"M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09zM4.157 8.5H7a.5.5 0 0 1 .478.647L6.11 13.59l5.732-6.09H9a.5.5 0 0 1-.478-.647L9.89 2.41z\"/>", "list-check": "<path fill-rule=\"evenodd\" d=\"M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0\"/>", "list": "<path fill-rule=\"evenodd\" d=\"M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5\"/>", "moon-stars": "<path d=\"M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278M4.858 1.311A7.27 7.27 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.32 7.32 0 0 0 5.205-2.162q-.506.063-1.029.063c-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286\"/> <path d=\"M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z\"/>", "pencil": "<path d=\"M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325\"/>", "people": "<path d=\"M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4\"/>", "person-circle": "<path d=\"M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0\"/> <path fill-rule=\"evenodd\" d=\"M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1\"/>", "person-gear": "<path d=\"M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m.256 7a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1zm3.63-4.54c.18-.613 1.048-.613 1.229 0l.043.148a.64.64 0 0 0 .921.382l.136-.074c.561-.306 1.175.308.87.869l-.075.136a.64.64 0 0 0 .382.92l.149.045c.612.18.612 1.048 0 1.229l-.15.043a.64.64 0 0 0-.38.921l.074.136c.305.561-.309 1.175-.87.87l-.136-.075a.64.64 0 0 0-.92.382l-.045.149c-.18.612-1.048.612-1.229 0l-.043-.15a.64.64 0 0 0-.921-.38l-.136.074c-.561.305-1.175-.309-.87-.87l.075-.136a.64.64 0 0 0-.382-.92l-.148-.045c-.613-.18-.613-1.048 0-1.229l.148-.043a.64.64 0 0 0 .382-.921l-.074-.136c-.306-.561.308-1.175.869-.87l.136.075a.64.64 0 0 0 .92-.382zM14 12.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0\"/>", "person-plus": "<path d=\"M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z\"/> <path fill-rule=\"evenodd\" d=\"M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5\"/>", "plug": "<path d=\"M6 0a.5.5 0 0 1 .5.5V3h3V.5a.5.5 0 0 1 1 0V3h1a.5.5 0 0 1 .5.5v3A3.5 3.5 0 0 1 8.5 10c-.002.434-.01.845-.04 1.22-.041.514-.126 1.003-.317 1.424a2.08 2.08 0 0 1-.97 1.028C6.725 13.9 6.169 14 5.5 14c-.998 0-1.61.33-1.974.718A1.92 1.92 0 0 0 3 16H2c0-.616.232-1.367.797-1.968C3.374 13.42 4.261 13 5.5 13c.581 0 .962-.088 1.218-.219.241-.123.4-.3.514-.55.121-.266.193-.621.23-1.09.027-.34.035-.718.037-1.141A3.5 3.5 0 0 1 4 6.5v-3a.5.5 0 0 1 .5-.5h1V.5A.5.5 0 0 1 6 0M5 4v2.5A2.5 2.5 0 0 0 7.5 9h1A2.5 2.5 0 0 0 11 6.5V4z\"/>", "plus-lg": "<path fill-rule=\"evenodd\" d=\"M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2\"/>", "search": "<path d=\"M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0\"/>", "send": "<path d=\"M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z\"/>", "shield-lock": "<path d=\"M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56\"/> <path d=\"M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415\"/>", "sliders": "<path fill-rule=\"evenodd\" d=\"M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z\"/>", "speedometer2": "<path d=\"M8 4a.5.5 0 0 1 .5.5V6a.5.5 0 0 1-1 0V4.5A.5.5 0 0 1 8 4M3.732 5.732a.5.5 0 0 1 .707 0l.915.914a.5.5 0 1 1-.708.708l-.914-.915a.5.5 0 0 1 0-.707M2 10a.5.5 0 0 1 .5-.5h1.586a.5.5 0 0 1 0 1H2.5A.5.5 0 0 1 2 10m9.5 0a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H12a.5.5 0 0 1-.5-.5m.754-4.246a.39.39 0 0 0-.527-.02L7.547 9.31a.91.91 0 1 0 1.302 1.258l3.434-4.297a.39.39 0 0 0-.029-.518z\"/> <path fill-rule=\"evenodd\" d=\"M0 10a8 8 0 1 1 15.547 2.661c-.442 1.253-1.845 1.602-2.932 1.25C11.309 13.488 9.475 13 8 13c-1.474 0-3.31.488-4.615.911-1.087.352-2.49.003-2.932-1.25A8 8 0 0 1 0 10m8-7a7 7 0 0 0-6.603 9.329c.203.575.923.876 1.68.63C4.397 12.533 6.358 12 8 12s3.604.532 4.923.96c.757.245 1.477-.056 1.68-.631A7 7 0 0 0 8 3\"/>", "sun": "<path d=\"M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708\"/>", "three-dots": "<path d=\"M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3\"/>", "trash3": "<path d=\"M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5\"/>", "x-circle": "<path d=\"M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16\"/> <path d=\"M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708\"/>", "x-lg": "<path d=\"M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z\"/>"};
+</script>
+<script>
+'use strict';
+// ---------- Utilidades ----------
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ic = (n, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 16 16" aria-hidden="true">${ICONES[n] || ''}</svg>`;
+const HOJE = new Date(2026, 10, 11);
+const addDias = (d) => { const x = new Date(HOJE); x.setDate(x.getDate() + d); return x; };
+const fmt = (d) => d ? d.toLocaleDateString('pt-BR') : '';
+const fmtCurta = (d) => d ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+const isoData = (d) => d ? d.toISOString().slice(0, 10) : '';
+const deIso = (s) => { if (!s) return null; const [a, m, d] = s.split('-').map(Number); return new Date(a, m - 1, d); };
+const milhar = (n) => Number(n).toLocaleString('pt-BR');
+const iniciais = (u) => u ? (u.nome[0] + u.sobrenome[0]).toUpperCase() : '—';
+const nomeCompleto = (u) => u ? `${u.nome} ${u.sobrenome}` : 'Sem responsável';
+
+// ---------- Dados de exemplo (iguais ao comando popular_demo) ----------
+const PAPEIS = { admin: 'Administrador', gerente: 'Gerente', dev: 'Desenvolvedor' };
+const usuarios = [
+  { id: 1, nome: 'Andrey', sobrenome: 'Jodar', email: 'andreyviniciusjodar@gmail.com', papel: 'admin', telefone: '(44) 99999-0000', ativo: true },
+  { id: 2, nome: 'Gabriela', sobrenome: 'Moreira', email: 'gerente.web@outsourcing.test', papel: 'gerente', telefone: '', ativo: true },
+  { id: 3, nome: 'Marcelo', sobrenome: 'Teixeira', email: 'gerente.mobile@outsourcing.test', papel: 'gerente', telefone: '', ativo: true },
+  { id: 4, nome: 'Ana', sobrenome: 'Souza', email: 'ana@outsourcing.test', papel: 'dev', telefone: '(44) 98888-1111', ativo: true },
+  { id: 5, nome: 'Bruno', sobrenome: 'Lima', email: 'bruno@outsourcing.test', papel: 'dev', telefone: '', ativo: true },
+  { id: 6, nome: 'Carla', sobrenome: 'Mendes', email: 'carla@outsourcing.test', papel: 'dev', telefone: '', ativo: true },
+  { id: 7, nome: 'Diego', sobrenome: 'Ferreira', email: 'diego@outsourcing.test', papel: 'dev', telefone: '', ativo: true },
+  { id: 8, nome: 'Elisa', sobrenome: 'Ramos', email: 'elisa@outsourcing.test', papel: 'dev', telefone: '', ativo: true },
+  { id: 9, nome: 'Fábio', sobrenome: 'Costa', email: 'fabio@outsourcing.test', papel: 'dev', telefone: '', ativo: true },
+];
+const U = (id) => usuarios.find((u) => u.id === id);
+const equipes = [
+  { id: 1, nome: 'Web', gerente: 2, membros: [4, 5, 6] },
+  { id: 2, nome: 'Mobile', gerente: 3, membros: [7, 8, 9, 6] },
+];
+const TIPOS = [['backlog', 'Backlog'], ['doing', 'Em andamento'], ['done', 'Concluído'], ['approved', 'Aprovado']];
+const PRIORIDADES = { low: 'Baixa', medium: 'Média', high: 'Alta', urgent: 'Urgente' };
+const PRAZO = { backlog: 12, doing: 4, done: -3, approved: -9 };
+const projetosBase = [
+  { nome: 'Portal do Cliente', equipe: 1, devs: [4, 5, 6], desc: 'Área logada para clientes acompanharem pedidos, faturas e chamados.', tarefas: ['Tela de login com recuperação de senha', 'Cadastro de clientes', 'Listagem de faturas em aberto', 'Download da segunda via do boleto', 'Abertura de chamados pelo portal', 'Histórico de pedidos do cliente', 'Levantar requisitos com o cliente', 'Definir identidade visual do portal'] },
+  { nome: 'Loja Virtual', equipe: 1, devs: [4, 5, 6], desc: 'Catálogo de produtos com carrinho, pagamento e acompanhamento de entregas.', tarefas: ['Catálogo com filtros por categoria', 'Página de detalhes do produto', 'Carrinho de compras', 'Cálculo de frete por CEP', 'Integração com o gateway de pagamento', 'E-mail de confirmação do pedido', 'Painel de vendas para o gerente', 'Política de trocas e devoluções'] },
+  { nome: 'App de Entregas', equipe: 2, devs: [7, 8, 9], desc: 'Aplicativo para entregadores registrarem coletas e entregas em tempo real.', tarefas: ['Lista de coletas do dia', 'Rota otimizada no mapa', 'Foto do comprovante de entrega', 'Assinatura do recebedor na tela', 'Modo offline com sincronização', 'Notificar o cliente ao sair para entrega', 'Relatório de entregas por entregador', 'Revisar textos do aplicativo'] },
+  { nome: 'App de Agendamentos', equipe: 2, devs: [7, 8, 6], desc: 'Aplicativo para clientes marcarem horários em salões e clínicas parceiras.', tarefas: ['Agenda semanal do profissional', 'Reserva de horário pelo cliente', 'Lembrete por notificação um dia antes', 'Cancelamento com antecedência mínima', 'Avaliação do atendimento', 'Cadastro de serviços e preços', 'Pesquisa com clientes piloto', 'Publicar versão beta nas lojas'] },
+];
+const projetos = []; const estagios = []; const tarefas = []; const notas = []; const apontamentos = [];
+let seq = { estagio: 1, tarefa: 1, nota: 1, apontamento: 1, projeto: 1, equipe: 3 };
+projetosBase.forEach((pb, giro) => {
+  const eq = equipes.find((e) => e.id === pb.equipe);
+  const p = { id: seq.projeto++, nome: pb.nome, desc: pb.desc, equipe: pb.equipe, criador: eq.gerente, membros: [...pb.devs], inicio: addDias(-30), termino: addDias(90) };
+  projetos.push(p);
+  const ests = TIPOS.map(([tipo, nome], i) => { const s = { id: seq.estagio++, projeto: p.id, nome, tipo, ordem: i + 1 }; estagios.push(s); return s; });
+  const resp = pb.devs.flatMap((d) => [d, d]).concat([null, eq.gerente]);
+  const ordem = TIPOS.map((t) => t[0]);
+  const tipos = pb.devs.flatMap((_, i) => [ordem[(giro + 2 * i) % 4], ordem[(giro + 2 * i + 1) % 4]]).concat(['backlog', 'doing']);
+  const prios = ['high', 'medium', 'urgent', 'low'];
+  pb.tarefas.forEach((titulo, i) => {
+    const est = ests.find((s) => s.tipo === tipos[i]);
+    tarefas.push({ id: seq.tarefa++, titulo, desc: '', estagio: est.id, responsavel: resp[i], prioridade: prios[i % 4], prazo: addDias(PRAZO[tipos[i]]), criada: addDias(-20 + i + giro) });
+  });
+});
+const tarefaPor = (proj, idx) => tarefas.filter((t) => projetoDaTarefa(t).id === proj)[idx];
+function estagioDe(t) { return estagios.find((s) => s.id === t.estagio); }
+function projetoDaTarefa(t) { return projetos.find((p) => p.id === estagioDe(t).projeto); }
+[[1, 0, 'O token de recuperação expira em 15 minutos; confirmar o prazo com o cliente.'], [1, 3, 'O banco devolve o PDF em base64; salvar em cache por um dia.'], [2, 1, 'Fotos do produto em 3 tamanhos para não pesar no celular.'], [2, 4, 'Usar o ambiente de testes do gateway até a homologação.'], [3, 2, 'Comprimir a foto antes de enviar; a rede dos entregadores é lenta.'], [3, 5, 'Mensagem curta, com link de rastreio e previsão de chegada.'], [4, 0, 'Mostrar a semana a partir de segunda e destacar o dia atual.'], [4, 3, 'Antecedência mínima de 2 horas, configurável por parceiro.']].forEach(([p, i, texto], k) => {
+  const t = tarefaPor(p, i); notas.push({ id: seq.nota++, tarefa: t.id, autor: t.responsavel, texto, criada: addDias(-6 + k) });
+});
+// Exemplos extras do administrador, para a demonstração ter conteúdo em "Minhas anotações" e "Meus apontamentos".
+notas.push({ id: seq.nota++, tarefa: tarefaPor(1, 6).id, autor: 1, texto: 'Revisar com a Gabriela os requisitos de acessibilidade antes da homologação.', criada: addDias(-1) });
+[4, 5, 6, 7, 8, 9].forEach((dev, k) => {
+  const t = tarefas.find((x) => x.responsavel === dev && estagioDe(x).tipo !== 'backlog');
+  if (t) apontamentos.push({ id: seq.apontamento++, tarefa: t.id, autor: dev, data: addDias(-k), horas: [2, 3.5, 1.5][k % 3], desc: 'Desenvolvimento e testes' });
+});
+apontamentos.push({ id: seq.apontamento++, tarefa: tarefaPor(1, 6).id, autor: 1, data: addDias(-2), horas: 1.5, desc: 'Reunião de alinhamento' });
+apontamentos.push({ id: seq.apontamento++, tarefa: tarefaPor(3, 7).id, autor: 1, data: addDias(-1), horas: 0.75, desc: 'Revisão de textos' });
+const ia = {
+  ativo: true, modelo: 'gemini-3.6-flash', esforco: 'low', maxTokens: 8000, cotaPadrao: 200000,
+  instrucoes: 'Responda apenas sobre o uso do Outsourcing. Não invente telas nem funcionalidades. Não acesse nem revele dados de outros usuários.',
+  chave: '••••WCHU', origemChave: 'variável de ambiente', atualizado: '11/11/2026 14:14',
+};
+const MODELOS = { 'gemini-3.6-flash': 'Gemini 3.6 Flash', 'gemini-3.8-flash': 'Gemini 3.8 Flash', 'gemini-3.5-flash-lite': 'Gemini 3.5 Flash-Lite' };
+const ESFORCOS = { low: 'Baixo', medium: 'Médio', high: 'Alto' };
+const SITUACOES = { sucesso: ['Sucesso', 'b-success'], erro: ['Erro', 'b-error'], recusada: ['Recusada pelo modelo', 'b-warning'], bloqueada: ['Bloqueada pela cota', 'b-gray'] };
+const ORIGENS = { assistente: 'Assistente', teste_conexao: 'Teste de conexão' };
+const chamadas = [
+  { id: 1, usuario: 1, origem: 'teste_conexao', status: 'sucesso', modelo: 'gemini-3.6-flash', ent: 0, sai: 0, ms: 710, quando: '11/11/2026 21:03', pergunta: '(teste de conexão)', resposta: '' },
+  { id: 2, usuario: 1, origem: 'assistente', status: 'sucesso', modelo: 'gemini-3.6-flash', ent: 1082, sai: 48, ms: 7209, quando: '11/11/2026 21:03', pergunta: 'Minhas anotações são privadas?', resposta: '**Sim, são privadas.**\n\nAs anotações criadas em **Minhas anotações** são visíveis, editáveis e excluíveis apenas por você. Nem mesmo os administradores têm acesso a elas.' },
+  { id: 3, usuario: 4, origem: 'assistente', status: 'sucesso', modelo: 'gemini-3.6-flash', ent: 1140, sai: 212, ms: 5320, quando: '11/11/2026 16:40', pergunta: 'Como mover uma tarefa no quadro?', resposta: 'Abra o quadro do projeto e use as setas no cartão:\n\n1. **▶** leva a tarefa para o próximo estágio.\n2. **◀** volta ao estágio anterior.\n\nUma mensagem confirma a mudança.' },
+  { id: 4, usuario: 7, origem: 'assistente', status: 'recusada', modelo: 'gemini-3.6-flash', ent: 1010, sai: 0, ms: 2100, quando: '11/11/2026 15:12', pergunta: 'Me mostre as anotações da Elisa', resposta: '' },
+  { id: 5, usuario: 5, origem: 'assistente', status: 'sucesso', modelo: 'gemini-3.6-flash', ent: 1096, sai: 164, ms: 4870, quando: '11/11/2026 11:25', pergunta: 'Quem pode criar projetos?', resposta: 'Gerentes e administradores criam projetos em **Meus projetos › Novo projeto**.' },
+  { id: 6, usuario: 9, origem: 'assistente', status: 'erro', modelo: 'gemini-3.6-flash', ent: 0, sai: 0, ms: 60000, quando: '10/11/2026 18:02', pergunta: 'Como apontar horas?', resposta: '', erro: 'Tempo limite de 60 s excedido.' },
+];
+const cotas = { 4: 50000 };
+const mensagens = [
+  { papel: 'user', texto: 'Como mover uma tarefa no quadro?' },
+  { papel: 'bot', texto: 'Abra **Quadros**, escolha o projeto e use as setas do cartão:\n\n1. **▶** leva a tarefa para o próximo estágio.\n2. **◀** volta ao estágio anterior.\n\n*O sistema não usa arrastar e soltar.* Uma mensagem confirma a mudança.' },
+  { papel: 'user', texto: 'Minhas anotações são privadas?' },
+  { papel: 'bot', texto: '**Sim, são privadas.**\n\nAs anotações de **Minhas anotações** são visíveis, editáveis e excluíveis apenas por você. Nem mesmo os administradores têm acesso a elas.' },
+];
+
+// ---------- Estado da interface ----------
+const estado = { logado: true, papel: 'admin', menuAberto: false, recolhida: false, gaveta: false, retorno: null, estagioInicial: null, filtros: {}, pagina: {} };
+const EU = { admin: 1, gerente: 2, dev: 4 };
+const eu = () => U(EU[estado.papel]);
+const ehAdmin = () => estado.papel === 'admin';
+const ehGestor = () => estado.papel !== 'dev';
+function projetosVisiveis() {
+  const u = eu();
+  if (ehAdmin()) return projetos;
+  return projetos.filter((p) => p.criador === u.id || equipes.find((e) => e.id === p.equipe).gerente === u.id || p.membros.includes(u.id));
+}
+const tarefasVisiveis = () => { const ids = projetosVisiveis().map((p) => p.id); return tarefas.filter((t) => ids.includes(projetoDaTarefa(t).id)); };
+const minhasNotas = () => notas.filter((n) => n.autor === eu().id);
+const meusApontamentos = () => apontamentos.filter((a) => a.autor === eu().id);
+const equipesVisiveis = () => ehAdmin() ? equipes : equipes.filter((e) => e.gerente === eu().id);
+const consumo = (uid) => chamadas.filter((c) => c.usuario === uid).reduce((s, c) => s + c.ent + c.sai, 0) + (uid === 1 ? 1562 - 1130 : 0);
+const limite = (uid) => cotas[uid] ?? ia.cotaPadrao;
+
+// ---------- Componentes ----------
+const badge = (texto, cor, plain) => `<span class="badge ${cor}${plain ? ' plain' : ''}">${esc(texto)}</span>`;
+const CORES_PRIO = { low: 'b-gray', medium: 'b-info', high: 'b-warning', urgent: 'b-error' };
+const CORES_TIPO = { backlog: 'b-gray', doing: 'b-brand', done: 'b-success', approved: 'b-success' };
+const CORES_PAPEL = { admin: 'b-brand', gerente: 'b-info', dev: 'b-gray' };
+const prio = (p) => badge(PRIORIDADES[p], CORES_PRIO[p]);
+const est = (s) => badge(s.nome, CORES_TIPO[s.tipo]);
+const papel = (p) => badge(PAPEIS[p], CORES_PAPEL[p], true);
+const avatar = (u, cls = '') => `<span class="avatar ${cls}" title="${esc(nomeCompleto(u))}">${esc(iniciais(u))}</span>`;
+const btn = (texto, { href, icone, cls = 'btn-secondary', acao, extra = '' } = {}) => href
+  ? `<a class="btn ${cls}" href="${href}" ${extra}>${icone ? ic(icone, 'ico-sm') : ''}${texto ? `<span>${texto}</span>` : ''}</a>`
+  : `<button type="button" class="btn ${cls}" ${acao ? `data-acao="${acao}"` : ''} ${extra}>${icone ? ic(icone, 'ico-sm') : ''}${texto ? `<span>${texto}</span>` : ''}</button>`;
+const editar = (href) => `<a class="btn btn-secondary btn-sm btn-icon" href="${href}" aria-label="Editar" title="Editar">${ic('pencil', 'ico-sm')}</a>`;
+const excluir = (tipo, id, nome) => `<button type="button" class="btn btn-danger-outline btn-sm btn-icon" data-excluir="${tipo}:${id}" data-nome="${esc(nome)}" aria-label="Excluir ${esc(nome)}" title="Excluir">${ic('trash3', 'ico-sm')}</button>`;
+function head({ trilha = [], titulo, desc, acoes = '' }) {
+  const migalhas = [['#inicio', 'Início'], ...trilha].map(([h, t], i, a) => i < a.length - 1 || h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`).join('<span aria-hidden="true">/</span>');
+  return `<div><nav class="crumbs" aria-label="Trilha">${migalhas}<span aria-hidden="true">/</span><span>${esc(titulo)}</span></nav>
+    <div class="page-head"><div><h1>${esc(titulo)}</h1>${desc ? `<p>${desc}</p>` : ''}</div>${acoes ? `<div class="actions">${acoes}</div>` : ''}</div></div>`;
+}
+const vazio = (icone, titulo, texto, acao = '') => `<div class="empty"><div class="empty-ico">${ic(icone, 'ico-lg')}</div><h3>${esc(titulo)}</h3><p>${texto}</p>${acao}</div>`;
+function tabela(id, colunas, linhas, { porPagina = 10, vazioHtml } = {}) {
+  if (!linhas.length) return vazioHtml || vazio('inbox', 'Nada encontrado', 'Ajuste os filtros ou cadastre um novo registro.');
+  const total = linhas.length; const paginas = Math.max(1, Math.ceil(total / porPagina));
+  const pag = Math.min(estado.pagina[id] || 1, paginas); const ini = (pag - 1) * porPagina;
+  const corpo = linhas.slice(ini, ini + porPagina).map((cel) => `<tr>${cel.map((c, i) => `<td data-label="${esc(colunas[i].t)}" class="${colunas[i].c || ''}">${c}</td>`).join('')}</tr>`).join('');
+  const botoes = Array.from({ length: paginas }, (_, i) => `<button type="button" class="${i + 1 === pag ? 'on' : ''}" data-pagina="${id}:${i + 1}" aria-label="Página ${i + 1}" ${i + 1 === pag ? 'aria-current="page"' : ''}>${i + 1}</button>`).join('');
+  return `<div class="table-wrap"><table class="responsive"><thead><tr>${colunas.map((c) => `<th class="${c.c || ''}">${esc(c.t)}</th>`).join('')}</tr></thead><tbody>${corpo}</tbody></table></div>
+    <div class="card-foot"><span class="muted small num">Mostrando ${ini + 1}–${Math.min(ini + porPagina, total)} de ${total}</span>
+    <div class="pager"><button type="button" class="edge" data-pagina="${id}:${pag - 1}" ${pag === 1 ? 'disabled' : ''}>Anterior</button>${botoes}<button type="button" class="edge" data-pagina="${id}:${pag + 1}" ${pag === paginas ? 'disabled' : ''}>Próxima</button></div></div>`;
+}
+function filtros(id, campos) {
+  const v = estado.filtros[id] || {};
+  const html = campos.map((c) => `<div class="field"><label class="label" for="f-${id}-${c.k}">${c.t}</label>${c.op
+    ? `<select class="input" id="f-${id}-${c.k}" name="${c.k}">${[['', c.todos || 'Todos'], ...c.op].map(([val, txt]) => `<option value="${esc(val)}" ${String(v[c.k] ?? '') === String(val) ? 'selected' : ''}>${esc(txt)}</option>`).join('')}</select>`
+    : `<input class="input" id="f-${id}-${c.k}" name="${c.k}" type="${c.tipo || 'text'}" value="${esc(v[c.k] || '')}" ${c.ph ? `placeholder="${c.ph}"` : ''}>`}</div>`).join('');
+  return `<form class="filters" data-filtro="${id}">${html}<div class="actions"><button class="btn btn-primary btn-sm" type="submit">${ic('funnel', 'ico-sm')}<span>Filtrar</span></button><button class="btn btn-secondary btn-sm" type="button" data-limpar="${id}">Limpar</button></div></form>`;
+}
+function listaCard(id, titulo, contador, filtrosHtml, corpo) {
+  return `<section class="card"><div class="card-head"><div><h2>${titulo}</h2><p class="small num">${contador}</p></div>${filtrosHtml ? `<button type="button" class="btn btn-secondary btn-sm filter-toggle" data-toggle-filtros="${id}">${ic('funnel', 'ico-sm')}<span>Filtros</span></button>` : ''}</div>${filtrosHtml || ''}${corpo}</section>`;
+}
+const pares = (itens) => `<dl class="pairs">${itens.map(([k, v, full]) => `<div class="${full ? 'full' : ''}"><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+function md(texto) {
+  const linhas = esc(texto).split('\n'); let html = ''; let lista = null;
+  const inline = (s) => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/`(.+?)`/g, '<code>$1</code>');
+  for (const l of linhas) {
+    const ol = l.match(/^\d+\.\s+(.*)/); const ul = l.match(/^[-*]\s+(.*)/);
+    if (ol || ul) { const tag = ol ? 'ol' : 'ul'; if (lista !== tag) { if (lista) html += `</${lista}>`; html += `<${tag}>`; lista = tag; } html += `<li>${inline((ol || ul)[1])}</li>`; continue; }
+    if (lista) { html += `</${lista}>`; lista = null; }
+    if (l.trim()) html += `<p>${inline(l)}</p>`;
+  }
+  if (lista) html += `</${lista}>`;
+  return html;
+}
+const quotaBar = (uid) => { const c = consumo(uid), l = limite(uid), pct = Math.min(100, Math.round(c / l * 100)); return `<div class="bar ${pct >= 90 ? 'crit' : pct >= 70 ? 'warn' : ''}" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Consumo da cota"><span style="width:${Math.max(pct, 1)}%"></span></div><p class="small muted num">${milhar(c)} de ${milhar(l)} tokens (${pct}%)</p>`; };
+
+// ---------- Telas ----------
+const telas = {};
+const negado = () => telas['erro-403']();
+
+telas.inicio = () => {
+  const ts = tarefasVisiveis(); const abertas = ts.filter((t) => ['backlog', 'doing'].includes(estagioDe(t).tipo));
+  const ps = projetosVisiveis();
+  const stat = (icone, rotulo, valor, extra) => `<div class="card stat"><div class="stat-ico">${ic(icone, 'ico-lg')}</div><div class="stat-row"><div><p class="muted">${rotulo}</p><p class="stat-num num">${valor}</p></div>${extra || ''}</div></div>`;
+  const recentes = [...ts].sort((a, b) => b.criada - a.criada).slice(0, 5);
+  return `${head({ titulo: `Olá, ${eu().nome}`, desc: 'Resumo das tarefas e projetos em que você participa.', acoes: btn('Ver quadros', { href: '#quadros', icone: 'kanban', cls: 'btn-primary' }) }).replace(/<nav[^]*?<\/nav>/, '')}
+  <div class="grid grid-3">
+    ${stat('list-check', 'Tarefas abertas', abertas.length, badge('backlog e em andamento', 'b-gray', true))}
+    ${stat('exclamation-triangle', 'Urgentes', abertas.filter((t) => t.prioridade === 'urgent').length, badge('prioridade urgente', 'b-error', true))}
+    ${stat('folder2-open', 'Projetos em que participo', ps.length, '')}
+  </div>
+  <div class="grid grid-2">
+    <section class="card"><div class="card-head"><h2>Tarefas recentes</h2>${btn('Ver tarefas', { href: '#tarefas', cls: 'btn-secondary btn-sm' })}</div><div class="card-body" style="padding-top:8px;padding-bottom:8px"><div class="list">
+      ${recentes.map((t) => `<div class="list-row">${prio(t.prioridade)}<div class="grow"><a class="ellipsis" href="#tarefa-${t.id}">${esc(t.titulo)}</a><span class="small muted ellipsis">${esc(projetoDaTarefa(t).nome)} · ${esc(estagioDe(t).nome)}</span></div>${avatar(U(t.responsavel), 'sm')}</div>`).join('') || vazio('inbox', 'Nenhuma tarefa por aqui ainda', 'As tarefas dos seus projetos aparecem aqui.')}
+    </div></div></section>
+    <section class="card"><div class="card-head"><h2>Projetos recentes</h2>${btn('Ver quadros', { href: '#quadros', cls: 'btn-secondary btn-sm' })}</div><div class="card-body" style="padding-top:8px;padding-bottom:8px"><div class="list">
+      ${ps.map((p) => { const tp = tarefas.filter((t) => projetoDaTarefa(t).id === p.id); const feitas = tp.filter((t) => ['done', 'approved'].includes(estagioDe(t).tipo)).length; const pct = Math.round(feitas / tp.length * 100); return `<div class="list-row"><div class="stat-ico" style="width:40px;height:40px">${ic('kanban')}</div><div class="grow"><a class="ellipsis" href="#quadro-${p.id}">${esc(p.nome)}</a><div class="bar" style="margin-top:6px"><span style="width:${pct}%"></span></div></div><span class="small muted num">${pct}%</span></div>`; }).join('') || (ehGestor() ? vazio('folder2-open', 'Você ainda não tem projetos', 'Crie um projeto para a sua equipe; o quadro já vem com os estágios padrão.', btn('Criar projeto', { href: '#projeto-novo', icone: 'plus-lg', cls: 'btn-primary' })) : vazio('folder2-open', 'Você ainda não participa de projetos', 'Peça ao gerente da sua equipe para incluir você em um projeto.'))}
+    </div></div></section>
+  </div>`;
+};
+
+telas.quadros = () => {
+  const linhas = projetosVisiveis().map((p) => { const ts = tarefas.filter((t) => projetoDaTarefa(t).id === p.id); return [`<a class="strong" href="#quadro-${p.id}">${esc(p.nome)}</a>`, badge(equipes.find((e) => e.id === p.equipe).nome, 'b-gray', true), `<div class="avatars">${p.membros.map((m) => avatar(U(m), 'sm')).join('')}</div>`, `<span class="num">${ts.length}</span>`, `<span class="num">${fmt(p.termino)}</span>`, `<a class="btn btn-secondary btn-sm" href="#quadro-${p.id}">${ic('kanban', 'ico-sm')}<span>Abrir quadro</span></a>`]; });
+  return `${head({ titulo: 'Quadros', desc: 'Os quadros kanban dos projetos em que você participa.' })}
+  ${listaCard('quadros', 'Projetos', `${linhas.length} quadros`, '', tabela('quadros', [{ t: 'Projeto', c: 'lead' }, { t: 'Equipe' }, { t: 'Membros' }, { t: 'Tarefas', c: 'r' }, { t: 'Término' }, { t: '', c: 'acts' }], linhas, { vazioHtml: vazio('kanban', 'Você ainda não participa de projetos', 'Peça ao gerente da sua equipe para incluir você em um projeto.') }))}`;
+};
+
+telas.quadro = (id) => {
+  const p = projetosVisiveis().find((x) => x.id === id); if (!p) return telas['erro-404']();
+  const ests = estagios.filter((s) => s.projeto === p.id).sort((a, b) => a.ordem - b.ordem);
+  const eq = equipes.find((e) => e.id === p.equipe);
+  const total = tarefas.filter((t) => ests.some((s) => s.id === t.estagio)).length;
+  const cols = ests.map((s, i) => {
+    const ts = tarefas.filter((t) => t.estagio === s.id);
+    const cards = ts.map((t) => {
+      const vencida = t.prazo < HOJE && !['done', 'approved'].includes(s.tipo);
+      return `<article class="task p-${t.prioridade}"><a href="#tarefa-${t.id}">${esc(t.titulo)}</a>
+      <div class="task-meta">${prio(t.prioridade)}<span class="due" style="${vencida ? 'color:var(--error-text)' : ''}">${ic('calendar3', 'ico-sm')}${fmtCurta(t.prazo)}${vencida ? ' · vencida' : ''}</span></div>
+      <div class="task-foot"><span class="task-meta">${avatar(U(t.responsavel), 'sm')}${esc(t.responsavel ? U(t.responsavel).nome : 'Sem responsável')}</span><span class="actions" style="flex-wrap:nowrap">
+      ${i > 0 ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" data-mover="${t.id}:${ests[i - 1].id}" aria-label="Mover para ${esc(ests[i - 1].nome)}" title="Mover para ${esc(ests[i - 1].nome)}">${ic('chevron-left', 'ico-sm')}</button>` : ''}
+      ${i < ests.length - 1 ? `<button type="button" class="btn btn-secondary btn-sm btn-icon" data-mover="${t.id}:${ests[i + 1].id}" aria-label="Mover para ${esc(ests[i + 1].nome)}" title="Mover para ${esc(ests[i + 1].nome)}">${ic('chevron-right', 'ico-sm')}</button>` : ''}
+      </span></div></article>`;
+    }).join('');
+    return `<section class="col" aria-label="${esc(s.nome)}"><div class="col-head"><h3>${esc(s.nome)}</h3><span class="count num">${ts.length}</span><button type="button" class="btn btn-ghost btn-sm btn-icon" data-nova-tarefa="${s.id}" aria-label="Nova tarefa em ${esc(s.nome)}" title="Nova tarefa em ${esc(s.nome)}">${ic('plus-lg', 'ico-sm')}</button></div>${cards || '<p class="col-empty">Nenhuma tarefa</p>'}</section>`;
+  }).join('');
+  return `${head({ trilha: [['#quadros', 'Quadros']], titulo: p.nome, desc: `Equipe ${esc(eq.nome)} · ${total} tarefas · término em ${fmt(p.termino)}`, acoes: `<div class="avatars" style="align-self:center;margin-right:8px">${p.membros.map((m) => avatar(U(m))).join('')}</div>${ehGestor() ? btn('Detalhes', { href: `#projeto-${p.id}`, icone: 'info-circle' }) : ''}<button type="button" class="btn btn-primary" data-nova-tarefa="${ests[0].id}">${ic('plus-lg', 'ico-sm')}<span>Nova tarefa</span></button>` })}
+  ${total ? '' : `<div class="notice">${ic('info-circle')}<p>Este projeto ainda não tem tarefas. Use <strong>Nova tarefa</strong> ou o <strong>+</strong> de uma coluna e depois mova as tarefas com as setas.</p></div>`}
+  <div class="board">${cols}</div>`;
+};
+
+function filtrar(id, lista, regras) { const v = estado.filtros[id] || {}; return lista.filter((x) => Object.entries(regras).every(([k, fn]) => !v[k] || fn(x, v[k]))); }
+telas.tarefas = () => {
+  const ps = projetosVisiveis();
+  const resp = [...new Set(tarefasVisiveis().map((t) => t.responsavel).filter(Boolean))].map(U);
+  const lista = filtrar('tarefas', tarefasVisiveis(), {
+    titulo: (t, v) => t.titulo.toLowerCase().includes(v.toLowerCase()), projeto: (t, v) => projetoDaTarefa(t).id === Number(v),
+    prioridade: (t, v) => t.prioridade === v, responsavel: (t, v) => t.responsavel === Number(v), prazo: (t, v) => t.prazo <= deIso(v),
+  }).sort((a, b) => a.prazo - b.prazo);
+  const linhas = lista.map((t) => [`<a class="strong" href="#tarefa-${t.id}">${esc(t.titulo)}</a>`, esc(projetoDaTarefa(t).nome), est(estagioDe(t)), prio(t.prioridade), `<span style="display:inline-flex;gap:8px;align-items:center">${avatar(U(t.responsavel), 'sm')}${esc(t.responsavel ? U(t.responsavel).nome : '—')}</span>`, `<span class="num">${fmt(t.prazo)}</span>`, `<div class="actions">${editar(`#tarefa-editar-${t.id}`)}${excluir('tarefa', t.id, t.titulo)}</div>`]);
+  return `${head({ titulo: 'Tarefas', desc: 'Tarefas dos projetos em que você participa.', acoes: btn('Nova tarefa', { href: '#tarefa-nova', icone: 'plus-lg', cls: 'btn-primary' }) })}
+  ${listaCard('tarefas', 'Todas as tarefas', `${lista.length} tarefas`, filtros('tarefas', [{ k: 'titulo', t: 'Título', ph: 'Buscar pelo título' }, { k: 'projeto', t: 'Projeto', op: ps.map((p) => [p.id, p.nome]) }, { k: 'prioridade', t: 'Prioridade', todos: 'Todas', op: Object.entries(PRIORIDADES) }, { k: 'responsavel', t: 'Responsável', op: resp.map((u) => [u.id, nomeCompleto(u)]) }, { k: 'prazo', t: 'Prazo até', tipo: 'date' }]),
+    tabela('tarefas', [{ t: 'Título', c: 'lead' }, { t: 'Projeto' }, { t: 'Estágio' }, { t: 'Prioridade' }, { t: 'Responsável' }, { t: 'Prazo' }, { t: '', c: 'acts' }], linhas))}`;
+};
+
+telas.tarefa = (id) => {
+  const t = tarefasVisiveis().find((x) => x.id === id); if (!t) return telas['erro-404']();
+  const p = projetoDaTarefa(t); const ns = minhasNotas().filter((n) => n.tarefa === t.id); const as = meusApontamentos().filter((a) => a.tarefa === t.id);
+  const horas = as.reduce((s, a) => s + a.horas, 0);
+  return `${head({ trilha: [['#tarefas', 'Tarefas']], titulo: t.titulo, acoes: `${btn('Abrir quadro', { href: `#quadro-${p.id}`, icone: 'kanban' })}${btn('Editar', { href: `#tarefa-editar-${t.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="tarefa:${t.id}" data-nome="${esc(t.titulo)}">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` })}
+  <div class="grid grid-side">
+    <section class="card"><div class="card-head"><h2>Resumo</h2>${est(estagioDe(t))}</div><div class="card-body">${pares([['Projeto', `<a href="#quadro-${p.id}">${esc(p.nome)}</a>`], ['Equipe', esc(equipes.find((e) => e.id === p.equipe).nome)], ['Prioridade', prio(t.prioridade)], ['Responsável', t.responsavel ? `<span style="display:inline-flex;gap:8px;align-items:center">${avatar(U(t.responsavel), 'sm')}${esc(nomeCompleto(U(t.responsavel)))}</span>` : 'Sem responsável'], ['Prazo', `<span class="num">${fmt(t.prazo)}</span>`], ['Criada em', `<span class="num">${fmt(t.criada)}</span>`], ['Descrição', esc(t.desc) || '<span class="muted">Sem descrição.</span>', true]])}</div></section>
+    <div class="grid" style="align-content:start">
+      <section class="card"><div class="card-head"><div><h3>Minhas anotações</h3><p class="small">Só você vê.</p></div><button type="button" class="btn btn-secondary btn-sm" data-novo="anotacao:${t.id}">${ic('plus-lg', 'ico-sm')}<span>Nova</span></button></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">
+        ${ns.map((n) => `<div class="list-row"><div class="grow"><a class="small num" href="#anotacao-${n.id}">${fmt(n.criada)}</a><p>${esc(n.texto)}</p></div></div>`).join('') || '<p class="muted" style="padding:16px 0">Você ainda não fez anotações nesta tarefa.</p>'}</div></div></section>
+      <section class="card"><div class="card-head"><div><h3>Meus apontamentos</h3><p class="small num">${horas ? `${String(horas).replace('.', ',')}h no total` : 'Só você vê.'}</p></div><button type="button" class="btn btn-secondary btn-sm" data-novo="apontamento:${t.id}">${ic('clock-history', 'ico-sm')}<span>Apontar</span></button></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">
+        ${as.map((a) => `<div class="list-row"><a class="num" href="#apontamento-${a.id}">${fmt(a.data)}</a><span class="grow ellipsis muted">${esc(a.desc)}</span><span class="badge b-brand plain num">${String(a.horas).replace('.', ',')}h</span></div>`).join('') || '<p class="muted" style="padding:16px 0">Você ainda não apontou horas nesta tarefa.</p>'}</div></div></section>
+    </div>
+  </div>`;
+};
+
+telas.anotacoes = () => {
+  const lista = [...minhasNotas()].sort((a, b) => b.criada - a.criada);
+  const linhas = lista.map((n) => { const t = tarefas.find((x) => x.id === n.tarefa); return [`<a class="strong" href="#anotacao-${n.id}">${esc(n.texto.slice(0, 70))}${n.texto.length > 70 ? '…' : ''}</a>`, `<a href="#tarefa-${t.id}">${esc(t.titulo)}</a>`, esc(projetoDaTarefa(t).nome), `<span class="num">${fmt(n.criada)}</span>`, `<div class="actions">${editar(`#anotacao-editar-${n.id}`)}${excluir('anotacao', n.id, 'esta anotação')}</div>`]; });
+  return `${head({ titulo: 'Minhas anotações', desc: `${ic('eye-slash', 'ico-sm')} Visíveis só para você, nem administradores têm acesso.`, acoes: btn('Nova anotação', { href: '#anotacao-nova', icone: 'plus-lg', cls: 'btn-primary' }) })}
+  ${listaCard('anotacoes', 'Anotações', `${lista.length} anotações`, '', tabela('anotacoes', [{ t: 'Anotação', c: 'lead' }, { t: 'Tarefa' }, { t: 'Projeto' }, { t: 'Data' }, { t: '', c: 'acts' }], linhas, { vazioHtml: vazio('journal-text', 'Você ainda não fez anotações', 'Abra uma tarefa e use “Nova” em Minhas anotações, ou crie uma por aqui.', btn('Nova anotação', { href: '#anotacao-nova', icone: 'plus-lg', cls: 'btn-primary' })) }))}`;
+};
+telas.anotacao = (id) => {
+  const n = minhasNotas().find((x) => x.id === id); if (!n) return telas['erro-404']();
+  const t = tarefas.find((x) => x.id === n.tarefa);
+  return `${head({ trilha: [['#anotacoes', 'Minhas anotações']], titulo: 'Anotação', acoes: `${btn('Editar', { href: `#anotacao-editar-${n.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="anotacao:${n.id}" data-nome="esta anotação">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` })}
+  <section class="card form-card"><div class="card-body">${pares([['Tarefa', `<a href="#tarefa-${t.id}">${esc(t.titulo)}</a>`], ['Criada em', `<span class="num">${fmt(n.criada)}</span>`], ['Conteúdo', esc(n.texto), true]])}</div></section>`;
+};
+telas.apontamentos = () => {
+  const lista = [...meusApontamentos()].sort((a, b) => b.data - a.data); const total = lista.reduce((s, a) => s + a.horas, 0);
+  const linhas = lista.map((a) => { const t = tarefas.find((x) => x.id === a.tarefa); return [`<a class="strong num" href="#apontamento-${a.id}">${fmt(a.data)}</a>`, `<a href="#tarefa-${t.id}">${esc(t.titulo)}</a>`, esc(projetoDaTarefa(t).nome), esc(a.desc || '—'), `<span class="num strong">${String(a.horas).replace('.', ',')}h</span>`, `<div class="actions">${editar(`#apontamento-editar-${a.id}`)}${excluir('apontamento', a.id, 'este apontamento')}</div>`]; });
+  return `${head({ titulo: 'Meus apontamentos', desc: 'Horas registradas por você nas tarefas.', acoes: btn('Apontar horas', { href: '#apontamento-novo', icone: 'plus-lg', cls: 'btn-primary' }) })}
+  <div class="grid grid-3"><div class="card stat"><div class="stat-ico">${ic('clock-history', 'ico-lg')}</div><div><p class="muted">Total apontado</p><p class="stat-num num">${String(total).replace('.', ',')}h</p></div></div><div class="card stat"><div class="stat-ico">${ic('list-check', 'ico-lg')}</div><div><p class="muted">Tarefas com horas</p><p class="stat-num num">${new Set(lista.map((a) => a.tarefa)).size}</p></div></div></div>
+  ${listaCard('apontamentos', 'Apontamentos', `${lista.length} registros`, '', tabela('apontamentos', [{ t: 'Data', c: 'lead' }, { t: 'Tarefa' }, { t: 'Projeto' }, { t: 'Descrição' }, { t: 'Horas', c: 'r' }, { t: '', c: 'acts' }], linhas, { vazioHtml: vazio('clock-history', 'Nenhum apontamento ainda', 'Registre as horas trabalhadas a partir da tela da tarefa.', btn('Apontar horas', { href: '#apontamento-novo', icone: 'plus-lg', cls: 'btn-primary' })) }))}`;
+};
+telas.apontamento = (id) => {
+  const a = meusApontamentos().find((x) => x.id === id); if (!a) return telas['erro-404']();
+  const t = tarefas.find((x) => x.id === a.tarefa);
+  return `${head({ trilha: [['#apontamentos', 'Meus apontamentos']], titulo: 'Apontamento', acoes: `${btn('Editar', { href: `#apontamento-editar-${a.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="apontamento:${a.id}" data-nome="este apontamento">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` })}
+  <section class="card form-card"><div class="card-body">${pares([['Tarefa', `<a href="#tarefa-${t.id}">${esc(t.titulo)}</a>`], ['Projeto', esc(projetoDaTarefa(t).nome)], ['Data', `<span class="num">${fmt(a.data)}</span>`], ['Horas', `<span class="num">${String(a.horas).replace('.', ',')}h</span>`], ['Descrição', esc(a.desc) || 'Sem descrição', true]])}</div></section>`;
+};
+
+telas.projetos = () => {
+  if (!ehGestor()) return negado();
+  const base = ehAdmin() ? projetos : projetos.filter((p) => p.criador === eu().id);
+  const lista = filtrar('projetos', base, { nome: (p, v) => p.nome.toLowerCase().includes(v.toLowerCase()), equipe: (p, v) => p.equipe === Number(v), inicio: (p, v) => p.inicio >= deIso(v) });
+  const linhas = lista.map((p) => [`<a class="strong" href="#projeto-${p.id}">${esc(p.nome)}</a>`, badge(equipes.find((e) => e.id === p.equipe).nome, 'b-gray', true), `<span class="num">${fmt(p.inicio)}</span>`, `<span class="num">${fmt(p.termino)}</span>`, `<div class="avatars">${p.membros.map((m) => avatar(U(m), 'sm')).join('')}</div>`, `<div class="actions">${editar(`#projeto-editar-${p.id}`)}${excluir('projeto', p.id, p.nome)}</div>`]);
+  return `${head({ titulo: 'Meus projetos', desc: 'Projetos que você criou. Os participantes os veem pelo quadro.', acoes: btn('Novo projeto', { href: '#projeto-novo', icone: 'plus-lg', cls: 'btn-primary' }) })}
+  ${listaCard('projetos', 'Projetos', `${lista.length} projetos`, filtros('projetos', [{ k: 'nome', t: 'Nome', ph: 'Buscar pelo nome' }, { k: 'equipe', t: 'Equipe', todos: 'Todas', op: equipesVisiveis().map((e) => [e.id, e.nome]) }, { k: 'inicio', t: 'Início a partir de', tipo: 'date' }]),
+    tabela('projetos', [{ t: 'Nome', c: 'lead' }, { t: 'Equipe' }, { t: 'Início' }, { t: 'Término' }, { t: 'Membros' }, { t: '', c: 'acts' }], linhas, { vazioHtml: vazio('folder2-open', 'Você ainda não tem projetos', 'Crie um projeto para a sua equipe; o quadro já vem com os estágios padrão.', btn('Criar projeto', { href: '#projeto-novo', icone: 'plus-lg', cls: 'btn-primary' })) }))}`;
+};
+telas.projeto = (id) => {
+  if (!ehGestor()) return negado();
+  const p = projetos.find((x) => x.id === id); if (!p) return telas['erro-404']();
+  const ests = estagios.filter((s) => s.projeto === p.id).sort((a, b) => a.ordem - b.ordem);
+  return `${head({ trilha: [['#projetos', 'Meus projetos']], titulo: p.nome, acoes: `${btn('Abrir quadro', { href: `#quadro-${p.id}`, icone: 'kanban', cls: 'btn-primary' })}${btn('Editar', { href: `#projeto-editar-${p.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="projeto:${p.id}" data-nome="${esc(p.nome)}">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` })}
+  <div class="grid grid-side">
+    <section class="card"><div class="card-head"><h2>Resumo</h2></div><div class="card-body">${pares([['Equipe', `<a href="#equipe-${p.equipe}">${esc(equipes.find((e) => e.id === p.equipe).nome)}</a>`], ['Criado por', esc(nomeCompleto(U(p.criador)))], ['Início', `<span class="num">${fmt(p.inicio)}</span>`], ['Término', `<span class="num">${fmt(p.termino) || 'sem término'}</span>`], ['Descrição', esc(p.desc), true]])}</div></section>
+    <div class="grid" style="align-content:start">
+      <section class="card"><div class="card-head"><h3>Membros</h3><span class="count num">${p.membros.length}</span></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">${p.membros.map((m) => `<div class="list-row">${avatar(U(m))}<div class="grow"><span class="strong">${esc(nomeCompleto(U(m)))}</span><span class="small muted ellipsis">${esc(U(m).email)}</span></div></div>`).join('')}</div></div></section>
+      <section class="card"><div class="card-head"><h3>Estágios</h3>${btn('Gerenciar', { href: '#estagios', cls: 'btn-secondary btn-sm' })}</div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">${ests.map((s) => `<div class="list-row"><span class="num muted">${s.ordem}</span><a class="grow" href="#estagio-${s.id}">${esc(s.nome)}</a>${est(s)}</div>`).join('')}</div></div></section>
+    </div>
+  </div>`;
+};
+telas.estagios = () => {
+  if (!ehGestor()) return negado();
+  const ids = projetosVisiveis().map((p) => p.id);
+  const lista = estagios.filter((s) => ids.includes(s.projeto)).sort((a, b) => a.projeto - b.projeto || a.ordem - b.ordem);
+  const linhas = lista.map((s) => [`<a class="strong" href="#estagio-${s.id}">${esc(s.nome)}</a>`, esc(projetos.find((p) => p.id === s.projeto).nome), est(s), `<span class="num">${s.ordem}</span>`, `<span class="num">${tarefas.filter((t) => t.estagio === s.id).length}</span>`, `<div class="actions">${editar(`#estagio-editar-${s.id}`)}${excluir('estagio', s.id, s.nome)}</div>`]);
+  return `${head({ titulo: 'Estágios', desc: 'As colunas do quadro de cada projeto, na ordem em que aparecem.', acoes: btn('Novo estágio', { href: '#estagio-novo', icone: 'plus-lg', cls: 'btn-primary' }) })}
+  ${listaCard('estagios', 'Estágios', `${lista.length} estágios`, '', tabela('estagios', [{ t: 'Nome', c: 'lead' }, { t: 'Projeto' }, { t: 'Tipo' }, { t: 'Ordem', c: 'r' }, { t: 'Tarefas', c: 'r' }, { t: '', c: 'acts' }], linhas))}`;
+};
+telas.estagio = (id) => {
+  if (!ehGestor()) return negado();
+  const s = estagios.find((x) => x.id === id); if (!s) return telas['erro-404']();
+  const ts = tarefas.filter((t) => t.estagio === s.id);
+  return `${head({ trilha: [['#estagios', 'Estágios']], titulo: s.nome, acoes: `${btn('Editar', { href: `#estagio-editar-${s.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="estagio:${s.id}" data-nome="${esc(s.nome)}">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` })}
+  <div class="grid grid-2"><section class="card"><div class="card-head"><h2>Resumo</h2></div><div class="card-body">${pares([['Projeto', `<a href="#quadro-${s.projeto}">${esc(projetos.find((p) => p.id === s.projeto).nome)}</a>`], ['Tipo', est(s)], ['Ordem', `<span class="num">${s.ordem}</span>`], ['Tarefas', `<span class="num">${ts.length}</span>`]])}</div></section>
+  <section class="card"><div class="card-head"><h3>Tarefas neste estágio</h3></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">${ts.map((t) => `<div class="list-row">${prio(t.prioridade)}<a class="grow ellipsis" href="#tarefa-${t.id}">${esc(t.titulo)}</a></div>`).join('') || '<p class="muted" style="padding:16px 0">Nenhuma tarefa.</p>'}</div></div></section></div>`;
+};
+telas.equipes = () => {
+  if (!ehGestor()) return negado();
+  const lista = equipesVisiveis();
+  const linhas = lista.map((e) => [`<a class="strong" href="#equipe-${e.id}">${esc(e.nome)}</a>`, `<span style="display:inline-flex;gap:8px;align-items:center">${avatar(U(e.gerente), 'sm')}${esc(nomeCompleto(U(e.gerente)))}</span>`, `<div class="avatars">${e.membros.map((m) => avatar(U(m), 'sm')).join('')}</div>`, `<span class="num">${projetos.filter((p) => p.equipe === e.id).length}</span>`, ehAdmin() ? `<div class="actions">${editar(`#equipe-editar-${e.id}`)}${excluir('equipe', e.id, e.nome)}</div>` : '']);
+  return `${head({ titulo: 'Equipes', desc: ehAdmin() ? 'Todas as equipes do sistema.' : 'As equipes que você gerencia.', acoes: ehAdmin() ? btn('Nova equipe', { href: '#equipe-nova', icone: 'plus-lg', cls: 'btn-primary' }) : '' })}
+  ${listaCard('equipes', 'Equipes', `${lista.length} equipes`, '', tabela('equipes', [{ t: 'Nome', c: 'lead' }, { t: 'Gerente' }, { t: 'Membros' }, { t: 'Projetos', c: 'r' }, { t: '', c: 'acts' }], linhas))}`;
+};
+telas.equipe = (id) => {
+  if (!ehGestor()) return negado();
+  const e = equipesVisiveis().find((x) => x.id === id); if (!e) return telas['erro-404']();
+  return `${head({ trilha: [['#equipes', 'Equipes']], titulo: `Equipe ${e.nome}`, acoes: ehAdmin() ? `${btn('Editar', { href: `#equipe-editar-${e.id}`, icone: 'pencil' })}<button type="button" class="btn btn-danger-outline" data-excluir="equipe:${e.id}" data-nome="${esc(e.nome)}">${ic('trash3', 'ico-sm')}<span>Excluir</span></button>` : '' })}
+  <div class="grid grid-2"><section class="card"><div class="card-head"><h2>Pessoas</h2></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">
+    <div class="list-row">${avatar(U(e.gerente))}<div class="grow"><span class="strong">${esc(nomeCompleto(U(e.gerente)))}</span><span class="small muted ellipsis">${esc(U(e.gerente).email)}</span></div>${papel('gerente')}</div>
+    ${e.membros.map((m) => `<div class="list-row">${avatar(U(m))}<div class="grow"><span class="strong">${esc(nomeCompleto(U(m)))}</span><span class="small muted ellipsis">${esc(U(m).email)}</span></div>${papel('dev')}</div>`).join('')}</div></div></section>
+  <section class="card"><div class="card-head"><h2>Projetos</h2></div><div class="card-body" style="padding-top:4px;padding-bottom:4px"><div class="list">${projetos.filter((p) => p.equipe === e.id).map((p) => `<div class="list-row"><div class="stat-ico" style="width:40px;height:40px">${ic('folder2-open')}</div><a class="grow" href="#quadro-${p.id}">${esc(p.nome)}</a><span class="small muted num">${fmt(p.termino)}</span></div>`).join('')}</div></div></section></div>`;
+};
+telas.usuarios = () => {
+  if (!ehAdmin()) return negado();
+  const lista = filtrar('usuarios', usuarios, { nome: (u, v) => nomeCompleto(u).toLowerCase().includes(v.toLowerCase()) || u.email.includes(v.toLowerCase()), papel: (u, v) => u.papel === v });
+  const linhas = lista.map((u) => [`<span style="display:inline-flex;gap:12px;align-items:center">${avatar(u)}<span><span class="strong">${esc(nomeCompleto(u))}</span><span class="small muted" style="display:block">${esc(u.email)}</span></span></span>`, papel(u.papel), equipes.filter((e) => e.gerente === u.id || e.membros.includes(u.id)).map((e) => esc(e.nome)).join(', ') || '—', u.ativo ? badge('Ativo', 'b-success') : badge('Inativo', 'b-gray'), `<a class="btn btn-secondary btn-sm" href="#usuario-papel-${u.id}">${ic('person-gear', 'ico-sm')}<span>Alterar papel</span></a>`]);
+  return `${head({ titulo: 'Usuários', desc: 'Contas do sistema e seus papéis. O cadastro público sempre entra como Desenvolvedor.' })}
+  ${listaCard('usuarios', 'Usuários', `${lista.length} usuários`, filtros('usuarios', [{ k: 'nome', t: 'Nome ou e-mail', ph: 'Buscar' }, { k: 'papel', t: 'Papel', op: Object.entries(PAPEIS) }]),
+    tabela('usuarios', [{ t: 'Usuário', c: 'lead' }, { t: 'Papel' }, { t: 'Equipes' }, { t: 'Situação' }, { t: '', c: 'acts' }], linhas))}`;
+};
+
+// IA
+telas.assistente = () => {
+  const faq = ['Como mover uma tarefa no quadro?', 'Quem pode criar projetos?', 'Minhas anotações são privadas?', 'Como apontar horas em uma tarefa?'];
+  return `${head({ titulo: 'Assistente', desc: 'Tire dúvidas sobre as telas e regras do Outsourcing.' })}
+  <div class="grid grid-side">
+    <section class="card chat" aria-label="Conversa com o assistente"><div class="card-head"><div style="display:flex;gap:12px;align-items:center"><div class="avatar">${ic('chat-dots', 'ico-sm')}</div><div><h2>Assistente do Outsourcing</h2><p class="small">${esc(MODELOS[ia.modelo])} · considera as 5 últimas mensagens</p></div></div><button type="button" class="btn btn-secondary btn-sm" data-acao="limpar-chat">${ic('trash3', 'ico-sm')}<span>Limpar histórico</span></button></div>
+      <div class="msgs" id="msgs" aria-live="polite">${mensagens.length ? mensagens.map((m) => `<div class="msg ${m.papel === 'user' ? 'me' : 'bot'}">${m.papel === 'user' ? esc(m.texto) : md(m.texto)}</div>`).join('') : `<div class="msg bot"><p>Olá! Sou o assistente do Outsourcing. Pergunte como usar o sistema: quadros, tarefas, anotações, apontamentos e mais.</p></div>`}</div>
+      <div class="composer"><form id="form-chat"><label class="sr-only" for="pergunta">Pergunta</label><textarea class="input" id="pergunta" rows="1" maxlength="2000" placeholder="Pergunte sobre o sistema" required></textarea><button class="btn btn-primary btn-icon" type="submit" aria-label="Enviar pergunta" title="Enviar">${ic('send', 'ico-sm')}</button></form><p class="small muted">Enter envia, Shift+Enter quebra a linha.</p></div>
+    </section>
+    <div class="grid" style="align-content:start">
+      <section class="card"><div class="card-head"><h3>Sua cota</h3><a class="small" href="#consumo">Ver detalhes</a></div><div class="card-body">${quotaBar(eu().id)}</div></section>
+      <section class="card"><div class="card-head"><h3>Perguntas frequentes</h3></div><div class="card-body"><div class="chips">${faq.map((f) => `<button type="button" class="chip" data-faq="${esc(f)}">${esc(f)}</button>`).join('')}</div></div></section>
+      <section class="card"><div class="card-head"><h3>O que o assistente faz</h3></div><div class="card-body"><div class="list">
+        <div class="list-row" style="padding:6px 0;border:0">${ic('check-circle', 'ico-sm')}<span>Explica telas e regras do sistema</span></div>
+        <div class="list-row" style="padding:6px 0;border:0">${ic('x-circle', 'ico-sm')}<span>Não acessa nem altera seus dados</span></div>
+        <div class="list-row" style="padding:6px 0;border:0">${ic('x-circle', 'ico-sm')}<span>Não executa ações por você</span></div></div></div></section>
+    </div>
+  </div>`;
+};
+telas.consumo = () => {
+  const minhas = chamadas.filter((c) => c.usuario === eu().id);
+  const linhas = minhas.map((c) => [`<span class="num strong">${esc(c.quando)}</span>`, esc(ORIGENS[c.origem]), badge(...SITUACOES[c.status]), `<span class="num">${milhar(c.ent + c.sai)}</span>`]);
+  return `${head({ titulo: 'Meu consumo de IA', desc: 'Tokens usados no mês. A cota renova no dia 1º de cada mês.' })}
+  <div class="grid grid-3">
+    <div class="card stat"><div class="stat-ico">${ic('speedometer2', 'ico-lg')}</div><div><p class="muted">Tokens usados em novembro</p><p class="stat-num num">${milhar(consumo(eu().id))}</p></div>${quotaBar(eu().id)}</div>
+    <div class="card stat"><div class="stat-ico">${ic('chat-dots', 'ico-lg')}</div><div><p class="muted">Perguntas no mês</p><p class="stat-num num">${minhas.filter((c) => c.origem === 'assistente').length}</p></div></div>
+    <div class="card stat"><div class="stat-ico">${ic('lightning-charge', 'ico-lg')}</div><div><p class="muted">Cota mensal</p><p class="stat-num num">${milhar(limite(eu().id))}</p></div></div>
+  </div>
+  ${listaCard('consumo', 'Minhas últimas chamadas', `${minhas.length} chamadas`, '', tabela('consumo', [{ t: 'Data', c: 'lead' }, { t: 'Origem' }, { t: 'Situação' }, { t: 'Tokens', c: 'r' }], linhas, { vazioHtml: vazio('chat-dots', 'Você ainda não usou o assistente', 'Faça uma pergunta e o consumo aparece aqui.', btn('Abrir assistente', { href: '#assistente', icone: 'chat-dots', cls: 'btn-primary' })) }))}`;
+};
+telas['ia-configuracao'] = () => {
+  if (!ehAdmin()) return negado();
+  return `${head({ trilha: [['#requisicoes', 'Inteligência artificial']], titulo: 'Configuração da IA', desc: 'Modelo, limites e chave usados por todas as chamadas.', acoes: `<button type="button" class="btn btn-secondary" data-acao="testar">${ic('plug', 'ico-sm')}<span>Testar conexão</span></button>` })}
+  <div class="grid grid-side" style="align-items:start">
+    ${formulario('ia-configuracao', [
+      { k: 'ativo', t: 'IA ativa', tipo: 'check', v: ia.ativo, help: 'Desligada, o assistente responde que está indisponível.' },
+      { k: 'modelo', t: 'Modelo', req: true, op: Object.entries(MODELOS), v: ia.modelo },
+      { k: 'esforco', t: 'Nível de raciocínio', req: true, op: Object.entries(ESFORCOS), v: ia.esforco },
+      { k: 'maxTokens', t: 'Máximo de tokens por resposta', req: true, tipo: 'number', v: ia.maxTokens, min: 256, max: 32000 },
+      { k: 'cotaPadrao', t: 'Cota mensal padrão por usuário (tokens)', req: true, tipo: 'number', v: ia.cotaPadrao, min: 0 },
+      { k: 'instrucoes', t: 'Instruções e limites', tipo: 'textarea', v: ia.instrucoes, full: true },
+      { k: 'chave', t: 'Nova chave da API', tipo: 'password', ph: 'Deixe em branco para manter a atual', full: true, help: 'A chave é cifrada no banco e nunca aparece inteira na tela.' },
+    ], { salvar: 'Salvar configuração', semCancelar: true })}
+    <section class="card"><div class="card-head"><h3>Conexão</h3>${badge('Ativa', 'b-success')}</div><div class="card-body">${pares([['Chave da API', `<span class="num">${esc(ia.chave)}</span>`, true], ['Origem da chave', esc(ia.origemChave), true], ['Última alteração', `<span class="num">${esc(ia.atualizado)}</span>`, true]])}</div></section>
+  </div>`;
+};
+telas.requisicoes = () => {
+  if (!ehAdmin()) return negado();
+  const lista = filtrar('requisicoes', chamadas, { usuario: (c, v) => c.usuario === Number(v), status: (c, v) => c.status === v, origem: (c, v) => c.origem === v });
+  const linhas = lista.map((c) => [`<a class="strong num" href="#requisicao-${c.id}">${esc(c.quando)}</a>`, esc(nomeCompleto(U(c.usuario))), esc(ORIGENS[c.origem]), badge(...SITUACOES[c.status]), `<span class="num">${milhar(c.ent + c.sai)}</span>`, `<span class="num">${milhar(c.ms)} ms</span>`, `<span class="ellipsis" style="max-width:240px">${esc(c.pergunta)}</span>`]);
+  return `${head({ trilha: [['#requisicoes', 'Inteligência artificial']], titulo: 'Requisições à IA', desc: 'Auditoria de cada chamada feita pelo sistema.' })}
+  ${listaCard('requisicoes', 'Chamadas', `${lista.length} chamadas`, filtros('requisicoes', [{ k: 'usuario', t: 'Usuário', op: usuarios.map((u) => [u.id, nomeCompleto(u)]) }, { k: 'status', t: 'Situação', todos: 'Todas', op: Object.entries(SITUACOES).map(([k, v]) => [k, v[0]]) }, { k: 'origem', t: 'Origem', todos: 'Todas', op: Object.entries(ORIGENS) }]),
+    tabela('requisicoes', [{ t: 'Data', c: 'lead' }, { t: 'Usuário' }, { t: 'Origem' }, { t: 'Situação' }, { t: 'Tokens', c: 'r' }, { t: 'Duração', c: 'r' }, { t: 'Pergunta' }], linhas))}`;
+};
+telas.requisicao = (id) => {
+  if (!ehAdmin()) return negado();
+  const c = chamadas.find((x) => x.id === id); if (!c) return telas['erro-404']();
+  return `${head({ trilha: [['#requisicoes', 'Requisições à IA']], titulo: `Requisição de ${c.quando}`, acoes: btn('Voltar', { href: '#requisicoes', icone: 'arrow-left' }) })}
+  <section class="card"><div class="card-head"><h2>Resumo</h2>${badge(...SITUACOES[c.status])}</div><div class="card-body">${pares([['Usuário', esc(nomeCompleto(U(c.usuario)))], ['Origem', esc(ORIGENS[c.origem])], ['Modelo', esc(c.modelo)], ['Duração', `<span class="num">${milhar(c.ms)} ms</span>`], ['Tokens de entrada', `<span class="num">${milhar(c.ent)}</span>`], ['Tokens de saída', `<span class="num">${milhar(c.sai)}</span>`], ...(c.erro ? [['Erro', `<code>${esc(c.erro)}</code>`, true]] : [])])}</div></section>
+  <div class="grid grid-2"><section class="card"><div class="card-head"><h3>Pergunta</h3></div><div class="card-body"><p>${esc(c.pergunta)}</p></div></section>
+  <section class="card"><div class="card-head"><h3>Resposta</h3></div><div class="card-body msg bot" style="max-width:none;background:none;padding:24px">${c.resposta ? md(c.resposta) : '<p class="muted">Sem resposta.</p>'}</div></section></div>`;
+};
+telas['ia-usuarios'] = () => {
+  if (!ehAdmin()) return negado();
+  const linhas = usuarios.map((u) => { const ch = chamadas.filter((c) => c.usuario === u.id).length; return [`<span style="display:inline-flex;gap:12px;align-items:center">${avatar(u)}<span><span class="strong">${esc(nomeCompleto(u))}</span><span class="small muted" style="display:block">${esc(u.email)}</span></span></span>`, `<span class="num">${ch}</span>`, `<span class="num">${milhar(consumo(u.id))}</span>`, `<div style="min-width:160px">${quotaBar(u.id)}${cotas[u.id] ? '' : '<span class="small muted">cota padrão</span>'}</div>`, `<a class="btn btn-secondary btn-sm" href="#ia-cota-${u.id}">${ic('pencil', 'ico-sm')}<span>Editar cota</span></a>`]; });
+  return `${head({ trilha: [['#requisicoes', 'Inteligência artificial']], titulo: 'IA por usuário', desc: `Consumo do mês atual. Cota padrão: <span class="num">${milhar(ia.cotaPadrao)}</span> tokens.` })}
+  ${listaCard('ia-usuarios', 'Consumo por usuário', `${usuarios.length} usuários`, '', tabela('ia-usuarios', [{ t: 'Usuário', c: 'lead' }, { t: 'Chamadas', c: 'r' }, { t: 'Tokens', c: 'r' }, { t: 'Cota' }, { t: '', c: 'acts' }], linhas))}`;
+};
+
+// Conta
+telas.conta = () => {
+  const u = eu();
+  const secao = (titulo, rota, itens) => `<section class="card"><div class="card-head"><h3>${titulo}</h3>${btn('Editar', { href: rota, icone: 'pencil', cls: 'btn-secondary btn-sm' })}</div><div class="card-body">${pares(itens)}</div></section>`;
+  return `${head({ titulo: 'Minha conta' })}
+  <section class="card"><div class="card-body" style="flex-direction:row;align-items:center;flex-wrap:wrap;gap:20px">${avatar(u, 'lg')}<div style="flex:1;min-width:200px"><h2>${esc(nomeCompleto(u))}</h2><p class="muted">${esc(u.email)}</p><div style="margin-top:8px">${papel(u.papel)}</div></div>${btn('Alterar senha', { href: '#conta-senha', icone: 'shield-lock' })}</div></section>
+  <div class="grid grid-2">
+    ${secao('Dados pessoais', '#conta-dados', [['Nome', esc(u.nome)], ['Sobrenome', esc(u.sobrenome)], ['E-mail', esc(u.email), true], ['Telefone', esc(u.telefone) || '<span class="muted">Não informado</span>']])}
+    ${secao('Endereço', '#conta-endereco', [['CEP', '<span class="num">87000-000</span>'], ['Cidade', 'Paranavaí'], ['Estado', 'PR'], ['País', 'Brasil']])}
+    ${secao('Perfil e redes', '#conta-perfil', [['LinkedIn', '<a href="#conta-perfil">linkedin.com/in/exemplo</a>', true], ['Instagram', '<span class="muted">Não informado</span>'], ['Facebook', '<span class="muted">Não informado</span>'], ['Twitter', '<span class="muted">Não informado</span>']])}
+  </div>`;
+};
+
+// Formulários
+function formulario(id, campos, { salvar = 'Salvar', voltar, semCancelar } = {}) {
+  const html = campos.map((c) => {
+    const idc = `c-${id}-${c.k}`; const rotulo = `<label for="${idc}">${esc(c.t)}${c.req ? ' <span class="req" aria-hidden="true">*</span>' : ''}</label>`;
+    let ctrl;
+    if (c.tipo === 'check') return `<div class="field full"><label class="check" for="${idc}"><input type="checkbox" id="${idc}" name="${c.k}" ${c.v ? 'checked' : ''}><span class="label">${esc(c.t)}</span></label>${c.help ? `<span class="help">${c.help}</span>` : ''}</div>`;
+    if (c.tipo === 'checks') ctrl = `<div class="checks" id="${idc}">${c.op.map(([v, t]) => `<label class="check"><input type="checkbox" name="${c.k}" value="${v}" ${(c.v || []).includes(v) ? 'checked' : ''}><span>${esc(t)}</span></label>`).join('')}</div>`;
+    else if (c.op) ctrl = `<select class="input" id="${idc}" name="${c.k}" ${c.req ? 'data-req' : ''}><option value="">Selecione</option>${c.grupos ? c.grupos.map(([g, ops]) => `<optgroup label="${esc(g)}">${ops.map(([v, t]) => `<option value="${v}" ${String(c.v) === String(v) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</optgroup>`).join('') : c.op.map(([v, t]) => `<option value="${v}" ${String(c.v) === String(v) ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+    else if (c.tipo === 'textarea') ctrl = `<textarea class="input" id="${idc}" name="${c.k}" ${c.req ? 'data-req' : ''} placeholder="${esc(c.ph || '')}">${esc(c.v || '')}</textarea>`;
+    else ctrl = `<input class="input" id="${idc}" name="${c.k}" type="${c.tipo || 'text'}" value="${esc(c.v ?? '')}" ${c.req ? 'data-req' : ''} ${c.ph ? `placeholder="${esc(c.ph)}"` : ''} ${c.min !== undefined ? `min="${c.min}"` : ''} ${c.max !== undefined ? `max="${c.max}"` : ''} ${c.step ? `step="${c.step}"` : ''} ${c.mask ? `data-mask="${c.mask}"` : ''} autocomplete="off">`;
+    return `<div class="field ${c.full ? 'full' : ''}">${rotulo}${ctrl}${c.help ? `<span class="help">${c.help}</span>` : ''}<span class="err" hidden></span></div>`;
+  }).join('');
+  return `<form class="card form-card" data-form="${id}" novalidate><div class="card-body"><div class="form-grid">${html}</div></div><div class="card-foot form-foot" style="justify-content:flex-end">${semCancelar ? '' : `<a class="btn btn-secondary" href="${voltar || estado.retorno || '#inicio'}">Cancelar</a>`}<button class="btn btn-primary" type="submit">${ic('check-circle', 'ico-sm')}<span>${esc(salvar)}</span></button></div></form>`;
+}
+const opEstagios = () => projetosVisiveis().map((p) => [p.nome, estagios.filter((s) => s.projeto === p.id).sort((a, b) => a.ordem - b.ordem).map((s) => [s.id, `${p.nome} / ${s.nome}`])]);
+const opTarefas = () => tarefasVisiveis().map((t) => [t.id, `${projetoDaTarefa(t).nome} · ${t.titulo}`]);
+const DEFS = {
+  tarefa: (t) => [
+    { k: 'titulo', t: 'Título', req: true, v: t?.titulo, full: true },
+    { k: 'desc', t: 'Descrição', tipo: 'textarea', v: t?.desc, full: true },
+    { k: 'estagio', t: 'Estágio', req: true, op: [], grupos: opEstagios(), v: t?.estagio ?? estado.estagioInicial, full: true },
+    { k: 'responsavel', t: 'Responsável', op: usuarios.filter((u) => u.ativo).map((u) => [u.id, nomeCompleto(u)]), v: t?.responsavel, help: 'Precisa participar do projeto.' },
+    { k: 'prazo', t: 'Prazo', tipo: 'date', v: isoData(t?.prazo) },
+    { k: 'prioridade', t: 'Prioridade', req: true, op: Object.entries(PRIORIDADES), v: t?.prioridade || 'medium' },
+  ],
+  anotacao: (n) => [{ k: 'tarefa', t: 'Tarefa', req: true, op: opTarefas(), v: n?.tarefa ?? estado.tarefaInicial, full: true }, { k: 'texto', t: 'Conteúdo', req: true, tipo: 'textarea', v: n?.texto, full: true, help: 'Só você verá esta anotação.' }],
+  apontamento: (a) => [{ k: 'tarefa', t: 'Tarefa', req: true, op: opTarefas(), v: a?.tarefa ?? estado.tarefaInicial, full: true }, { k: 'data', t: 'Data', req: true, tipo: 'date', v: isoData(a?.data || HOJE) }, { k: 'horas', t: 'Horas', req: true, tipo: 'number', v: a?.horas, min: 0.25, max: 24, step: 0.25, help: 'Entre 0,25 e 24.' }, { k: 'desc', t: 'Descrição', v: a?.desc, full: true }],
+  projeto: (p) => [{ k: 'nome', t: 'Nome', req: true, v: p?.nome, full: true }, { k: 'desc', t: 'Descrição', tipo: 'textarea', v: p?.desc, full: true }, { k: 'equipe', t: 'Equipe', req: true, op: equipesVisiveis().map((e) => [e.id, e.nome]), v: p?.equipe }, { k: 'inicio', t: 'Início', req: true, tipo: 'date', v: isoData(p?.inicio) }, { k: 'termino', t: 'Término', tipo: 'date', v: isoData(p?.termino), help: 'Não pode ser anterior ao início.' }, { k: 'membros', t: 'Membros atribuídos', tipo: 'checks', op: usuarios.filter((u) => u.papel === 'dev').map((u) => [u.id, nomeCompleto(u)]), v: p?.membros, full: true }],
+  estagio: (s) => [{ k: 'nome', t: 'Nome', req: true, v: s?.nome }, { k: 'tipo', t: 'Tipo', req: true, op: TIPOS, v: s?.tipo }, { k: 'projeto', t: 'Projeto', req: true, op: projetosVisiveis().map((p) => [p.id, p.nome]), v: s?.projeto }, { k: 'ordem', t: 'Ordem', req: true, tipo: 'number', min: 1, v: s?.ordem }],
+  equipe: (e) => [{ k: 'nome', t: 'Nome', req: true, v: e?.nome }, { k: 'gerente', t: 'Gerente', req: true, op: usuarios.filter((u) => u.papel === 'gerente').map((u) => [u.id, nomeCompleto(u)]), v: e?.gerente }, { k: 'membros', t: 'Membros', tipo: 'checks', op: usuarios.filter((u) => u.papel === 'dev').map((u) => [u.id, nomeCompleto(u)]), v: e?.membros, full: true }],
+};
+const COLECOES = { tarefa: tarefas, anotacao: notas, apontamento: apontamentos, projeto: projetos, estagio: estagios, equipe: equipes };
+const NOMES = { tarefa: ['Nova tarefa', 'Editar tarefa', '#tarefas', 'Tarefas'], anotacao: ['Nova anotação', 'Editar anotação', '#anotacoes', 'Minhas anotações'], apontamento: ['Apontar horas', 'Editar apontamento', '#apontamentos', 'Meus apontamentos'], projeto: ['Novo projeto', 'Editar projeto', '#projetos', 'Meus projetos'], estagio: ['Novo estágio', 'Editar estágio', '#estagios', 'Estágios'], equipe: ['Nova equipe', 'Editar equipe', '#equipes', 'Equipes'] };
+const GESTAO = ['projeto', 'estagio'];
+function telaForm(tipo, id) {
+  if (GESTAO.includes(tipo) && !ehGestor()) return negado();
+  if (tipo === 'equipe' && !ehAdmin()) return negado();
+  const obj = id ? COLECOES[tipo].find((x) => x.id === id) : null;
+  if (id && !obj) return telas['erro-404']();
+  const [novo, editar_, lista, nomeLista] = NOMES[tipo];
+  return `${head({ trilha: [[lista, nomeLista]], titulo: id ? editar_ : novo })}${formulario(`${tipo}:${id || 0}`, DEFS[tipo](obj), { salvar: id ? 'Salvar alterações' : 'Cadastrar', voltar: estado.retorno || lista })}`;
+}
+telas['usuario-papel'] = (id) => {
+  if (!ehAdmin()) return negado();
+  const u = U(id); if (!u) return telas['erro-404']();
+  return `${head({ trilha: [['#usuarios', 'Usuários']], titulo: `Papel de ${nomeCompleto(u)}` })}${formulario(`papel:${id}`, [{ k: 'papel', t: 'Papel', req: true, op: Object.entries(PAPEIS), v: u.papel, full: true, help: 'Define o que a pessoa vê no menu e quais telas pode abrir.' }, { k: 'ativo', t: 'Conta ativa', tipo: 'check', v: u.ativo }], { voltar: '#usuarios' })}`;
+};
+telas['ia-cota'] = (id) => {
+  if (!ehAdmin()) return negado();
+  const u = U(id); if (!u) return telas['erro-404']();
+  return `${head({ trilha: [['#ia-usuarios', 'IA por usuário']], titulo: `Cota de ${nomeCompleto(u)}` })}${formulario(`cota:${id}`, [{ k: 'limite', t: 'Limite mensal de tokens', tipo: 'number', min: 0, v: cotas[id] ?? '', ph: `Padrão: ${milhar(ia.cotaPadrao)}`, full: true, help: 'Deixe em branco para usar a cota padrão.' }], { voltar: '#ia-usuarios' })}`;
+};
+telas['conta-dados'] = () => { const u = eu(); return `${head({ trilha: [['#conta', 'Minha conta']], titulo: 'Editar dados' })}${formulario('dados', [{ k: 'nome', t: 'Nome', req: true, v: u.nome }, { k: 'sobrenome', t: 'Sobrenome', req: true, v: u.sobrenome }, { k: 'telefone', t: 'Telefone', v: u.telefone, ph: '(00) 00000-0000', mask: 'tel', full: true }], { voltar: '#conta' })}`; };
+telas['conta-perfil'] = () => `${head({ trilha: [['#conta', 'Minha conta']], titulo: 'Editar perfil' })}${formulario('perfil', [{ k: 'linkedin', t: 'LinkedIn', tipo: 'url', v: 'https://linkedin.com/in/exemplo', full: true }, { k: 'instagram', t: 'Instagram', tipo: 'url', ph: 'https://', full: true }, { k: 'facebook', t: 'Facebook', tipo: 'url', ph: 'https://', full: true }, { k: 'twitter', t: 'Twitter', tipo: 'url', ph: 'https://', full: true }], { voltar: '#conta' })}`;
+telas['conta-endereco'] = () => `${head({ trilha: [['#conta', 'Minha conta']], titulo: 'Editar endereço' })}${formulario('endereco', [{ k: 'cep', t: 'CEP', v: '87000-000', mask: 'cep' }, { k: 'cidade', t: 'Cidade', v: 'Paranavaí' }, { k: 'estado', t: 'Estado', v: 'PR' }, { k: 'pais', t: 'País', v: 'Brasil' }], { voltar: '#conta' })}`;
+telas['conta-senha'] = () => `${head({ trilha: [['#conta', 'Minha conta']], titulo: 'Alterar senha' })}${formulario('senha', [{ k: 'atual', t: 'Senha atual', req: true, tipo: 'password', full: true }, { k: 'nova', t: 'Nova senha', req: true, tipo: 'password', help: 'Pelo menos 8 caracteres, sem ser só números.' }, { k: 'confirma', t: 'Confirme a nova senha', req: true, tipo: 'password' }], { salvar: 'Alterar senha', voltar: '#conta' })}`;
+
+// Público
+telas.publico = () => `${head({ titulo: 'Bem-vindo' }).replace(/<nav[^]*?<\/nav>/, '')}
+  <section class="card hero"><span class="badge b-brand plain">Gestão de equipes e projetos</span><h1>Organize equipes, projetos e tarefas em um só lugar</h1><p>O Outsourcing acompanha o trabalho de cada equipe em quadros kanban, com papéis para administradores, gerentes e desenvolvedores, e um assistente de IA para tirar dúvidas.</p><div class="actions">${btn('Entrar', { href: '#entrar', icone: 'box-arrow-in-right', cls: 'btn-primary' })}${btn('Criar conta', { href: '#cadastro', icone: 'person-plus' })}</div></section>
+  <div class="grid grid-3">
+    <section class="card feature"><div class="stat-ico">${ic('kanban', 'ico-lg')}</div><h3>Quadros kanban</h3><p class="muted">Cada projeto tem Backlog, Em andamento, Concluído e Aprovado. As tarefas avançam com um clique.</p></section>
+    <section class="card feature"><div class="stat-ico">${ic('people', 'ico-lg')}</div><h3>Papéis e permissões</h3><p class="muted">Administradores cuidam de usuários e equipes, gerentes dos projetos, desenvolvedores das tarefas.</p></section>
+    <section class="card feature"><div class="stat-ico">${ic('chat-dots', 'ico-lg')}</div><h3>Assistente de IA</h3><p class="muted">Pergunte como usar qualquer tela. O consumo de cada usuário fica sob controle com cotas mensais.</p></section>
+  </div>`;
+function diagrama(tipo) {
+  if (tipo === 'casos') {
+    const atores = [['Visitante', 60], ['Desenvolvedor', 170], ['Gerente', 280], ['Administrador', 390]];
+    const casos = [['Criar conta e entrar', 0], ['Mover tarefas no quadro', 1], ['Anotar e apontar horas', 1], ['Perguntar ao assistente', 1], ['Gerenciar projetos e estágios', 2], ['Gerenciar equipes e usuários', 3], ['Configurar a IA e cotas', 3]];
+    return `<svg viewBox="0 0 720 460" role="img" aria-label="Diagrama de casos de uso"><rect x="230" y="20" width="460" height="420" rx="16" fill="none" stroke="var(--border)"/><text x="460" y="44" text-anchor="middle" fill="var(--muted)" font-size="13">Outsourcing</text>
+      ${atores.map(([n, y]) => `<g><circle cx="80" cy="${y}" r="10" fill="none" stroke="var(--text-2)" stroke-width="1.5"/><line x1="80" y1="${y + 10}" x2="80" y2="${y + 32}" stroke="var(--text-2)" stroke-width="1.5"/><line x1="64" y1="${y + 18}" x2="96" y2="${y + 18}" stroke="var(--text-2)" stroke-width="1.5"/><text x="80" y="${y + 52}" text-anchor="middle" font-size="12" fill="var(--text)">${n}</text></g>`).join('')}
+      ${casos.map(([n, a], i) => { const y = 74 + i * 52; return `<g><line x1="100" y1="${atores[a][1] + 18}" x2="290" y2="${y}" stroke="var(--border)"/><ellipse cx="460" cy="${y}" rx="170" ry="20" fill="var(--brand-soft)" stroke="var(--brand-200)"/><text x="460" y="${y + 4}" text-anchor="middle" font-size="13" fill="var(--text)">${n}</text></g>`; }).join('')}</svg>`;
+  }
+  const caixas = [['User', 330, 320], ['Team', 60, 200], ['Project', 200, 200], ['Stage', 340, 200], ['Task', 480, 200], ['Note', 470, 60], ['TimeEntry', 600, 60], ['Profile', 60, 320], ['Address', 190, 320], ['ConfiguracaoIA', 470, 330], ['ChamadaIA', 600, 330], ['CotaUsuario', 470, 410], ['MensagemAssistente', 600, 410]];
+  const pos = Object.fromEntries(caixas.map(([n, x, y]) => [n, [x + 55, y + 18]]));
+  const liga = [['Team', 'Project'], ['Project', 'Stage'], ['Stage', 'Task'], ['Task', 'Note'], ['Task', 'TimeEntry'], ['User', 'Profile'], ['User', 'Address'], ['User', 'Team'], ['User', 'Task'], ['User', 'ChamadaIA'], ['User', 'CotaUsuario'], ['User', 'MensagemAssistente']];
+  return `<svg viewBox="0 0 740 460" role="img" aria-label="Diagrama de classes">${liga.map(([a, b]) => `<line x1="${pos[a][0]}" y1="${pos[a][1]}" x2="${pos[b][0]}" y2="${pos[b][1]}" stroke="var(--border)" stroke-width="1.5"/>`).join('')}
+    ${caixas.map(([n, x, y]) => `<g><rect x="${x}" y="${y}" width="${n.length > 11 ? 130 : 110}" height="36" rx="8" fill="${['ConfiguracaoIA', 'ChamadaIA', 'CotaUsuario', 'MensagemAssistente'].includes(n) ? 'var(--info-soft)' : n === 'User' ? 'var(--brand)' : 'var(--surface)'}" stroke="var(--brand-200)"/><text x="${x + (n.length > 11 ? 65 : 55)}" y="${y + 23}" text-anchor="middle" font-size="12" font-weight="600" fill="${n === 'User' ? '#fff' : 'var(--text)'}">${n}</text></g>`).join('')}</svg>`;
+}
+telas.sobre = () => `${head({ titulo: 'Sobre o projeto' })}
+  <section class="card"><div class="card-body" style="max-width:76ch"><p>O Outsourcing é um sistema web para gestão de equipes, projetos e tarefas em quadro kanban, desenvolvido com Python e Django na arquitetura MVT para a disciplina de Novas Aplicações em Engenharia de Software do IFPR.</p><p>Administradores cuidam de usuários e equipes. Gerentes criam projetos e organizam os estágios de suas equipes. Desenvolvedores acompanham as tarefas dos projetos em que participam, movem cada uma pelo quadro e mantêm anotações e apontamentos de horas privados.</p><p>O sistema também tem um assistente de inteligência artificial (Google Gemini) que tira dúvidas sobre as telas e regras. Administradores configuram o modelo e a chave, testam a conexão, acompanham cada requisição e definem a cota mensal de cada usuário.</p></div></section>
+  <div class="grid grid-2"><figure class="card" style="margin:0"><div class="card-head"><h2>Diagrama de casos de uso</h2></div><div class="card-body diagram">${diagrama('casos')}</div></figure><figure class="card" style="margin:0"><div class="card-head"><h2>Diagrama de classes</h2></div><div class="card-body diagram">${diagrama('classes')}<figcaption class="small muted">Simplificado no protótipo; no sistema, a imagem gerada pelo graph_models.</figcaption></div></figure></div>`;
+const erroInterno = (codigo, titulo, texto) => `<div class="empty" style="padding:64px 24px"><p class="error-code num">${codigo}</p><h1>${titulo}</h1><p>${texto}</p><div class="actions">${btn('Voltar ao início', { href: '#inicio', icone: 'house', cls: 'btn-primary' })}</div></div>`;
+telas['erro-403'] = () => erroInterno(403, 'Acesso negado', 'Seu papel não permite abrir esta tela. Se precisar dela, fale com um administrador.');
+telas['erro-404'] = () => erroInterno(404, 'Página não encontrada', 'O endereço não existe ou você não tem acesso a este registro.');
+
+// Telas sem a estrutura (autenticação e erro 500)
+function telaAuth(cadastro) {
+  const campos = cadastro
+    ? [{ k: 'email', t: 'E-mail', req: true, tipo: 'email', ph: 'voce@exemplo.com', full: true }, { k: 'nome', t: 'Nome', req: true }, { k: 'sobrenome', t: 'Sobrenome', req: true }, { k: 'telefone', t: 'Telefone', ph: '(00) 00000-0000', mask: 'tel', full: true }, { k: 'senha', t: 'Senha', req: true, tipo: 'password' }, { k: 'senha2', t: 'Confirme a senha', req: true, tipo: 'password' }]
+    : [{ k: 'email', t: 'E-mail', req: true, tipo: 'email', ph: 'voce@exemplo.com', full: true, v: 'andreyviniciusjodar@gmail.com' }, { k: 'senha', t: 'Senha', req: true, tipo: 'password', full: true, v: 'demonstracao' }];
+  const f = formulario(cadastro ? 'cadastro' : 'entrar', campos, { salvar: cadastro ? 'Criar conta' : 'Entrar', semCancelar: true }).replace('class="card form-card"', 'class="card"');
+  return `<div class="auth"><div class="auth-form"><div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:24px">
+    <a class="brand" href="#publico" style="padding:0"><span class="brand-mark"><b></b><b></b><b></b></span><span>Outsourcing</span></a>
+    <div><h1>${cadastro ? 'Criar conta' : 'Entrar'}</h1><p class="muted">${cadastro ? 'Toda conta nova entra como Desenvolvedor. Um administrador pode mudar o papel depois.' : 'Use o e-mail e a senha da sua conta.'}</p></div>
+    ${f}
+    <p class="muted" style="text-align:center">${cadastro ? 'Já tem conta? <a href="#entrar">Entrar</a>' : 'Ainda não tem conta? <a href="#cadastro">Criar conta</a>'}</p></div></div>
+    <aside class="auth-side"><div class="grid-deco"></div><h2>Equipes, projetos e tarefas no mesmo quadro</h2><p>Acompanhe cada estágio, registre horas, guarde anotações privadas e tire dúvidas com o assistente de IA.</p>
+    <ul><li>${ic('kanban')}Quadros kanban por projeto</li><li>${ic('shield-lock')}Acesso por papel: administrador, gerente e desenvolvedor</li><li>${ic('chat-dots')}Assistente com cota mensal de uso</li></ul></aside></div>`;
+}
+const tela500 = () => `<div class="error-page"><div class="empty"><a class="brand" href="#publico" style="padding:0"><span class="brand-mark"><b></b><b></b><b></b></span><span>Outsourcing</span></a><p class="error-code num">500</p><h1>Algo deu errado</h1><p>Ocorreu um erro inesperado no servidor. Tente novamente em instantes; se continuar, avise o administrador do sistema.</p>${btn('Voltar ao início', { href: '#inicio', icone: 'house', cls: 'btn-primary' })}</div></div>`;
+
+// ---------- Estrutura ----------
+const MENU = [
+  ['Trabalho', () => true, [['inicio', 'Início', 'house'], ['quadros', 'Quadros', 'kanban'], ['tarefas', 'Tarefas', 'list-check'], ['anotacoes', 'Minhas anotações', 'journal-text'], ['apontamentos', 'Meus apontamentos', 'clock-history']]],
+  ['Gestão', ehGestor, [['projetos', 'Meus projetos', 'folder2-open'], ['estagios', 'Estágios', 'layout-three-columns'], ['equipes', 'Equipes', 'people'], ['usuarios', 'Usuários', 'person-gear', ehAdmin]]],
+  ['Inteligência artificial', () => true, [['assistente', 'Assistente', 'chat-dots'], ['consumo', 'Meu consumo', 'speedometer2'], ['ia-configuracao', 'Configuração da IA', 'sliders', ehAdmin], ['requisicoes', 'Requisições', 'activity', ehAdmin], ['ia-usuarios', 'IA por usuário', 'bar-chart', ehAdmin]]],
+  ['Sistema', () => true, [['conta', 'Minha conta', 'person-circle'], ['sobre', 'Sobre', 'info-circle']]],
+];
+const MENU_PUBLICO = [['Público', () => true, [['publico', 'Início', 'house'], ['entrar', 'Entrar', 'box-arrow-in-right'], ['cadastro', 'Criar conta', 'person-plus'], ['sobre', 'Sobre', 'info-circle']]]];
+const ATIVO = { quadro: 'quadros', tarefa: 'tarefas', 'tarefa-nova': 'tarefas', 'tarefa-editar': 'tarefas', anotacao: 'anotacoes', 'anotacao-nova': 'anotacoes', 'anotacao-editar': 'anotacoes', apontamento: 'apontamentos', 'apontamento-novo': 'apontamentos', 'apontamento-editar': 'apontamentos', projeto: 'projetos', 'projeto-novo': 'projetos', 'projeto-editar': 'projetos', estagio: 'estagios', 'estagio-novo': 'estagios', 'estagio-editar': 'estagios', equipe: 'equipes', 'equipe-nova': 'equipes', 'equipe-editar': 'equipes', 'usuario-papel': 'usuarios', requisicao: 'requisicoes', 'ia-cota': 'ia-usuarios', 'conta-dados': 'conta', 'conta-perfil': 'conta', 'conta-endereco': 'conta', 'conta-senha': 'conta' };
+function sidebar(rota) {
+  const ativo = ATIVO[rota] || rota;
+  const grupos = (estado.logado ? MENU : MENU_PUBLICO).filter(([, pode]) => pode()).map(([g, , itens]) => `<div class="nav-group"><span>${g}</span></div>${itens.filter((i) => !i[3] || i[3]()).map(([r, t, icone]) => `<a class="nav-item ${r === ativo ? 'active' : ''}" href="#${r}" ${r === ativo ? 'aria-current="page"' : ''} title="${t}">${ic(icone)}<span>${t}</span></a>`).join('')}`).join('');
+  return `<aside class="sidebar" id="sidebar" aria-label="Menu principal"><a class="brand" href="#${estado.logado ? 'inicio' : 'publico'}"><span class="brand-mark"><b></b><b></b><b></b></span><span>Outsourcing</span></a><nav class="nav">${grupos}</nav></aside>`;
+}
+function topbar() {
+  const tema = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+  const u = eu();
+  const usuario = estado.logado ? `<div style="position:relative"><button type="button" class="user-btn" data-acao="menu-usuario" aria-haspopup="true" aria-expanded="${estado.menuAberto}">${avatar(u)}<span class="user-name">${esc(u.nome)} ${esc(u.sobrenome)}</span>${ic('chevron-down', 'ico-sm')}</button>
+    <div class="menu ${estado.menuAberto ? 'open' : ''}" role="menu"><div style="padding:4px 12px 8px"><p class="strong" style="font-weight:600">${esc(nomeCompleto(u))}</p><p class="small muted">${esc(u.email)}</p></div>
+    <a class="menu-item" href="#conta" role="menuitem">${ic('person-circle')}Minha conta</a><a class="menu-item" href="#consumo" role="menuitem">${ic('speedometer2')}Meu consumo</a><hr>
+    <p class="small muted" style="padding:0 12px 4px">Demonstração: ver como</p>${Object.entries(PAPEIS).map(([k, v]) => `<button type="button" class="menu-item ${estado.papel === k ? 'on' : ''}" data-papel="${k}" role="menuitemradio" aria-checked="${estado.papel === k}">${ic(k === 'admin' ? 'shield-lock' : k === 'gerente' ? 'people' : 'person-circle')}${v}</button>`).join('')}<hr>
+    <button type="button" class="menu-item" data-acao="sair" role="menuitem">${ic('box-arrow-right')}Sair</button></div></div>`
+    : `${btn('Entrar', { href: '#entrar', icone: 'box-arrow-in-right', cls: 'btn-primary btn-sm' })}`;
+  return `<header class="topbar"><button type="button" class="btn btn-secondary btn-icon" data-acao="menu" aria-label="Abrir ou recolher o menu" title="Menu">${ic('list')}</button>
+    ${estado.logado ? `<form class="search" role="search" id="busca"><label class="sr-only" for="busca-topo">Buscar tarefas</label>${ic('search', 'ico-sm')}<input class="input" id="busca-topo" type="search" placeholder="Buscar tarefas…" value="${esc((estado.filtros.tarefas || {}).titulo || '')}"></form><a class="btn btn-secondary btn-icon search-btn" href="#tarefas" aria-label="Buscar tarefas">${ic('search')}</a>` : ''}
+    <span class="grow"></span><span class="proto-tag">Protótipo</span>
+    <button type="button" class="btn btn-secondary btn-icon" data-acao="tema" aria-label="${tema ? 'Usar tema claro' : 'Usar tema escuro'}" title="${tema ? 'Tema claro' : 'Tema escuro'}">${ic(tema ? 'sun' : 'moon-stars')}</button>${usuario}</header>`;
+}
+
+// ---------- Roteamento ----------
+function resolver(hash) {
+  const nome = hash || (estado.logado ? 'inicio' : 'publico');
+  let m;
+  if ((m = nome.match(/^(quadro|tarefa|anotacao|apontamento|projeto|estagio|equipe|requisicao)-(\d+)$/))) return [m[1], Number(m[2])];
+  if ((m = nome.match(/^(tarefa|anotacao|apontamento|projeto|estagio|equipe)-editar-(\d+)$/))) return [`${m[1]}-editar`, Number(m[2])];
+  if ((m = nome.match(/^(usuario-papel|ia-cota)-(\d+)$/))) return [m[1], Number(m[2])];
+  return [nome, null];
+}
+const NOVOS = { 'tarefa-nova': 'tarefa', 'anotacao-nova': 'anotacao', 'apontamento-novo': 'apontamento', 'projeto-novo': 'projeto', 'estagio-novo': 'estagio', 'equipe-nova': 'equipe' };
+const PUBLICAS = ['publico', 'entrar', 'cadastro', 'sobre', 'erro-500'];
+let rotaAnterior = null;
+function render() {
+  const hash = location.hash.slice(1);
+  const [rota, id] = resolver(hash);
+  const app = document.getElementById('app');
+  if (rotaAnterior !== hash) { estado.menuAberto = false; estado.gaveta = false; }
+  if (!['tarefa-nova', 'anotacao-nova', 'apontamento-novo', 'tarefa-editar'].includes(rota) && rotaAnterior !== hash) { if (!NOVOS[rota] && !rota.endsWith('-editar')) { estado.retorno = null; estado.estagioInicial = null; estado.tarefaInicial = null; } }
+  const ehForm = NOVOS[rota] || rota.endsWith('-editar') || ['usuario-papel', 'ia-cota', 'conta-dados', 'conta-perfil', 'conta-endereco', 'conta-senha'].includes(rota);
+  if (ehForm && !estado.retorno && rotaAnterior !== null && rotaAnterior !== hash && !/(-nova|-novo|-editar-)/.test(rotaAnterior)) estado.retorno = `#${rotaAnterior || 'inicio'}`;
+  rotaAnterior = hash;
+  if (rota === 'entrar' || rota === 'cadastro') { app.innerHTML = telaAuth(rota === 'cadastro'); return depois(); }
+  if (rota === 'erro-500') { app.innerHTML = tela500(); return depois(); }
+  if (!estado.logado && !PUBLICAS.includes(rota)) { location.hash = '#entrar'; return; }
+  let corpo;
+  if (NOVOS[rota]) corpo = telaForm(NOVOS[rota], null);
+  else if (rota.endsWith('-editar')) corpo = telaForm(rota.replace('-editar', ''), id);
+  else if (telas[rota]) corpo = telas[rota](id);
+  else corpo = telas['erro-404']();
+  app.innerHTML = `<div class="shell ${estado.recolhida ? 'collapsed' : ''} ${estado.gaveta ? 'drawer-open' : ''}">${sidebar(rota)}<div class="backdrop" data-acao="fechar-gaveta"></div><div class="main">${topbar()}<main class="content" id="conteudo" tabindex="-1">${corpo}</main></div></div>`;
+  depois();
+}
+function depois() {
+  document.querySelectorAll('[data-mask]').forEach((el) => el.addEventListener('input', mascara));
+  const msgs = document.getElementById('msgs'); if (msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+function mascara(e) {
+  const d = e.target.value.replace(/\D/g, '');
+  if (e.target.dataset.mask === 'cep') e.target.value = d.slice(0, 8).replace(/^(\d{5})(\d)/, '$1-$2');
+  else e.target.value = d.slice(0, 11).replace(/^(\d{2})(\d)/, '($1) $2').replace(d.length === 11 ? /(\d{5})(\d)/ : /(\d{4})(\d)/, '$1-$2');
+}
+const ir = (h) => { if (location.hash === h) render(); else location.hash = h; };
+
+// ---------- Toast e modal ----------
+function toast(texto, tipo = 'ok') {
+  const el = document.createElement('div'); el.className = `toast ${tipo}`; el.setAttribute('role', 'status');
+  el.innerHTML = `<span class="t-ico">${ic(tipo === 'erro' ? 'x-circle' : tipo === 'info' ? 'info-circle' : 'check-circle')}</span><p>${esc(texto)}</p><button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Fechar">${ic('x-lg', 'ico-sm')}</button>`;
+  el.querySelector('button').onclick = () => el.remove();
+  document.getElementById('toasts').appendChild(el); setTimeout(() => el.remove(), 4000);
+}
+let focoAntes = null;
+function confirmar(titulo, texto, aoConfirmar) {
+  focoAntes = document.activeElement;
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="modal-bg" data-fechar-modal><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modal-t" aria-describedby="modal-d"><div class="modal-ico">${ic('exclamation-triangle', 'ico-lg')}</div><div><h2 id="modal-t">${esc(titulo)}</h2><p class="muted" id="modal-d" style="margin-top:4px">${texto}</p></div><div class="actions"><button type="button" class="btn btn-secondary" data-fechar-modal>Cancelar</button><button type="button" class="btn btn-danger" id="modal-ok">${ic('trash3', 'ico-sm')}<span>Excluir</span></button></div></div></div>`;
+  const fechar = () => { root.innerHTML = ''; focoAntes && focoAntes.focus && focoAntes.focus(); };
+  root.querySelectorAll('[data-fechar-modal]').forEach((el) => el.addEventListener('click', (e) => { if (e.target === el) fechar(); }));
+  root.querySelector('#modal-ok').onclick = () => { fechar(); aoConfirmar(); };
+  root.querySelector('[data-fechar-modal].btn').focus();
+}
+
+// ---------- Ações ----------
+const ROTULOS = { tarefa: ['a tarefa', 'Tarefa excluída.', '#tarefas'], anotacao: ['', 'Anotação excluída.', '#anotacoes'], apontamento: ['', 'Apontamento excluído.', '#apontamentos'], projeto: ['o projeto', 'Projeto excluído.', '#projetos'], estagio: ['o estágio', 'Estágio excluído.', '#estagios'], equipe: ['a equipe', 'Equipe excluída.', '#equipes'] };
+function excluirRegistro(tipo, id) {
+  const col = COLECOES[tipo]; const [, msg, lista] = ROTULOS[tipo];
+  if (tipo === 'estagio' && tarefas.some((t) => t.estagio === id)) return toast('Mova ou exclua as tarefas antes de excluir este estágio.', 'erro');
+  if (tipo === 'equipe' && projetos.some((p) => p.equipe === id)) return toast('Esta equipe tem projetos e não pode ser excluída.', 'erro');
+  let destino = lista;
+  if (tipo === 'tarefa') { const t = tarefas.find((x) => x.id === id); if (location.hash === `#tarefa-${id}`) destino = `#quadro-${projetoDaTarefa(t).id}`; }
+  if (tipo === 'projeto') { estagios.filter((s) => s.projeto === id).forEach((s) => { tarefas.filter((t) => t.estagio === s.id).forEach((t) => tarefas.splice(tarefas.indexOf(t), 1)); estagios.splice(estagios.indexOf(s), 1); }); }
+  col.splice(col.findIndex((x) => x.id === id), 1);
+  toast(msg);
+  if (location.hash.match(new RegExp(`^#${tipo}-${id}$`))) ir(destino); else render();
+}
+function validar(form) {
+  let ok = true;
+  form.querySelectorAll('.field').forEach((f) => { const c = f.querySelector('.input'); const e = f.querySelector('.err'); if (!c || !e) return; c.classList.remove('invalid'); e.hidden = true; c.removeAttribute('aria-invalid');
+    let msg = '';
+    if (c.hasAttribute('data-req') && !c.value.trim()) msg = 'Este campo é obrigatório.';
+    else if (c.type === 'number' && c.value && ((c.min && Number(c.value) < Number(c.min)) || (c.max && Number(c.value) > Number(c.max)))) msg = `Informe um valor entre ${String(c.min).replace('.', ',')} e ${c.max || 'o máximo'}.`;
+    else if (c.type === 'email' && c.value && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.value)) msg = 'Informe um e-mail válido.';
+    if (msg) { ok = false; c.classList.add('invalid'); c.setAttribute('aria-invalid', 'true'); e.innerHTML = `${ic('exclamation-triangle', 'ico-sm')}${msg}`; e.hidden = false; } });
+  const ini = form.querySelector('[name=inicio]'), fim = form.querySelector('[name=termino]');
+  if (ini && fim && ini.value && fim.value && fim.value < ini.value) { ok = false; const e = fim.closest('.field').querySelector('.err'); fim.classList.add('invalid'); e.innerHTML = `${ic('exclamation-triangle', 'ico-sm')}O término não pode ser anterior ao início.`; e.hidden = false; }
+  const s1 = form.querySelector('[name=nova]') || form.querySelector('[name=senha]'), s2 = form.querySelector('[name=confirma]') || form.querySelector('[name=senha2]');
+  if (s1 && s2 && s1.value && s2.value && s1.value !== s2.value) { ok = false; const e = s2.closest('.field').querySelector('.err'); s2.classList.add('invalid'); e.innerHTML = `${ic('exclamation-triangle', 'ico-sm')}As senhas não conferem.`; e.hidden = false; }
+  const resp = form.querySelector('[name=responsavel]'), estg = form.querySelector('[name=estagio]');
+  if (resp && estg && resp.value && estg.value) { const p = projetos.find((x) => x.id === estagios.find((s) => s.id === Number(estg.value)).projeto); const eq = equipes.find((e) => e.id === p.equipe); if (!(p.membros.includes(Number(resp.value)) || eq.gerente === Number(resp.value))) { ok = false; const e = resp.closest('.field').querySelector('.err'); resp.classList.add('invalid'); e.innerHTML = `${ic('exclamation-triangle', 'ico-sm')}O responsável precisa participar do projeto.`; e.hidden = false; } }
+  if (!ok) { const p = form.querySelector('.invalid'); p && p.focus(); }
+  return ok;
+}
+function salvar(form) {
+  const [tipo, idS] = form.dataset.form.split(':'); const id = Number(idS); const v = Object.fromEntries(new FormData(form));
+  const membros = [...form.querySelectorAll('[name=membros]:checked')].map((c) => Number(c.value));
+  if (tipo === 'entrar') { estado.logado = true; toast(`Olá, ${eu().nome}!`, 'info'); return ir('#inicio'); }
+  if (tipo === 'cadastro') { toast('Conta criada. Você já pode entrar.'); return ir('#entrar'); }
+  if (tipo === 'ia-configuracao') { Object.assign(ia, { ativo: !!v.ativo, modelo: v.modelo, esforco: v.esforco, maxTokens: Number(v.maxTokens), cotaPadrao: Number(v.cotaPadrao), instrucoes: v.instrucoes }); if (v.chave) ia.chave = '••••' + v.chave.slice(-4); ia.atualizado = '11/11/2026 22:00'; toast('Configuração salva.'); return render(); }
+  if (tipo === 'papel') { const u = U(id); u.papel = v.papel; u.ativo = !!v.ativo; toast(`Papel de ${u.nome} alterado.`); return ir('#usuarios'); }
+  if (tipo === 'cota') { if (v.limite) cotas[id] = Number(v.limite); else delete cotas[id]; toast('Cota alterada.'); return ir('#ia-usuarios'); }
+  if (['dados', 'perfil', 'endereco', 'senha'].includes(tipo)) { if (tipo === 'dados') Object.assign(eu(), { nome: v.nome, sobrenome: v.sobrenome, telefone: v.telefone }); toast(tipo === 'senha' ? 'Senha alterada.' : 'Dados salvos.'); return ir('#conta'); }
+  const col = COLECOES[tipo]; let obj = id ? col.find((x) => x.id === id) : null; const novo = !obj;
+  if (novo) { obj = { id: Math.max(0, ...col.map((x) => x.id)) + 1 }; col.push(obj); }
+  if (tipo === 'tarefa') Object.assign(obj, { titulo: v.titulo, desc: v.desc, estagio: Number(v.estagio), responsavel: v.responsavel ? Number(v.responsavel) : null, prazo: deIso(v.prazo), prioridade: v.prioridade, criada: obj.criada || HOJE });
+  if (tipo === 'anotacao') Object.assign(obj, { tarefa: Number(v.tarefa), texto: v.texto, autor: obj.autor || eu().id, criada: obj.criada || HOJE });
+  if (tipo === 'apontamento') Object.assign(obj, { tarefa: Number(v.tarefa), data: deIso(v.data), horas: Number(v.horas), desc: v.desc, autor: obj.autor || eu().id });
+  if (tipo === 'projeto') { Object.assign(obj, { nome: v.nome, desc: v.desc, equipe: Number(v.equipe), inicio: deIso(v.inicio), termino: deIso(v.termino), membros, criador: obj.criador || eu().id }); if (novo) TIPOS.forEach(([t, n], i) => estagios.push({ id: Math.max(...estagios.map((s) => s.id)) + 1, projeto: obj.id, nome: n, tipo: t, ordem: i + 1 })); }
+  if (tipo === 'estagio') Object.assign(obj, { nome: v.nome, tipo: v.tipo, projeto: Number(v.projeto), ordem: Number(v.ordem) });
+  if (tipo === 'equipe') Object.assign(obj, { nome: v.nome, gerente: Number(v.gerente), membros });
+  const genero = { tarefa: 'Tarefa', anotacao: 'Anotação', apontamento: 'Apontamento', projeto: 'Projeto', estagio: 'Estágio', equipe: 'Equipe' }[tipo];
+  const fem = ['tarefa', 'anotacao', 'equipe'].includes(tipo);
+  toast(`${genero} ${novo ? (fem ? 'cadastrada' : 'cadastrado') : (fem ? 'alterada' : 'alterado')}.`);
+  ir(estado.retorno || (tipo === 'projeto' && novo ? `#quadro-${obj.id}` : NOMES[tipo][2]));
+}
+const RESPOSTAS = [
+  [/mover|quadro|estágio/i, 'Abra **Quadros**, escolha o projeto e use as setas do cartão:\n\n1. **▶** leva a tarefa para o próximo estágio.\n2. **◀** volta ao estágio anterior.\n\nUma mensagem confirma a mudança.'],
+  [/projeto/i, 'Gerentes e administradores criam projetos em **Meus projetos › Novo projeto**. O quadro já nasce com os estágios *Backlog*, *Em andamento*, *Concluído* e *Aprovado*.'],
+  [/anota|privad/i, '**Sim, são privadas.** Só você vê, edita e exclui as suas anotações, nem administradores têm acesso.'],
+  [/hora|apont/i, 'Abra a tarefa e use **Apontar**, ou vá em **Meus apontamentos › Apontar horas**. Informe a data e de `0,25` a `24` horas.'],
+];
+function perguntar(texto) {
+  if (!texto.trim()) return;
+  mensagens.push({ papel: 'user', texto }); render();
+  const msgs = document.getElementById('msgs'); msgs.insertAdjacentHTML('beforeend', '<div class="msg bot" id="digitando"><span class="typing" aria-label="Assistente digitando"><i></i><i></i><i></i></span></div>'); msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => {
+    const r = (RESPOSTAS.find(([re]) => re.test(texto)) || [null, 'Posso ajudar com o uso do Outsourcing: **quadros**, **tarefas**, **anotações**, **apontamentos**, **projetos** e **equipes**. Tente reformular a pergunta citando uma dessas telas.'])[1];
+    mensagens.push({ papel: 'bot', texto: r }); chamadas.unshift({ id: chamadas.length + 1, usuario: eu().id, origem: 'assistente', status: 'sucesso', modelo: ia.modelo, ent: 1100, sai: 120, ms: 4200, quando: '11/11/2026 22:10', pergunta: texto, resposta: r });
+    if (location.hash === '#assistente') render();
+  }, 900);
+}
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-acao],[data-excluir],[data-mover],[data-nova-tarefa],[data-novo],[data-papel],[data-pagina],[data-limpar],[data-toggle-filtros],[data-faq]');
+  if (!a) { if (estado.menuAberto && !e.target.closest('.menu')) { estado.menuAberto = false; render(); } return; }
+  const d = a.dataset;
+  if (d.acao === 'menu') { if (matchMedia('(max-width: 991.98px)').matches) estado.gaveta = !estado.gaveta; else estado.recolhida = !estado.recolhida; return render(); }
+  if (d.acao === 'fechar-gaveta') { estado.gaveta = false; return render(); }
+  if (d.acao === 'tema') { const escuro = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = escuro ? 'light' : 'dark'; return render(); }
+  if (d.acao === 'menu-usuario') { estado.menuAberto = !estado.menuAberto; return render(); }
+  if (d.acao === 'sair') { estado.logado = false; estado.menuAberto = false; toast('Você saiu do sistema.', 'info'); return ir('#entrar'); }
+  if (d.acao === 'testar') { a.disabled = true; a.querySelector('span').textContent = 'Testando…'; setTimeout(() => { toast(`Conexão bem-sucedida. Modelo disponível: ${MODELOS[ia.modelo]}.`); chamadas.unshift({ id: chamadas.length + 1, usuario: eu().id, origem: 'teste_conexao', status: 'sucesso', modelo: ia.modelo, ent: 0, sai: 0, ms: 690, quando: '11/11/2026 22:05', pergunta: '(teste de conexão)', resposta: '' }); render(); }, 900); return; }
+  if (d.acao === 'limpar-chat') { mensagens.length = 0; toast('Histórico apagado.'); return render(); }
+  if (d.papel) { estado.papel = d.papel; estado.menuAberto = false; estado.filtros = {}; toast(`Visualizando como ${PAPEIS[d.papel]}.`, 'info'); const [r] = resolver(location.hash.slice(1)); return render(); }
+  if (d.pagina) { const [id, p] = d.pagina.split(':'); estado.pagina[id] = Number(p); return render(); }
+  if (d.limpar) { delete estado.filtros[d.limpar]; estado.pagina[d.limpar] = 1; return render(); }
+  if (d.toggleFiltros) { document.querySelector(`[data-filtro="${d.toggleFiltros}"]`).classList.toggle('open'); return; }
+  if (d.faq) return perguntar(d.faq);
+  if (d.mover) { const [tid, sid] = d.mover.split(':').map(Number); const t = tarefas.find((x) => x.id === tid); t.estagio = sid; toast(`Tarefa movida para ${estagios.find((s) => s.id === sid).nome}.`); return render(); }
+  if (d.novaTarefa) { estado.estagioInicial = Number(d.novaTarefa); estado.retorno = location.hash; return ir('#tarefa-nova'); }
+  if (d.novo) { const [tipo, tid] = d.novo.split(':'); estado.tarefaInicial = Number(tid); estado.retorno = location.hash; return ir(tipo === 'anotacao' ? '#anotacao-nova' : '#apontamento-novo'); }
+  if (d.excluir) { const [tipo, id] = d.excluir.split(':'); const [artigo] = ROTULOS[tipo]; return confirmar(`Excluir ${tipo === 'anotacao' ? 'anotação' : tipo === 'apontamento' ? 'apontamento' : tipo === 'estagio' ? 'estágio' : tipo}?`, `Excluir ${artigo ? artigo + ' ' : ''}<strong>${esc(d.nome)}</strong>? Esta ação não pode ser desfeita.`, () => excluirRegistro(tipo, Number(id))); }
+});
+document.addEventListener('submit', (e) => {
+  const f = e.target; e.preventDefault();
+  if (f.id === 'busca') { estado.filtros.tarefas = { ...(estado.filtros.tarefas || {}), titulo: f.querySelector('input').value }; estado.pagina.tarefas = 1; return ir('#tarefas'); }
+  if (f.id === 'form-chat') { const t = f.querySelector('textarea'); const v = t.value; t.value = ''; return perguntar(v); }
+  if (f.dataset.filtro) { estado.filtros[f.dataset.filtro] = Object.fromEntries(new FormData(f)); estado.pagina[f.dataset.filtro] = 1; return render(); }
+  if (f.dataset.form && validar(f)) salvar(f);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { if (document.getElementById('modal-root').innerHTML) { document.getElementById('modal-root').innerHTML = ''; return; } if (estado.gaveta || estado.menuAberto) { estado.gaveta = false; estado.menuAberto = false; render(); } }
+  if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'pergunta') { e.preventDefault(); e.target.form.requestSubmit(); }
+});
+document.getElementById('pular').addEventListener('click', (e) => { e.preventDefault(); const c = document.getElementById('conteudo'); c && c.focus(); });
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+render();
+</script>
+</body>
+</html>
