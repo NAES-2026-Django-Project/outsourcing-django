@@ -185,6 +185,7 @@ Tamanhos: padrão 44px de altura (padding 10px 16px, texto 14/20 peso 500); comp
 - Foco: borda `--brand-200`/`--brand` e anel `0 0 0 4px rgba(70,95,255,.12)`.
 - Erro: borda `--error`, anel vermelho translúcido e mensagem 12/18 `--error-text` com ícone.
 - Seleção com seta própria; área de texto com altura mínima de 120px; caixa de seleção 20px com marca `--brand`.
+- Seleção múltipla de pessoas (membros de equipe e de projeto): dropdown com busca por nome ou e-mail (Select2 4.1). Cada opção mostra avatar com iniciais, nome e e-mail; cada pessoa escolhida vira uma pílula `--brand-soft` com × para remover, dentro do campo de 44px. A lista não fecha a cada escolha, para adicionar várias pessoas seguidas.
 - Desabilitado: fundo `--surface-2`, texto `--muted`.
 
 ### Etiquetas
@@ -332,5 +333,5 @@ Implementado em 12/11/2026 (plano `docs/plans/2026-11-12-aplicar-interface-taila
 |---|---|---|---|
 | 11/11/2026 | Layout base | Abordagem A: barra lateral fixa com grupos de menu e barra superior com busca e usuário | Comporta todos os menus, inclusive os de IA, e segue o padrão de painéis em Bootstrap. Protótipo em `prototypes/layout-base.html` |
 | 11/11/2026 | Assistente de IA | Abordagem C: página de conversa com coluna de apoio (cota, perguntas frequentes e limites) | Atende à exigência de uma tela no visual do site e deixa o consumo e os limites visíveis. Protótipo em `prototypes/assistente.html` |
-| 12/11/2026 | Quadro e formulários | Cartões do kanban também podem ser arrastados entre colunas (mantendo as setas); membros de equipe e de projeto passam a ser caixas de seleção em grade; tema claro como padrão | A lista de seleção múltipla exigia Ctrl para marcar mais de uma pessoa e parecia aceitar só uma; arrastar é o gesto esperado num quadro kanban |
+| 12/11/2026 | Quadro e formulários | Cartões do kanban também podem ser arrastados entre colunas (mantendo as setas); membros de equipe e de projeto passam a ser um dropdown de seleção múltipla com busca, em que cada pessoa escolhida vira uma pílula removível (Select2); tema claro como padrão | A lista de seleção múltipla exigia Ctrl para marcar mais de uma pessoa e parecia aceitar só uma; as caixas de seleção, testadas antes, ocupavam espaço demais; arrastar é o gesto esperado num quadro kanban |
 | 11/11/2026 | Todas | Nova identidade inspirada no TailAdmin: paleta brand `#465FFF`, fonte Outfit, Bootstrap Icons, cartões de 16px, tabelas que viram cartões no celular e tema escuro com alternância. Mantém as abordagens A e C com o novo visual | A interface antiga do projeto (TailAdmin) era prática e agradável; a proposta única, aplicada a todas as telas, deixa o sistema mais limpo, consistente e responsivo. Protótipo em `prototypes/interface-tailadmin.html` (https://claude.ai/artifact/Qo296wGA8fiFjxLpa6wzMJ) |

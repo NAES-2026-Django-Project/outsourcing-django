@@ -12,7 +12,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | DEF-4 | Layout com Bootstrap, Tailwind, Bulma ou semelhante | 4 | `templates/base.html` |
 | [x] | DEF-5 | Controle de acesso às páginas com autenticação | 5, 7 | `AcessoTests` |
 | [x] | DEF-6 | Controle de acesso por grupos em mais de uma view | 7 | `accounts/mixins.py`, `AcessoTests` |
-| [x] | DEF-7 | Plugins ou ferramentas com jQuery, Vue, React, Angular ou semelhante | 11 | jQuery, Bootbox e jQuery Mask em `templates/base.html` e `static/js/app.js` |
+| [x] | DEF-7 | Plugins ou ferramentas com jQuery, Vue, React, Angular ou semelhante | 11 | jQuery, Bootbox, jQuery Mask e Select2 em `templates/base.html` e `static/js/app.js` |
 | [x] | DEF-8 | Controle de versões com Git | 1 | Repositório no GitHub, `main` com merges das ondas |
 
 ## 1º trimestre
@@ -61,7 +61,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | T3-1.2 | Django Filter em pelo menos duas ListView, com paginação por `templatetag` própria que preserve a busca | 9 | `projects/filters.py`, `projects/templatetags/paginacao.py`, `FiltrosTests` |
 | [x] | T3-1.3 | Registros associados ao usuário em pelo menos duas classes (só ele lista, vê, altera e exclui) | 7 | `Note` e `TimeEntry`: `do_autor` em `projects/models.py`, `NoteAutorMixin` e `TimeEntryAutorMixin` em `projects/views.py`, fora do Django admin; `PosseAnotacaoTests`, `PosseApontamentoTests` |
 | [x] | T3-1.4 | Framework de mensagens em cadastro, alteração e exclusão | 7, 11 | `SuccessMessageMixin` nas views, `MensagensECrudTests` |
-| [x] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | Bootbox e jQuery Mask em `static/js/app.js`, verificados no navegador |
+| [x] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | Bootbox (confirmação de exclusão), jQuery Mask (telefone e CEP) e Select2 (membros de equipe e de projeto como pílulas) em `static/js/app.js`, verificados no navegador |
 | [x] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | https://outsourcing-naes-2026.rj.r.appspot.com, publicado em 11/11/2026 e verificado logado (páginas do menu, Testar conexão e assistente); link no `README.md`; `app.yaml`, `scripts/gerar_app_local.py` |
 | [x] | T3-2.1 | `AGENTS.md` e pelo menos três skills, uma para mensagens de commit | 2 | `AGENTS.md`, `.claude/skills/` |
 | [x] | T3-2.2a | App `ia` como única porta de entrada para a IA | 13 | `ia/services.py::chamar_ia` é o único uso do SDK `google-genai` (Gemini) no código |
