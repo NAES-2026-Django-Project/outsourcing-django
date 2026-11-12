@@ -17,7 +17,7 @@ class PaginasTests(TestCase):
 
     def test_layout_carrega_jquery_e_plugins(self):
         response = self.client.get(reverse('pages:sobre'))
-        for script in ['jquery.min.js', 'bootbox.all.min.js', 'jquery.mask.min.js', 'js/app.js']:
+        for script in ['jquery.min.js', 'bootbox.all.min.js', 'jquery.mask.min.js', 'select2.min.js', 'js/app.js']:
             with self.subTest(script):
                 self.assertContains(response, script)
 

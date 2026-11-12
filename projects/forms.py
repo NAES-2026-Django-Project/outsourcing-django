@@ -14,9 +14,16 @@ class DateInput(forms.DateInput):
 
 
 class MembrosField(forms.ModelMultipleChoiceField):
-    """Pessoas como caixas de seleção (uma por linha), em vez da lista que exigia Ctrl para marcar várias."""
+    """Dropdown de seleção múltipla com busca: cada pessoa escolhida vira uma pílula no campo (Select2 em app.js).
 
-    widget = forms.CheckboxSelectMultiple
+    Sem JavaScript continua sendo um <select multiple> comum.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('widget', forms.SelectMultiple(attrs={
+            'data-pilulas': '1', 'data-placeholder': 'Busque e selecione pelo nome ou e-mail',
+        }))
+        super().__init__(*args, **kwargs)
 
     def label_from_instance(self, obj):
         return f'{obj} · {obj.email}'
@@ -25,7 +32,7 @@ class MembrosField(forms.ModelMultipleChoiceField):
 class TeamForm(forms.ModelForm):
     members = MembrosField(
         label='Membros', queryset=User.objects.none(), required=False,
-        help_text='Marque todos os desenvolvedores que fazem parte da equipe.',
+        help_text='Escolha quantos desenvolvedores quiser; cada um vira uma etiqueta no campo. Clique no × para remover.',
     )
 
     class Meta:
@@ -42,7 +49,7 @@ class TeamForm(forms.ModelForm):
 class ProjectForm(forms.ModelForm):
     assigned_members = MembrosField(
         label='Membros atribuídos', queryset=User.objects.none(), required=False,
-        help_text='Marque quem trabalha no projeto. Só valem o gerente e os membros da equipe escolhida.',
+        help_text='Escolha quem trabalha no projeto; só valem o gerente e os membros da equipe escolhida.',
     )
 
     class Meta:

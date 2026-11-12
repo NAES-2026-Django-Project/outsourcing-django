@@ -603,27 +603,28 @@ class PopularDemoTests(TestCase):
 
 
 class FormulariosDeMembrosTests(Base):
-    """Membros de equipe e de projeto como caixas de seleção, aceitando várias pessoas."""
+    """Membros de equipe e de projeto num dropdown de seleção múltipla com pílulas (Select2), aceitando várias pessoas."""
 
-    def test_equipe_salva_varios_membros_por_caixas_de_selecao(self):
+    def test_equipe_salva_varios_membros_pelo_dropdown_com_pilulas(self):
         outro_dev = criar_usuario('dev2@exemplo.com', DESENVOLVEDOR)
         self.client.force_login(self.admin)
         response = self.client.get(reverse('projects:equipe_criar'))
-        caixas = re.findall(r'<input type="checkbox"[^>]*name="members"', response.content.decode())
-        self.assertEqual(len(caixas), 3)
-        self.assertContains(response, 'dev2@exemplo.com')
+        html = response.content.decode()
+        self.assertRegex(html, r'<select name="members"[^>]*data-pilulas="1"[^>]*multiple')
+        self.assertEqual(len(re.findall(r'<option value="\d+">[^<]+ · [^<]+@exemplo\.com</option>', html)), 3)
+        self.assertContains(response, 'select2.min.js')
         response = self.client.post(reverse('projects:equipe_criar'), {
             'name': 'Cometa', 'manager': self.gerente.pk, 'members': [self.dev.pk, outro_dev.pk],
         })
         self.assertRedirects(response, reverse('projects:equipes'))
         self.assertEqual(set(Team.objects.get(name='Cometa').members.all()), {self.dev, outro_dev})
 
-    def test_projeto_usa_caixas_de_selecao_para_os_membros(self):
+    def test_projeto_usa_o_mesmo_dropdown_para_os_membros(self):
         self.client.force_login(self.gerente)
         response = self.client.get(reverse('projects:projeto_editar', args=[self.projeto.pk]))
         html = response.content.decode()
-        self.assertRegex(html, r'<input type="checkbox"[^>]*name="assigned_members"')
-        self.assertRegex(html, rf'name="assigned_members" value="{self.dev.pk}"[^>]*checked')
+        self.assertRegex(html, r'<select name="assigned_members"[^>]*data-pilulas="1"[^>]*multiple')
+        self.assertRegex(html, rf'<option value="{self.dev.pk}" selected>')
 
 
 class ArrastarNoQuadroTests(Base):

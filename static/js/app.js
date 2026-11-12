@@ -58,3 +58,23 @@ $('#id_phone').mask(mascaraTelefone, {
   },
 });
 $('#id_cep').mask('00000-000');
+
+// Select2: seleção múltipla de pessoas com busca; cada escolhida vira uma pílula removível (membros de equipe e de projeto).
+const opcaoPessoa = (opcao) => {
+  if (!opcao.id) return opcao.text;
+  const [nome, email] = opcao.text.split(' · ');
+  const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  return $('<span class="pessoa-opcao">')
+    .append($('<span class="avatar sm">').text(iniciais))
+    .append($('<span>').append($('<span class="d-block">').text(nome)).append($('<small class="text-secondary">').text(email || '')));
+};
+$('select[data-pilulas]').each(function () {
+  $(this).select2({
+    language: 'pt-BR',
+    width: '100%',
+    placeholder: this.dataset.placeholder,
+    closeOnSelect: false,
+    templateResult: opcaoPessoa,
+    templateSelection: (opcao) => opcao.text.split(' · ')[0],
+  });
+});
