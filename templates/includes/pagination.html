@@ -1,14 +1,16 @@
-{% load paginacao %}
+{% load paginacao ui %}
 {% if is_paginated %}
-<nav class="d-flex align-items-center gap-3 mt-3" aria-label="Paginação">
-  <ul class="pagination pagination-sm">
-    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
-      <a class="page-link" href="{% if page_obj.has_previous %}{% url_pagina page_obj.previous_page_number %}{% else %}#{% endif %}">Anterior</a>
-    </li>
-    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
-      <a class="page-link" href="{% if page_obj.has_next %}{% url_pagina page_obj.next_page_number %}{% else %}#{% endif %}">Próxima</a>
-    </li>
-  </ul>
-  <small class="text-secondary">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} registros</small>
+<nav class="card-foot" aria-label="Paginação">
+  <span class="small text-secondary num">Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}</span>
+  <div class="pager">
+    {% if page_obj.has_previous %}<a class="borda" href="{% url_pagina page_obj.previous_page_number %}">Anterior</a>{% else %}<span class="borda desabilitado">Anterior</span>{% endif %}
+    {% paginas page_obj as numeros %}
+    {% for numero in numeros %}
+      {% if numero == page_obj.number %}<span class="atual" aria-current="page">{{ numero }}</span>
+      {% elif numero == page_obj.paginator.ELLIPSIS %}<span>{{ numero }}</span>
+      {% else %}<a href="{% url_pagina numero %}" aria-label="Página {{ numero }}">{{ numero }}</a>{% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}<a class="borda" href="{% url_pagina page_obj.next_page_number %}">Próxima</a>{% else %}<span class="borda desabilitado">Próxima</span>{% endif %}
+  </div>
 </nav>
 {% endif %}

@@ -1,40 +1,44 @@
+{% load ui %}
 {% with nome=request.resolver_match.url_name %}
 <div class="sidebar-inner">
-  <a class="brand" href="{% url 'pages:home' %}"><span class="brand-mark"><b></b><b></b><b></b></span>Outsourcing</a>
+  <div class="d-flex align-items-center justify-content-between">
+    <a class="brand" href="{% url 'pages:home' %}"><span class="brand-mark"><b></b><b></b><b></b></span><span class="brand-text">Outsourcing</span></a>
+    <button type="button" class="btn btn-outline-secondary btn-icon d-lg-none me-3" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fechar menu">{% icone "x-lg" %}</button>
+  </div>
   <nav>
     {% if request.user.is_authenticated %}
-      <div class="nav-group">Trabalho</div>
-      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}">Início</a>
-      <a class="nav-item-link {% if 'quadro' in nome %}active{% endif %}" href="{% url 'projects:quadros' %}">Quadros</a>
-      <a class="nav-item-link {% if 'tarefa' in nome %}active{% endif %}" href="{% url 'projects:tarefas' %}">Tarefas</a>
-      <a class="nav-item-link {% if 'anotac' in nome %}active{% endif %}" href="{% url 'projects:anotacoes' %}">Minhas anotações</a>
-      <a class="nav-item-link {% if 'apontamento' in nome %}active{% endif %}" href="{% url 'projects:apontamentos' %}">Meus apontamentos</a>
+      <div class="nav-group"><span>Trabalho</span></div>
+      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}" title="Início">{% icone "house" %}<span>Início</span></a>
+      <a class="nav-item-link {% if 'quadro' in nome %}active{% endif %}" href="{% url 'projects:quadros' %}" title="Quadros">{% icone "kanban" %}<span>Quadros</span></a>
+      <a class="nav-item-link {% if 'tarefa' in nome %}active{% endif %}" href="{% url 'projects:tarefas' %}" title="Tarefas">{% icone "list-check" %}<span>Tarefas</span></a>
+      <a class="nav-item-link {% if 'anotac' in nome %}active{% endif %}" href="{% url 'projects:anotacoes' %}" title="Minhas anotações">{% icone "journal-text" %}<span>Minhas anotações</span></a>
+      <a class="nav-item-link {% if 'apontamento' in nome %}active{% endif %}" href="{% url 'projects:apontamentos' %}" title="Meus apontamentos">{% icone "clock-history" %}<span>Meus apontamentos</span></a>
       {% if request.user.eh_administrador or request.user.eh_gerente %}
-        <div class="nav-group">Gestão</div>
-        <a class="nav-item-link {% if 'projeto' in nome %}active{% endif %}" href="{% url 'projects:projetos' %}">Meus projetos</a>
-        <a class="nav-item-link {% if 'estagio' in nome %}active{% endif %}" href="{% url 'projects:estagios' %}">Estágios</a>
-        <a class="nav-item-link {% if 'equipe' in nome %}active{% endif %}" href="{% url 'projects:equipes' %}">Equipes</a>
+        <div class="nav-group"><span>Gestão</span></div>
+        <a class="nav-item-link {% if 'projeto' in nome %}active{% endif %}" href="{% url 'projects:projetos' %}" title="Meus projetos">{% icone "folder2-open" %}<span>Meus projetos</span></a>
+        <a class="nav-item-link {% if 'estagio' in nome %}active{% endif %}" href="{% url 'projects:estagios' %}" title="Estágios">{% icone "layout-three-columns" %}<span>Estágios</span></a>
+        <a class="nav-item-link {% if 'equipe' in nome %}active{% endif %}" href="{% url 'projects:equipes' %}" title="Equipes">{% icone "people" %}<span>Equipes</span></a>
       {% endif %}
       {% if request.user.eh_administrador %}
-        <a class="nav-item-link {% if nome == 'usuarios' or nome == 'usuario_papel' %}active{% endif %}" href="{% url 'accounts:usuarios' %}">Usuários</a>
+        <a class="nav-item-link {% if nome == 'usuarios' or nome == 'usuario_papel' %}active{% endif %}" href="{% url 'accounts:usuarios' %}" title="Usuários">{% icone "person-gear" %}<span>Usuários</span></a>
       {% endif %}
-      <div class="nav-group">Inteligência artificial</div>
-      <a class="nav-item-link {% if nome == 'assistente' %}active{% endif %}" href="{% url 'ia:assistente' %}">Assistente</a>
-      <a class="nav-item-link {% if nome == 'meu_consumo' %}active{% endif %}" href="{% url 'ia:meu_consumo' %}">Meu consumo</a>
+      <div class="nav-group"><span>Inteligência artificial</span></div>
+      <a class="nav-item-link {% if nome == 'assistente' %}active{% endif %}" href="{% url 'ia:assistente' %}" title="Assistente">{% icone "chat-dots" %}<span>Assistente</span></a>
+      <a class="nav-item-link {% if nome == 'meu_consumo' %}active{% endif %}" href="{% url 'ia:meu_consumo' %}" title="Meu consumo">{% icone "speedometer2" %}<span>Meu consumo</span></a>
       {% if request.user.eh_administrador %}
-        <a class="nav-item-link {% if nome == 'configuracao' %}active{% endif %}" href="{% url 'ia:configuracao' %}">Configuração da IA</a>
-        <a class="nav-item-link {% if 'requisic' in nome %}active{% endif %}" href="{% url 'ia:requisicoes' %}">Requisições</a>
-        <a class="nav-item-link {% if nome == 'uso_por_usuario' or nome == 'cota_usuario' %}active{% endif %}" href="{% url 'ia:uso_por_usuario' %}">IA por usuário</a>
+        <a class="nav-item-link {% if nome == 'configuracao' %}active{% endif %}" href="{% url 'ia:configuracao' %}" title="Configuração da IA">{% icone "sliders" %}<span>Configuração da IA</span></a>
+        <a class="nav-item-link {% if 'requisic' in nome %}active{% endif %}" href="{% url 'ia:requisicoes' %}" title="Requisições">{% icone "activity" %}<span>Requisições</span></a>
+        <a class="nav-item-link {% if nome == 'uso_por_usuario' or nome == 'cota_usuario' %}active{% endif %}" href="{% url 'ia:uso_por_usuario' %}" title="IA por usuário">{% icone "bar-chart" %}<span>IA por usuário</span></a>
       {% endif %}
-      <div class="nav-group">Sistema</div>
-      <a class="nav-item-link {% if nome == 'conta' or nome == 'dados' or nome == 'perfil' or nome == 'endereco' or nome == 'senha' %}active{% endif %}" href="{% url 'accounts:conta' %}">Minha conta</a>
+      <div class="nav-group"><span>Sistema</span></div>
+      <a class="nav-item-link {% if nome == 'conta' or nome == 'dados' or nome == 'perfil' or nome == 'endereco' or nome == 'senha' %}active{% endif %}" href="{% url 'accounts:conta' %}" title="Minha conta">{% icone "person-circle" %}<span>Minha conta</span></a>
     {% else %}
-      <div class="nav-group">Público</div>
-      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}">Início</a>
-      <a class="nav-item-link {% if nome == 'login' %}active{% endif %}" href="{% url 'accounts:login' %}">Entrar</a>
-      <a class="nav-item-link {% if nome == 'cadastro' %}active{% endif %}" href="{% url 'accounts:cadastro' %}">Criar conta</a>
+      <div class="nav-group"><span>Público</span></div>
+      <a class="nav-item-link {% if nome == 'home' %}active{% endif %}" href="{% url 'pages:home' %}" title="Início">{% icone "house" %}<span>Início</span></a>
+      <a class="nav-item-link {% if nome == 'login' %}active{% endif %}" href="{% url 'accounts:login' %}" title="Entrar">{% icone "box-arrow-in-right" %}<span>Entrar</span></a>
+      <a class="nav-item-link {% if nome == 'cadastro' %}active{% endif %}" href="{% url 'accounts:cadastro' %}" title="Criar conta">{% icone "person-plus" %}<span>Criar conta</span></a>
     {% endif %}
-    <a class="nav-item-link {% if nome == 'sobre' %}active{% endif %}" href="{% url 'pages:sobre' %}">Sobre</a>
+    <a class="nav-item-link {% if nome == 'sobre' %}active{% endif %}" href="{% url 'pages:sobre' %}" title="Sobre">{% icone "info-circle" %}<span>Sobre</span></a>
   </nav>
 </div>
 {% endwith %}
