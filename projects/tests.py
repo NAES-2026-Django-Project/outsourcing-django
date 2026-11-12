@@ -1,8 +1,11 @@
+import os
 from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib import admin
 from django.contrib.messages import get_messages
+from django.core.management import CommandError, call_command
 from django.db import connection
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
@@ -10,6 +13,7 @@ from django.urls import reverse
 from django.views.defaults import bad_request, server_error
 
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR, GERENTE
+from accounts.models import User
 from accounts.tests import criar_usuario
 
 from .models import Note, Project, Stage, Task, Team, TimeEntry
@@ -516,3 +520,53 @@ class PaginasDeErroTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('Requisição inválida', response.content.decode())
 
+
+@patch.dict(os.environ, {'DEMO_SENHA': 'senha-demo-123'})
+class PopularDemoTests(TestCase):
+    def popular(self, **kwargs):
+        call_command('popular_demo', stdout=open(os.devnull, 'w'), **kwargs)
+
+    def test_cria_contas_projetos_e_tarefas_validas(self):
+        self.popular()
+        contas = User.objects.filter(email__endswith='@outsourcing.test')
+        self.assertEqual(contas.count(), 3)
+        gerente = contas.get(email='gerente@outsourcing.test')
+        self.assertEqual(gerente.nomes_grupos, {GERENTE})
+        self.assertTrue(gerente.check_password('senha-demo-123'))
+        self.assertEqual(contas.get(email='dev1@outsourcing.test').nomes_grupos, {DESENVOLVEDOR})
+        self.assertEqual(Project.objects.filter(created_by=gerente).count(), 2)
+        self.assertEqual(Task.objects.count(), 12)
+        for tarefa in Task.objects.all():
+            tarefa.full_clean()  # responsável participa do projeto
+        dev1 = contas.get(email='dev1@outsourcing.test')
+        self.assertEqual(Note.objects.do_autor(dev1).count(), 2)
+        self.assertEqual(TimeEntry.objects.do_autor(dev1).count(), 3)
+
+    def test_rodar_de_novo_nao_duplica_nem_desfaz_movimentos(self):
+        self.popular()
+        tarefa = Task.objects.get(title='Abrir chamado pelo portal')
+        tarefa.stage = tarefa.stage.project.stages.get(stage_type='doing')
+        tarefa.save()
+        self.popular()
+        self.assertEqual(User.objects.filter(email__endswith='@outsourcing.test').count(), 3)
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(Task.objects.count(), 12)
+        self.assertEqual(Note.objects.count(), 2)
+        self.assertEqual(TimeEntry.objects.count(), 3)
+        self.assertEqual(Task.objects.get(pk=tarefa.pk).stage.stage_type, 'doing')
+
+    def test_remover_apaga_somente_os_dados_de_demonstracao(self):
+        outro = criar_usuario('real@exemplo.com', GERENTE)
+        self.popular()
+        self.popular(remover=True)
+        self.assertFalse(User.objects.filter(email__endswith='@outsourcing.test').exists())
+        self.assertEqual(Team.objects.count(), 0)
+        self.assertEqual(Project.objects.count(), 0)
+        self.assertEqual(Task.objects.count(), 0)
+        self.assertTrue(User.objects.filter(pk=outro.pk).exists())
+
+    def test_exige_a_senha(self):
+        with patch.dict(os.environ, {'DEMO_SENHA': ''}):
+            with self.assertRaises(CommandError):
+                self.popular()
+        self.assertFalse(User.objects.filter(email__endswith='@outsourcing.test').exists())
