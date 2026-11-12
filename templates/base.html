@@ -9,7 +9,8 @@
     (function () {
       var tema = null;
       try { tema = localStorage.getItem('tema'); } catch (e) {}
-      document.documentElement.dataset.bsTheme = tema || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      // Tema claro é o padrão; o escuro só vale depois que a pessoa escolhe no botão do cabeçalho.
+      document.documentElement.dataset.bsTheme = tema === 'dark' ? 'dark' : 'light';
       try { if (localStorage.getItem('menu-recolhido') === '1') document.documentElement.classList.add('menu-recolhido'); } catch (e) {}
     })();
   </script>

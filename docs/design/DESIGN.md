@@ -319,7 +319,7 @@ Implementado em 12/11/2026 (plano `docs/plans/2026-11-12-aplicar-interface-taila
   | `.table-cards` | tabela que vira cartões abaixo de 768px, com `data-label` em cada célula |
 
 - `pages/templatetags/ui.py`: `{% icone %}`, `{% etiqueta_prioridade %}`, `{% etiqueta_estagio %}`, `{% etiqueta_papel %}`, `{% etiqueta_grupo %}`, `{% etiqueta_situacao %}` (mapeamento da seção 3.3 num só lugar), `{% avatar %}`, filtro `iniciais`, `{% trilha %}` e `{% paginas %}`.
-- `templates/base.html`: Outfit e Bootstrap Icons 1.11.3 por CDN, tema salvo em `localStorage` (ou `prefers-color-scheme`), barra lateral recolhível (`menu-recolhido`), cabeçalho com busca, tema e menu do usuário, link "Pular para o conteúdo". `templates/auth_base.html` é o layout dividido de entrar e criar conta; `erro_simples.html` serve 400 e 500.
+- `templates/base.html`: Outfit e Bootstrap Icons 1.11.3 por CDN, tema claro como padrão e escuro só por escolha no botão do cabeçalho (salva em `localStorage`), barra lateral recolhível (`menu-recolhido`), cabeçalho com busca, tema e menu do usuário, link "Pular para o conteúdo". `templates/auth_base.html` é o layout dividido de entrar e criar conta; `erro_simples.html` serve 400 e 500.
 - `templates/includes/`: `sidebar.html` (ícones e grupos), `messages.html` (toasts), `pagination.html` (numerada, sempre com `url_pagina`), `filtros.html` (recolhidos no celular), `lista_cabecalho.html`, `empty_state.html` e `avatar.html`.
 - `static/js/app.js`: tema, menu (recolher no desktop, gaveta no celular), filtros no celular, Bootbox com ícone e botões do modal (seção 8) e as máscaras do jQuery Mask.
 - Formulários continuam com crispy-forms + crispy-bootstrap5, em uma coluna dentro do cartão `.form-card` de até 720px.
