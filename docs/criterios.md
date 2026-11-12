@@ -62,7 +62,7 @@ Fonte oficial: `../guidelines/NAES 2026 - Plano de Atividades e Avaliações.pdf
 | [x] | T3-1.3 | Registros associados ao usuário em pelo menos duas classes (só ele lista, vê, altera e exclui) | 7 | `Note` e `TimeEntry`: `do_autor` em `projects/models.py`, `NoteAutorMixin` e `TimeEntryAutorMixin` em `projects/views.py`, fora do Django admin; `PosseAnotacaoTests`, `PosseApontamentoTests` |
 | [x] | T3-1.4 | Framework de mensagens em cadastro, alteração e exclusão | 7, 11 | `SuccessMessageMixin` nas views, `MensagensECrudTests` |
 | [x] | T3-1.5 | Pelo menos dois plugins jQuery distintos e funcionais | 11 | Bootbox e jQuery Mask em `static/js/app.js`, verificados no navegador |
-| [ ] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | |
+| [x] | T3-1.6 | Deploy no Google App Engine e link de acesso | 12 | https://outsourcing-naes-2026.rj.r.appspot.com, publicado em 11/11/2026 e verificado logado (páginas do menu, Testar conexão e assistente); link no `README.md`; `app.yaml`, `scripts/gerar_app_local.py` |
 | [x] | T3-2.1 | `AGENTS.md` e pelo menos três skills, uma para mensagens de commit | 2 | `AGENTS.md`, `.claude/skills/` |
 | [x] | T3-2.2a | App `ia` como única porta de entrada para a IA | 13 | `ia/services.py::chamar_ia` é o único uso do SDK `google-genai` (Gemini) no código |
 | [x] | T3-2.2b | Banco guarda configuração editável em tela, auditoria de cada chamada e cota mensal de tokens | 13 | `ConfiguracaoIA`, `ChamadaIA` e `CotaUsuario` em `ia/models.py`; `ChamarIATests` |
