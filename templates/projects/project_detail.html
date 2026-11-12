@@ -1,19 +1,48 @@
 {% extends "base.html" %}
+{% load ui %}
 {% block title %}{{ projeto.name }} · Outsourcing{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>{{ projeto.name }}</h1>
-  <div class="d-flex gap-2">
-    <a class="btn btn-primary" href="{% url 'projects:quadro' projeto.pk %}">Abrir quadro</a>
-    <a class="btn btn-outline-secondary" href="{% url 'projects:projeto_editar' projeto.pk %}?next={{ request.path|urlencode }}">Editar</a>
-    <a class="btn btn-outline-danger" data-excluir="o projeto {{ projeto.name }}" href="{% url 'projects:projeto_excluir' projeto.pk %}">Excluir</a>
+<header>
+  {% trilha 'projects:projetos' 'Meus projetos' atual=projeto.name %}
+  <div class="page-head">
+    <div><h1>{{ projeto.name }}</h1></div>
+    <div class="acoes">
+      <a class="btn btn-primary" href="{% url 'projects:quadro' projeto.pk %}">{% icone "kanban" %}<span>Abrir quadro</span></a>
+      <a class="btn btn-outline-secondary" href="{% url 'projects:projeto_editar' projeto.pk %}?next={{ request.path|urlencode }}">{% icone "pencil" %}<span>Editar</span></a>
+      <a class="btn btn-outline-danger" data-excluir="o projeto {{ projeto.name }}" href="{% url 'projects:projeto_excluir' projeto.pk %}">{% icone "trash3" %}<span>Excluir</span></a>
+    </div>
   </div>
-</div>
-<div class="card card-body gap-2">
-  <div>{{ projeto.description|default:"Sem descrição."|linebreaksbr }}</div>
-  <div><strong>Equipe:</strong> {{ projeto.team.name }}</div>
-  <div><strong>Período:</strong> {{ projeto.start_date|date:"d/m/Y" }} a {{ projeto.end_date|date:"d/m/Y"|default:"sem término" }}</div>
-  <div><strong>Membros:</strong> {% for m in projeto.assigned_members.all %}{{ m }}{% if not forloop.last %}, {% endif %}{% empty %}Nenhum{% endfor %}</div>
-  <div><strong>Estágios:</strong> {% for s in projeto.stages.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+</header>
+<div class="grade grade-lado">
+  <section class="card">
+    <div class="card-head"><h2>Resumo</h2></div>
+    <div class="card-body">
+      <dl class="pairs">
+        <div><dt>Equipe</dt><dd><a href="{% url 'projects:equipe_detalhe' projeto.team_id %}">{{ projeto.team.name }}</a></dd></div>
+        <div><dt>Criado por</dt><dd>{{ projeto.created_by }}</dd></div>
+        <div><dt>Início</dt><dd class="num">{{ projeto.start_date|date:"d/m/Y" }}</dd></div>
+        <div><dt>Término</dt><dd class="num">{{ projeto.end_date|date:"d/m/Y"|default:"Sem término" }}</dd></div>
+        <div class="full"><dt>Descrição</dt><dd>{{ projeto.description|default:"Sem descrição."|linebreaksbr }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  <div class="pilha">
+    <section class="card">
+      <div class="card-head"><h3>Membros</h3><span class="contador num">{{ projeto.assigned_members.all|length }}</span></div>
+      <div class="card-body card-flush"><div class="linhas">
+        {% for membro in projeto.assigned_members.all %}
+          <div class="linha">{% avatar membro %}<div class="grow"><span class="forte d-block">{{ membro }}</span><span class="small text-secondary ellipsis">{{ membro.email }}</span></div></div>
+        {% empty %}<p class="text-secondary my-3">Nenhum membro atribuído.</p>{% endfor %}
+      </div></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h3>Estágios</h3><a class="btn btn-outline-secondary btn-sm" href="{% url 'projects:estagios' %}">Gerenciar</a></div>
+      <div class="card-body card-flush"><div class="linhas">
+        {% for estagio in projeto.stages.all %}
+          <div class="linha"><span class="num text-secondary">{{ estagio.order }}</span><a class="grow" href="{% url 'projects:estagio_detalhe' estagio.pk %}">{{ estagio.name }}</a>{% etiqueta_estagio estagio %}</div>
+        {% endfor %}
+      </div></div>
+    </section>
+  </div>
 </div>
 {% endblock %}

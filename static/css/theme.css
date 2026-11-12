@@ -382,3 +382,8 @@ figure.card { margin: 0; }
   .menu-recolhido .nav-group { text-align: center; padding-left: 0; padding-right: 0; }
   .menu-recolhido .nav-group::before { content: "···"; }
 }
+
+/* Formulários em cartão (crud/form.html) */
+.form-card { max-width: 720px; width: 100%; }
+.form-card .card-body { gap: 0; }
+.form-card .card-body > :last-child, .form-card .card-body .mb-3:last-child { margin-bottom: 0 !important; }
