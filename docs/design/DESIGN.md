@@ -296,12 +296,34 @@ Bootstrap Icons 1.11.3 (`<i class="bi bi-…" aria-hidden="true">` no Django; SV
 
 ## 13. Implementação no Django
 
-- `static/css/theme.css` define os tokens da seção 3.2 em `:root` e `[data-bs-theme="dark"]` e sobrescreve as variáveis `--bs-*` do Bootstrap (cores, `--bs-body-font-family: Outfit…`, `--bs-border-radius: .5rem`, `--bs-border-radius-lg: 1rem`). Componentes próprios usam classes curtas: `.page-head`, `.stat`, `.badge-soft-*`, `.board`, `.task-card`, `.empty-state`, `.table-cards`.
-- `templates/base.html`: carrega Outfit (Google Fonts) e Bootstrap Icons 1.11.3 (CDN jsDelivr); ganha o botão de tema (guarda a escolha em `localStorage`), a trilha de navegação (`{% block trilha %}`) e o link "Pular para o conteúdo".
-- `templates/includes/sidebar.html`: ícones por item e estado recolhido.
-- `templates/includes/`: novos parciais `page_head.html`, `empty_state.html` e `badge.html` para padronizar cabeçalhos, vazios e etiquetas; `pagination.html` e `filtros.html` seguem os padrões da seção 8.
-- `static/js/app.js`: o Bootbox recebe as classes do modal (seção 8); recolher a barra lateral e alternar o tema.
-- Formulários continuam com crispy-forms + crispy-bootstrap5; o visual vem do `theme.css`.
+Implementado em 12/11/2026 (plano `docs/plans/2026-11-12-aplicar-interface-tailadmin.md`).
+
+- `static/css/theme.css`: tokens da seção 3.2 em `:root`/`[data-bs-theme="light"]` e `[data-bs-theme="dark"]`, mapeados para as variáveis `--bs-*` do Bootstrap 5.3 (cores, fonte Outfit, raios de 8 e 16px). Ajusta botões, campos, cartões, tabelas, dropdown, toasts e modal do Bootstrap e define os componentes próprios.
+
+  | Classe | Componente |
+  |---|---|
+  | `.page-head`, `.crumbs` | cabeçalho de página e trilha |
+  | `.card-head`, `.card-foot` | cabeçalho e rodapé de cartão |
+  | `.stat` | indicador |
+  | `.pairs` | pares rótulo/valor |
+  | `.linhas` / `.linha` | listas em cartão |
+  | `.tag-*` | etiquetas |
+  | `.avatar` | iniciais |
+  | `.filters` | barra de filtros |
+  | `.pager` | paginação |
+  | `.empty` | estado vazio |
+  | `.board`, `.board-col`, `.task-card` | quadro |
+  | `.chat`, `.msg` | assistente |
+  | `.auth` | entrar e criar conta |
+  | `.erro-pagina` | erros |
+  | `.table-cards` | tabela que vira cartões abaixo de 768px, com `data-label` em cada célula |
+
+- `pages/templatetags/ui.py`: `{% icone %}`, `{% etiqueta_prioridade %}`, `{% etiqueta_estagio %}`, `{% etiqueta_papel %}`, `{% etiqueta_grupo %}`, `{% etiqueta_situacao %}` (mapeamento da seção 3.3 num só lugar), `{% avatar %}`, filtro `iniciais`, `{% trilha %}` e `{% paginas %}`.
+- `templates/base.html`: Outfit e Bootstrap Icons 1.11.3 por CDN, tema salvo em `localStorage` (ou `prefers-color-scheme`), barra lateral recolhível (`menu-recolhido`), cabeçalho com busca, tema e menu do usuário, link "Pular para o conteúdo". `templates/auth_base.html` é o layout dividido de entrar e criar conta; `erro_simples.html` serve 400 e 500.
+- `templates/includes/`: `sidebar.html` (ícones e grupos), `messages.html` (toasts), `pagination.html` (numerada, sempre com `url_pagina`), `filtros.html` (recolhidos no celular), `lista_cabecalho.html`, `empty_state.html` e `avatar.html`.
+- `static/js/app.js`: tema, menu (recolher no desktop, gaveta no celular), filtros no celular, Bootbox com ícone e botões do modal (seção 8) e as máscaras do jQuery Mask.
+- Formulários continuam com crispy-forms + crispy-bootstrap5, em uma coluna dentro do cartão `.form-card` de até 720px.
+- Apoio às telas: `Task.vencida` (prazo vencido no quadro e no detalhe) e o progresso dos projetos no painel (`annotate` em `HomeView`).
 
 ## 14. Decisões
 
