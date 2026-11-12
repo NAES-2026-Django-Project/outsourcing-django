@@ -7,6 +7,7 @@ from django.db import connection
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.views.defaults import bad_request, server_error
 
 from accounts.constants import ADMINISTRADOR, DESENVOLVEDOR, GERENTE
 from accounts.tests import criar_usuario
@@ -403,3 +404,115 @@ class MensagensECrudTests(Base):
         response = self.client.get(reverse('projects:tarefas'))
         self.assertTrue(response.context['is_paginated'])
         self.assertEqual(len(response.context['tarefas']), 10)
+
+
+class NavegacaoTests(Base):
+    """Fluxo de navegação: retorno à origem, pré-seleção, ações no detalhe e estados vazios."""
+
+    def setUp(self):
+        super().setUp()
+        self.url_tarefa = reverse('projects:tarefa_detalhe', args=[self.tarefa.pk])
+        self.url_quadro = reverse('projects:quadro', args=[self.projeto.pk])
+
+    def test_salvar_volta_para_a_origem(self):
+        self.client.force_login(self.dev)
+        url = f"{reverse('projects:anotacao_criar')}?tarefa={self.tarefa.pk}&next={self.url_tarefa}"
+        response = self.client.post(url, {'task': self.tarefa.pk, 'content': 'Lembrar do CSRF'})
+        self.assertRedirects(response, self.url_tarefa)
+
+    def test_next_externo_e_ignorado(self):
+        self.client.force_login(self.dev)
+        url = f"{reverse('projects:anotacao_criar')}?next=https://evil.test/roubo"
+        response = self.client.post(url, {'task': self.tarefa.pk, 'content': 'Teste'})
+        self.assertRedirects(response, reverse('projects:anotacoes'))
+        response = self.client.get(url)
+        self.assertEqual(response.context['voltar'], reverse('projects:anotacoes'))
+
+    def test_cancelar_usa_a_origem(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(f"{reverse('projects:tarefa_editar', args=[self.tarefa.pk])}?next={self.url_tarefa}")
+        self.assertEqual(response.context['voltar'], self.url_tarefa)
+        self.assertContains(response, f'href="{self.url_tarefa}"')
+
+    def test_excluir_tarefa_pelo_detalhe_volta_ao_quadro(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(self.url_tarefa)
+        url_excluir = f"{reverse('projects:tarefa_excluir', args=[self.tarefa.pk])}?next={self.url_quadro}"
+        self.assertContains(response, url_excluir)
+        response = self.client.post(f"{reverse('projects:tarefa_excluir', args=[self.tarefa.pk])}?next={self.url_quadro}")
+        self.assertRedirects(response, self.url_quadro)
+        self.assertFalse(Task.objects.filter(pk=self.tarefa.pk).exists())
+
+    def test_estagio_pre_selecionado_pelo_quadro(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(f"{reverse('projects:tarefa_criar')}?estagio={self.estagios[1].pk}")
+        self.assertEqual(response.context['form'].initial.get('stage'), self.estagios[1].pk)
+
+    def test_estagio_de_projeto_alheio_nao_e_pre_selecionado(self):
+        self.client.force_login(self.dev)
+        alheio = self.outro_projeto.stages.first()
+        response = self.client.get(f"{reverse('projects:tarefa_criar')}?estagio={alheio.pk}")
+        self.assertNotIn('stage', response.context['form'].initial)
+
+    def test_quadro_tem_atalhos_de_nova_tarefa(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(self.url_quadro)
+        for estagio in self.estagios:
+            self.assertContains(response, f"?estagio={estagio.pk}&amp;next=")
+
+    def test_excluir_equipe_no_detalhe_so_para_administrador(self):
+        url_excluir = reverse('projects:equipe_excluir', args=[self.equipe.pk])
+        self.client.force_login(self.gerente)
+        self.assertNotContains(self.client.get(reverse('projects:equipe_detalhe', args=[self.equipe.pk])), url_excluir)
+        self.client.force_login(self.admin)
+        self.assertContains(self.client.get(reverse('projects:equipe_detalhe', args=[self.equipe.pk])), url_excluir)
+
+    def test_detalhes_oferecem_excluir(self):
+        nota = Note.objects.create(content='N', task=self.tarefa, author=self.gerente)
+        apontamento = TimeEntry.objects.create(task=self.tarefa, author=self.gerente, hours='1.00')
+        self.client.force_login(self.gerente)
+        casos = [
+            ('projeto', self.projeto.pk), ('estagio', self.estagios[0].pk), ('tarefa', self.tarefa.pk),
+            ('anotacao', nota.pk), ('apontamento', apontamento.pk),
+        ]
+        for nome, pk in casos:
+            with self.subTest(nome):
+                response = self.client.get(reverse(f'projects:{nome}_detalhe', args=[pk]))
+                self.assertContains(response, reverse(f'projects:{nome}_excluir', args=[pk]))
+                self.assertContains(response, 'data-excluir')
+
+    def test_quadro_sem_tarefas_orienta_o_usuario(self):
+        self.tarefa.delete()
+        self.client.force_login(self.dev)
+        response = self.client.get(self.url_quadro)
+        self.assertContains(response, 'Este projeto ainda não tem tarefas')
+        self.assertContains(response, '<p class="board-empty">Nenhuma tarefa</p>', count=4)
+
+    def test_coluna_vazia_mostra_aviso(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(self.url_quadro)
+        self.assertNotContains(response, 'Este projeto ainda não tem tarefas')
+        self.assertContains(response, '<p class="board-empty">Nenhuma tarefa</p>', count=3)
+
+    def test_home_sugere_proximo_passo_por_papel(self):
+        novo_gerente = criar_usuario('novo@exemplo.com', GERENTE)
+        self.client.force_login(novo_gerente)
+        self.assertContains(self.client.get(reverse('pages:home')), reverse('projects:projeto_criar'))
+        self.client.force_login(self.estranho)
+        response = self.client.get(reverse('pages:home'))
+        self.assertNotContains(response, reverse('projects:projeto_criar'))
+        self.assertContains(response, 'Peça ao gerente')
+        self.assertContains(response, reverse('projects:quadros'))
+
+
+class PaginasDeErroTests(TestCase):
+    def test_erro_500_usa_o_template_do_projeto(self):
+        response = server_error(RequestFactory().get('/'))
+        self.assertEqual(response.status_code, 500)
+        self.assertIn('Algo deu errado', response.content.decode())
+
+    def test_erro_400_usa_o_template_do_projeto(self):
+        response = bad_request(RequestFactory().get('/'), exception=None)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Requisição inválida', response.content.decode())
+
