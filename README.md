@@ -24,7 +24,7 @@ python manage.py popular_demo            # cria ou completa os dados, sem duplic
 python manage.py popular_demo --remover  # apaga os dados de demonstração
 ```
 
-O comando cria a "Equipe Demonstração", os projetos "Portal do Cliente" e "App de Entregas" com doze tarefas, e três contas com a senha de `DEMO_SENHA`:
+O comando cria a equipe "Demonstração", os projetos "Portal do Cliente" e "App de Entregas" com doze tarefas, e três contas com a senha de `DEMO_SENHA`:
 
 | Conta | Papel |
 |---|---|

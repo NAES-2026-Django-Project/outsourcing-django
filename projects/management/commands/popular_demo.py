@@ -21,7 +21,7 @@ from accounts.models import User
 from projects.models import Note, Priority, Project, StageType, Task, Team, TimeEntry
 
 DOMINIO = '@outsourcing.test'
-EQUIPE = 'Equipe Demonstração'
+EQUIPE = 'Demonstração'
 
 CONTAS = (
     # e-mail, nome, sobrenome, grupo
