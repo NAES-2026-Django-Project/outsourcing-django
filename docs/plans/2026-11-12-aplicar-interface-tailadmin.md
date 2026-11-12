@@ -223,3 +223,10 @@ Ao final, rodar `/validate-criterion` nesses IDs.
 - Correção encontrada na verificação: a trilha aparecia com o HTML escapado, e a classe `lead` colidia com a do Bootstrap.
 - `/validate-criterion`: DEF-4, DEF-7, T1-1.5, T2-1.4, T2-2.3, T3-1.2, T3-1.4, T3-1.5, T3-2.3c e T3-2.5 continuam cumpridos.
 - Publicado em https://outsourcing-naes-2026.rj.r.appspot.com e conferido logado: fonte, ícones, tokens e as páginas principais.
+
+## Ajustes pedidos na revisão (12/11/2026)
+
+- [x] `feat(ui): tema claro como padrão`: o escuro só vale por escolha no botão do cabeçalho.
+- [x] `feat(projects): membros de equipe e de projeto como caixas de seleção`: a lista múltipla exigia Ctrl e parecia aceitar só uma pessoa.
+- [x] `feat(projects): arrastar e soltar cartões no quadro kanban`: SortableJS, mesmo POST e validação das setas. As setas continuam como alternativa por teclado; `contexto_projeto.md` foi atualizado para o assistente.
+- [x] Testes: 135 passando. Arraste verificado com o mouse no servidor local: o cartão foi do Backlog para Em andamento, com a mensagem de confirmação. Publicado e conferido em produção (tema claro, colunas e cartões arrastáveis, caixas de membros).
