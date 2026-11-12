@@ -5,6 +5,15 @@
   <h1>{{ projeto.name }}</h1>
   {% if colunas %}<a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}?estagio={{ colunas.0.estagio.pk }}&amp;next={{ request.path|urlencode }}">Nova tarefa</a>{% endif %}
 </div>
+{% if colunas and not total_tarefas %}
+  <div class="card card-body">
+    <p class="mb-0">Este projeto ainda não tem tarefas. Use <strong>Nova tarefa</strong> ou o botão <strong>+</strong> de uma coluna para começar, e depois mova as tarefas com as setas ◀ ▶.</p>
+  </div>
+{% elif not colunas %}
+  <div class="card card-body">
+    <p class="mb-0">Este projeto não tem estágios. Cadastre um estágio em <a href="{% url 'projects:estagios' %}">Estágios</a>.</p>
+  </div>
+{% endif %}
 <div class="board">
   {% for coluna in colunas %}
     <section class="board-col">
@@ -40,6 +49,8 @@
             </span>
           </div>
         </article>
+      {% empty %}
+        <p class="board-empty">Nenhuma tarefa</p>
       {% endfor %}
     </section>
   {% endfor %}

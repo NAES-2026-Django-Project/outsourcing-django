@@ -399,6 +399,7 @@ class BoardView(LoginRequiredMixin, DetailView):
             }
             for i, estagio in enumerate(estagios)
         ]
+        context['total_tarefas'] = sum(len(estagio.tasks.all()) for estagio in estagios)
         return context
 
 
