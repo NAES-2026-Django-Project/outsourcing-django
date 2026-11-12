@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load ui %}
+{% load static ui %}
 {% block title %}{{ projeto.name }} · Quadro · Outsourcing{% endblock %}
 {% block content %}
 <header>
@@ -15,6 +15,7 @@
     </div>
   </div>
 </header>
+<p class="small text-secondary mb-0">{% icone "arrows-move" %} Arraste um cartão para outra coluna ou use as setas ◀ ▶ para mudar o estágio.</p>
 {% if colunas and not total_tarefas %}
   <div class="aviso">{% icone "info-circle" %}<p>Este projeto ainda não tem tarefas. Use <strong>Nova tarefa</strong> ou o botão <strong>+</strong> de uma coluna para começar, e depois mova as tarefas com as setas ◀ ▶.</p></div>
 {% elif not colunas %}
@@ -28,8 +29,9 @@
         <span class="contador num">{{ coluna.estagio.tasks.all|length }}</span>
         <a class="btn btn-outline-secondary btn-sm btn-icon" href="{% url 'projects:tarefa_criar' %}?estagio={{ coluna.estagio.pk }}&amp;next={{ request.path|urlencode }}" aria-label="Nova tarefa em {{ coluna.estagio.name }}" title="Nova tarefa em {{ coluna.estagio.name }}">{% icone "plus-lg" %}</a>
       </div>
+      <div class="board-lista" data-estagio="{{ coluna.estagio.pk }}" data-nome="{{ coluna.estagio.name }}">
       {% for tarefa in coluna.estagio.tasks.all %}
-        <article class="task-card {{ tarefa.priority }}">
+        <article class="task-card {{ tarefa.priority }}" data-mover="{% url 'projects:tarefa_mover' tarefa.pk %}" aria-roledescription="cartão arrastável">
           <a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a>
           <div class="task-meta">
             {% etiqueta_prioridade tarefa %}
@@ -58,7 +60,12 @@
       {% empty %}
         <p class="board-empty">Nenhuma tarefa</p>
       {% endfor %}
+      </div>
     </section>
   {% endfor %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="{% static 'js/quadro.js' %}"></script>
 {% endblock %}

@@ -625,3 +625,13 @@ class FormulariosDeMembrosTests(Base):
         self.assertRegex(html, r'<input type="checkbox"[^>]*name="assigned_members"')
         self.assertRegex(html, rf'name="assigned_members" value="{self.dev.pk}"[^>]*checked')
 
+
+class ArrastarNoQuadroTests(Base):
+    def test_quadro_marca_colunas_e_cartoes_para_arrastar(self):
+        self.client.force_login(self.dev)
+        response = self.client.get(reverse('projects:quadro', args=[self.projeto.pk]))
+        for estagio in self.estagios:
+            self.assertContains(response, f'class="board-lista" data-estagio="{estagio.pk}"')
+        self.assertContains(response, f'data-mover="{reverse("projects:tarefa_mover", args=[self.tarefa.pk])}"')
+        self.assertContains(response, 'sortablejs@1.15.2/Sortable.min.js')
+        self.assertContains(response, 'js/quadro.js')

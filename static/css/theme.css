@@ -393,3 +393,12 @@ figure.card { margin: 0; }
 .form-card fieldset > div:has(> .form-check) { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 16px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; max-height: 280px; overflow-y: auto; background: var(--surface); box-shadow: var(--shadow-xs); }
 .form-card fieldset > div:has(> .form-check) .form-check { margin: 0; }
 .form-card fieldset .form-check-label { overflow-wrap: anywhere; cursor: pointer; }
+
+/* Arrastar e soltar no quadro (static/js/quadro.js) */
+.board-lista { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 120px; border-radius: 12px; }
+.task-card { cursor: grab; touch-action: manipulation; }
+.task-card.arrastando { cursor: grabbing; box-shadow: var(--shadow-md); }
+.task-card.arrastando-sombra { opacity: .4; border-style: dashed; }
+.task-card.salvando { opacity: .6; pointer-events: none; }
+.em-arraste .board-lista { outline: 2px dashed var(--brand-200); outline-offset: 4px; }
+.em-arraste .board-empty { display: none; }

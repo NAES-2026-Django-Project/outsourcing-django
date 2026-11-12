@@ -142,6 +142,7 @@ Regras de contraste (AA):
 ```
 
 - **Barra lateral:** fundo `--surface`, borda direita `--border`, logo no topo (altura 64px), grupos Trabalho, Gestão, Inteligência artificial e Sistema. Item: ícone 20px + texto 14/20 peso 500, padding 8px 12px, raio 8px. Ativo: fundo `--brand-soft`, texto e ícone `--brand-text`. Hover: `--surface-2`. Grupos sem permissão não aparecem.
+- **Tema:** claro por padrão; o escuro só vale quando a pessoa escolhe no botão do cabeçalho.
 - **Cabeçalho:** fundo `--surface`, borda inferior, fixo. Botão de menu (recolhe no desktop, abre a gaveta no celular), busca de tarefas, alternância de tema, avatar com nome e menu (Minha conta, Sair).
 - **Conteúdo:** trilha de navegação (12/18 `--muted`), linha de título com ação principal à direita, e as seções empilhadas com 24px de espaço.
 - **Páginas públicas** (entrar, criar conta): tela dividida; à esquerda o formulário em cartão de até 440px, à direita um painel `--brand` com a proposta do sistema (oculto abaixo de 992px).
@@ -228,7 +229,7 @@ Fundo escurecido `rgba(16,24,40,.5)` com desfoque leve; cartão de até 440px, �
 
 ### Cartão do quadro (kanban)
 
-Fundo `--surface`, borda `--border`, raio 12px, faixa esquerda de 3px na cor da prioridade, padding 12px. Título 14/20 peso 500 (link); linha de metadados: etiqueta de prioridade, avatar com iniciais do responsável, prazo com ícone (vermelho se vencido). Botões ◀ ▶ só ícone no rodapé. Coluna: fundo `--surface-2`, raio 16px, cabeçalho com nome, contador em pílula e botão "+".
+Fundo `--surface`, borda `--border`, raio 12px, faixa esquerda de 3px na cor da prioridade, padding 12px. Título 14/20 peso 500 (link); linha de metadados: etiqueta de prioridade, avatar com iniciais do responsável, prazo com ícone (vermelho se vencido). Botões ◀ ▶ só ícone no rodapé. O cartão também pode ser arrastado e solto em outra coluna (SortableJS 1.15.2; no toque, segurar 200ms antes de arrastar); durante o arraste as colunas ganham contorno tracejado e o cartão de origem fica translúcido. As setas continuam como alternativa acessível por teclado. Coluna: fundo `--surface-2`, raio 16px, cabeçalho com nome, contador em pílula e botão "+".
 
 ### Chat do assistente
 
@@ -331,4 +332,5 @@ Implementado em 12/11/2026 (plano `docs/plans/2026-11-12-aplicar-interface-taila
 |---|---|---|---|
 | 11/11/2026 | Layout base | Abordagem A: barra lateral fixa com grupos de menu e barra superior com busca e usuário | Comporta todos os menus, inclusive os de IA, e segue o padrão de painéis em Bootstrap. Protótipo em `prototypes/layout-base.html` |
 | 11/11/2026 | Assistente de IA | Abordagem C: página de conversa com coluna de apoio (cota, perguntas frequentes e limites) | Atende à exigência de uma tela no visual do site e deixa o consumo e os limites visíveis. Protótipo em `prototypes/assistente.html` |
+| 12/11/2026 | Quadro e formulários | Cartões do kanban também podem ser arrastados entre colunas (mantendo as setas); membros de equipe e de projeto passam a ser caixas de seleção em grade; tema claro como padrão | A lista de seleção múltipla exigia Ctrl para marcar mais de uma pessoa e parecia aceitar só uma; arrastar é o gesto esperado num quadro kanban |
 | 11/11/2026 | Todas | Nova identidade inspirada no TailAdmin: paleta brand `#465FFF`, fonte Outfit, Bootstrap Icons, cartões de 16px, tabelas que viram cartões no celular e tema escuro com alternância. Mantém as abordagens A e C com o novo visual | A interface antiga do projeto (TailAdmin) era prática e agradável; a proposta única, aplicada a todas as telas, deixa o sistema mais limpo, consistente e responsivo. Protótipo em `prototypes/interface-tailadmin.html` (https://claude.ai/artifact/Qo296wGA8fiFjxLpa6wzMJ) |
