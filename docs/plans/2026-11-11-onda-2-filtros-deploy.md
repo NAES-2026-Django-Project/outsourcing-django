@@ -1,6 +1,6 @@
 # Onda 2: filtros, otimização, jQuery e deploy
 
-- Status: em andamento
+- Status: concluída
 - Critérios: DEF-7, DEF-8, T2-2.4, T2-2.5, T3-1.1, T3-1.2, T3-1.5, T3-1.6
 - Entrada: etapas 9 a 12 do plano geral aprovado
 
@@ -9,7 +9,7 @@
 - [x] `django-filter` e `django-debug-toolbar` instalados e em `INSTALLED_APPS`
 - [x] Banco Neon conectado e migrado
 - [x] PostgreSQL local descartável para testes
-- [ ] Google Cloud CLI instalada e projeto criado (ação do desenvolvedor)
+- [x] Google Cloud CLI instalada e projeto `outsourcing-naes-2026` criado com faturamento
 
 ## 2. Etapas e commits
 
@@ -44,4 +44,4 @@
 ## 4. Adequação ao critério avaliativo
 
 - [x] Validação registrada em `docs/criterios.md`
-- [ ] T3-1.6: publicar com `gcloud app deploy` e registrar o link (ação do desenvolvedor)
+- [x] T3-1.6: publicado com `gcloud app deploy` em https://outsourcing-naes-2026.rj.r.appspot.com
