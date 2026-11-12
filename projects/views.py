@@ -244,6 +244,15 @@ class TaskCreateView(RetornoMixin, LoginRequiredMixin, FormComUsuarioMixin, Succ
     success_message = 'Tarefa cadastrada.'
     extra_context = {'titulo': 'Nova tarefa', 'botao': 'Cadastrar', 'voltar': reverse_lazy('projects:tarefas')}
 
+    def get_initial(self):
+        initial = super().get_initial()
+        estagio = self.request.GET.get('estagio', '')
+        if estagio.isdecimal():
+            projetos = Project.objects.com_participacao(self.request.user)
+            if Stage.objects.filter(pk=estagio, project__in=projetos).exists():
+                initial['stage'] = int(estagio)
+        return initial
+
 
 class TaskUpdateView(RetornoMixin, TaskQuerysetMixin, FormComUsuarioMixin, SuccessMessageMixin, UpdateView):
     form_class = TaskForm

@@ -3,12 +3,18 @@
 {% block content %}
 <div class="page-head">
   <h1>{{ projeto.name }}</h1>
-  <a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}?next={{ request.path|urlencode }}">Nova tarefa</a>
+  {% if colunas %}<a class="btn btn-primary" href="{% url 'projects:tarefa_criar' %}?estagio={{ colunas.0.estagio.pk }}&amp;next={{ request.path|urlencode }}">Nova tarefa</a>{% endif %}
 </div>
 <div class="board">
   {% for coluna in colunas %}
     <section class="board-col">
-      <h2>{{ coluna.estagio.name }}<span class="num">{{ coluna.estagio.tasks.all|length }}</span></h2>
+      <h2>
+        {{ coluna.estagio.name }}
+        <span class="d-flex align-items-center gap-2">
+          <span class="num">{{ coluna.estagio.tasks.all|length }}</span>
+          <a class="btn btn-outline-secondary btn-sm py-0" href="{% url 'projects:tarefa_criar' %}?estagio={{ coluna.estagio.pk }}&amp;next={{ request.path|urlencode }}" aria-label="Nova tarefa em {{ coluna.estagio.name }}" title="Nova tarefa em {{ coluna.estagio.name }}">+</a>
+        </span>
+      </h2>
       {% for tarefa in coluna.estagio.tasks.all %}
         <article class="task-card {{ tarefa.priority }}">
           <a href="{% url 'projects:tarefa_detalhe' tarefa.pk %}">{{ tarefa.title }}</a>
