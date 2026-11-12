@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import date
 from decimal import Decimal
 from unittest.mock import patch
@@ -599,3 +600,28 @@ class PopularDemoTests(TestCase):
             with self.assertRaises(CommandError):
                 self.popular()
         self.assertFalse(self.contas_demo().exists())
+
+
+class FormulariosDeMembrosTests(Base):
+    """Membros de equipe e de projeto como caixas de seleção, aceitando várias pessoas."""
+
+    def test_equipe_salva_varios_membros_por_caixas_de_selecao(self):
+        outro_dev = criar_usuario('dev2@exemplo.com', DESENVOLVEDOR)
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse('projects:equipe_criar'))
+        caixas = re.findall(r'<input type="checkbox"[^>]*name="members"', response.content.decode())
+        self.assertEqual(len(caixas), 3)
+        self.assertContains(response, 'dev2@exemplo.com')
+        response = self.client.post(reverse('projects:equipe_criar'), {
+            'name': 'Cometa', 'manager': self.gerente.pk, 'members': [self.dev.pk, outro_dev.pk],
+        })
+        self.assertRedirects(response, reverse('projects:equipes'))
+        self.assertEqual(set(Team.objects.get(name='Cometa').members.all()), {self.dev, outro_dev})
+
+    def test_projeto_usa_caixas_de_selecao_para_os_membros(self):
+        self.client.force_login(self.gerente)
+        response = self.client.get(reverse('projects:projeto_editar', args=[self.projeto.pk]))
+        html = response.content.decode()
+        self.assertRegex(html, r'<input type="checkbox"[^>]*name="assigned_members"')
+        self.assertRegex(html, rf'name="assigned_members" value="{self.dev.pk}"[^>]*checked')
+

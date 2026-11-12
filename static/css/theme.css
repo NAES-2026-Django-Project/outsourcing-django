@@ -387,3 +387,9 @@ figure.card { margin: 0; }
 .form-card { max-width: 720px; width: 100%; }
 .form-card .card-body { gap: 0; }
 .form-card .card-body > :last-child, .form-card .card-body .mb-3:last-child { margin-bottom: 0 !important; }
+
+/* Caixas de seleção múltipla (membros de equipe e de projeto): o crispy usa fieldset > legend + div > .form-check */
+.form-card fieldset legend { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--text-2); margin-bottom: 6px; float: none; }
+.form-card fieldset > div:has(> .form-check) { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 16px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; max-height: 280px; overflow-y: auto; background: var(--surface); box-shadow: var(--shadow-xs); }
+.form-card fieldset > div:has(> .form-check) .form-check { margin: 0; }
+.form-card fieldset .form-check-label { overflow-wrap: anywhere; cursor: pointer; }

@@ -13,19 +13,38 @@ class DateInput(forms.DateInput):
         super().__init__(format='%Y-%m-%d', **kwargs)
 
 
+class MembrosField(forms.ModelMultipleChoiceField):
+    """Pessoas como caixas de seleção (uma por linha), em vez da lista que exigia Ctrl para marcar várias."""
+
+    widget = forms.CheckboxSelectMultiple
+
+    def label_from_instance(self, obj):
+        return f'{obj} · {obj.email}'
+
+
 class TeamForm(forms.ModelForm):
+    members = MembrosField(
+        label='Membros', queryset=User.objects.none(), required=False,
+        help_text='Marque todos os desenvolvedores que fazem parte da equipe.',
+    )
+
     class Meta:
         model = Team
         fields = ['name', 'manager', 'members']
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        ativos = User.objects.filter(is_active=True)
+        ativos = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
         self.fields['manager'].queryset = ativos.filter(groups__name=GERENTE)
         self.fields['members'].queryset = ativos.filter(groups__name=DESENVOLVEDOR)
 
 
 class ProjectForm(forms.ModelForm):
+    assigned_members = MembrosField(
+        label='Membros atribuídos', queryset=User.objects.none(), required=False,
+        help_text='Marque quem trabalha no projeto. Só valem o gerente e os membros da equipe escolhida.',
+    )
+
     class Meta:
         model = Project
         fields = ['name', 'description', 'team', 'assigned_members', 'start_date', 'end_date']
@@ -35,7 +54,7 @@ class ProjectForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Gerente só cria projetos nas equipes que gerencia.
         self.fields['team'].queryset = Team.objects.visiveis_para(user)
-        self.fields['assigned_members'].queryset = User.objects.filter(is_active=True)
+        self.fields['assigned_members'].queryset = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
 
     def clean(self):
         cleaned = super().clean()
